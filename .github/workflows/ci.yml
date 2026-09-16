@@ -21,7 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: backend
-      # Note: We can add 'npm test' here once we have backend tests!
+      - name: Run tests
+        run: npm test
+        working-directory: backend
 
   # Job 2: Check the Frontend
   frontend-checks:
@@ -40,6 +42,24 @@ jobs:
       - name: Run Linting
         run: npm run lint
         working-directory: frontend/badminton-ai
-      - name: Run Type-Checking
-        run: npx tsc -b
+      - name: Run build (includes type-checking via tsc -b)
+        run: npm run build
         working-directory: frontend/badminton-ai
+
+  # Job 3: Check the Worker
+  worker-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: worker/requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        working-directory: worker
+      - name: Run tests
+        run: pytest tests/
+        working-directory: worker
