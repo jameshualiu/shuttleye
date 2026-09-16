@@ -1,4 +1,4 @@
-# 🏸 Badminton AI Analyst
+# Shuttleye
 
 **Upload a match video. Get automated shuttle tracking, court geometry, player poses, and stroke-by-stroke shot analysis.**
 
@@ -13,21 +13,7 @@ A full-stack platform that turns raw badminton footage into actionable, stroke-l
 
 ---
 
-## 🎬 Demo
-
-> 🎬 **Demo video coming soon.**
-
-<!-- When you have the video, drop the file in .github/assets/ and use ONE of these:
-
-  Option A — thumbnail image linking to a hosted video (YouTube / Loom).
-  GitHub won't inline-play a committed .mp4 reliably, so this is the safest bet:
-  [![Watch the demo](.github/assets/demo-thumbnail.png)](https://youtu.be/YOUR_VIDEO_ID)
-
-  Option B — inline animated GIF (committed to the repo, renders inline):
-  ![Demo](.github/assets/demo.gif)
--->
-
-## 📸 Screenshots
+## Screenshots
 
 | Dashboard | Analysis | Shot Stats |
 |-----------|----------|------------|
@@ -35,7 +21,7 @@ A full-stack platform that turns raw badminton footage into actionable, stroke-l
 
 ---
 
-## ✨ What it does
+## What it does
 
 - **Shuttle tracking** — frame-by-frame shuttlecock position via a TrackNet-family detector.
 - **Court geometry** — detects court keypoints and computes a pixel → real-world-meters homography for a standard 6.1 × 13.4 m court.
@@ -47,7 +33,7 @@ A full-stack platform that turns raw badminton footage into actionable, stroke-l
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 Three independently deployed services that communicate **only** through a Firestore document and an `analysis.json` file in object storage — never through direct calls.
 
@@ -73,11 +59,11 @@ flowchart LR
 | **Backend** | `backend` | Node/Express 5 orchestration layer: mints presigned upload/download URLs, owns the Firestore job document, triggers the worker. Never touches raw video bytes. |
 | **Worker** | `worker` | Python CV/ML pipeline, deployed to [Modal](https://modal.com) as a serverless T4 GPU function. |
 
-> 📄 See [`data-flow.md`](data-flow.md) for the full upload → processing → results flow, the Firestore schema, and the `analysis.json` payload shape.
+> See [`data-flow.md`](data-flow.md) for the full upload → processing → results flow, the Firestore schema, and the `analysis.json` payload shape.
 
 ---
 
-## ⚙️ How it works (the pipeline)
+## How it works (the pipeline)
 
 The worker's `process_video()` runs a two-pass pipeline:
 
@@ -92,7 +78,7 @@ Every optional model path degrades gracefully to the next fallback rather than e
 
 ---
 
-## 🧰 Tech stack
+## Tech stack
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4, Radix UI, React Router 7, Firebase (Auth + Firestore)
 - **Backend:** Node.js, Express 5, Firebase Admin, `@aws-sdk/client-s3` (presigned URLs), Pino, `express-rate-limit`
@@ -102,7 +88,7 @@ Every optional model path degrades gracefully to the next fallback rather than e
 
 ---
 
-## 🚀 Getting started
+## Getting started
 
 ### Prerequisites
 
@@ -171,13 +157,13 @@ modal deploy app.py          # deploy the endpoint
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 - **ShuttleSet** (Wang et al., KDD 2023) — labeled badminton stroke dataset used for stroke classification.
 - **VIRD** (Lin et al., IEEE TVCG 2024) — research that shaped the focus on actionable, stroke-level feedback over raw video.
 
 ---
 
-## 📄 License
+## License
 
 Released under the MIT License. See [LICENSE](LICENSE).
