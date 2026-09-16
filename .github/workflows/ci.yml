@@ -58,7 +58,7 @@ jobs:
           cache: 'pip'
           cache-dependency-path: worker/requirements.txt
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt pytest
         working-directory: worker
       - name: Run tests
         run: pytest tests/
