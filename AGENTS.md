@@ -10,11 +10,12 @@ Before detailing a plan for the active ticket, inspect its target file modificat
 ### Pipeline Steps
 
 #### Step 1: Context Gathering & Plan Proposal
-1. Select the highest-priority, incomplete ticket from Tier 1 (ignore open PR tasks like `[WK-19]`).
-2. Run the Conflict Prevention Pre-Check.
-3. Dynamically open, read, and analyze the listed target source code files.
-4. Output a concise engineering strategy outlining exactly what code/logic will change to meet the ticket's Acceptance Criteria.
-5. **[GATE 1]**: Completely halt execution and wait for the user to say "Proceed".
+1. Read `BACKLOG.md` in full, even if it was already read earlier in the conversation — treat the file on disk as the source of truth, since tickets can ship (via a merged PR) without the file being updated.
+2. Select the highest-priority, incomplete ticket from Tier 1 (ignore open PR tasks like `[WK-19]`).
+3. Run the Conflict Prevention Pre-Check.
+4. Dynamically open, read, and analyze the listed target source code files.
+5. Output a concise engineering strategy outlining exactly what code/logic will change to meet the ticket's Acceptance Criteria.
+6. **[GATE 1]**: Completely halt execution and wait for the user to say "Proceed".
 
 #### Step 2: Branch Creation & Implementation
 1. Create and switch to a new git branch: `feature/[Ticket-ID]-[short-kebab-case-description]`.
@@ -26,5 +27,6 @@ Before detailing a plan for the active ticket, inspect its target file modificat
 #### Step 3: Git Operations & PR Creation
 1. Verify `git status` to ensure all changes are accounted for cleanly.
 2. Commit the modifications locally with the approved conventional commit structures.
-3. Run `git push origin HEAD` to push the feature branch to GitHub.
-4. Use the GitHub CLI tool (`gh pr create`) to open a brand-new Pull Request. Title the PR using your primary conventional commit message. Draft a professional, clear 2-sentence description summarizing the structural alterations for an engineering reviewer.
+3. Update `BACKLOG.md` to reflect the ticket just shipped — check off / remove it from Tier 1 (or the relevant Tier 2 batch), and add a note in the file's existing "shipped" log style (see the "2026-08-31 shipped" entry for the format). Commit this as one more commit on the same branch — do not open a separate PR for it.
+4. Run `git push origin HEAD` to push the feature branch to GitHub.
+5. Use the GitHub CLI tool (`gh pr create`) to open a brand-new Pull Request. Title the PR using your primary conventional commit message. Draft a professional, clear 2-sentence description summarizing the structural alterations for an engineering reviewer.
