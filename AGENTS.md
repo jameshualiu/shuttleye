@@ -29,4 +29,9 @@ Before detailing a plan for the active ticket, inspect its target file modificat
 2. Commit the modifications locally with the approved conventional commit structures.
 3. Update `BACKLOG.md` to reflect the ticket just shipped — check off / remove it from Tier 1 (or the relevant Tier 2 batch), and add a note in the file's existing "shipped" log style (see the "2026-08-31 shipped" entry for the format). Commit this as one more commit on the same branch — do not open a separate PR for it.
 4. Run `git push origin HEAD` to push the feature branch to GitHub.
-5. Use the GitHub CLI tool (`gh pr create`) to open a brand-new Pull Request. Title the PR using your primary conventional commit message. Draft a professional, clear 2-sentence description summarizing the structural alterations for an engineering reviewer.
+5. Use the GitHub CLI tool (`gh pr create`) to open a brand-new Pull Request. 
+   Title the PR using your primary conventional commit message. Draft a 
+   professional, clear 2-sentence description summarizing the structural 
+   alterations for an engineering reviewer. Apply labels matching the areas 
+   touched (e.g. `frontend`, `backend`, `worker`, `security`) based on the 
+   target files modified in this ticket.
