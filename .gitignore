@@ -23,11 +23,7 @@ backend/src/config/serviceAccount.json
 *.key
 
 # Internal notes / planning docs / AI instructions
-ARTHUR_INTEGRATION_PLAN.md
-GEMINI.md
-docs/
 .claude/
-.superpowers/
 
 # Python
 __pycache__/
