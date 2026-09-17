@@ -10,7 +10,7 @@ const verifyToken = async (req, res, next) => {
   }
 
   try {
-    const decodedValue = await admin.auth().verifyIdToken(token);
+    const decodedValue = await admin.auth().verifyIdToken(token, true);
     req.user = decodedValue;
     next();
   } catch (e) {

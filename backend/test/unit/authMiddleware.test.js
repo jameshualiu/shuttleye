@@ -45,7 +45,7 @@ describe('authMiddleware', () => {
 
     await authMiddleware(req, res, next);
 
-    expect(mockVerifyIdToken).toHaveBeenCalledWith('good-token');
+    expect(mockVerifyIdToken).toHaveBeenCalledWith('good-token', true);
     expect(req.user).toEqual({ uid: 'user-1', email: 'user@example.com' });
     expect(next).toHaveBeenCalledWith();
   });
