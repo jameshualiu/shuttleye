@@ -1,37 +1,87 @@
 # AGENTS.md
 
-## Agent Protocol Instructions
+## Agent Protocol
 
-When requested to run the backlog automation protocol, execute the following multi-step pipeline for the target tickets in `backlog.md` starting with Tier 1. You are permitted to execute file-reads, file-writes, local tests, and terminal/git commands autonomously, but you must halt and wait for user input at the specified `[GATE]` markers.
+Use GitHub Issues as the source of truth for active engineering work. `BACKLOG.md` is a lightweight roadmap for deferred or future work and does not need to be converted entirely into Issues.
 
-### Conflict Prevention Pre-Check
-Before detailing a plan for the active ticket, inspect its target file modifications. Cross-reference those files against the target files of the next 3 downstream tickets in `backlog.md`. If an overlap is detected, explicitly report it to the user with a recommended merging or execution strategy before proceeding.
+Prefer simple, focused changes over unnecessary abstractions or process.
 
-### Pipeline Steps
+## Before implementation
 
-#### Step 1: Context Gathering & Plan Proposal
-1. Read `BACKLOG.md` in full, even if it was already read earlier in the conversation — treat the file on disk as the source of truth, since tickets can ship (via a merged PR) without the file being updated.
-2. Select the highest-priority, incomplete ticket from Tier 1 (ignore open PR tasks like `[WK-19]`).
-3. Run the Conflict Prevention Pre-Check.
-4. Dynamically open, read, and analyze the listed target source code files.
-5. Output a concise engineering strategy outlining exactly what code/logic will change to meet the ticket's Acceptance Criteria.
-6. **[GATE 1]**: Completely halt execution and wait for the user to say "Proceed".
+1. Identify the GitHub Issue being addressed.
+2. Read the relevant source files and documentation before proposing changes.
+3. Check recent git history when it is unclear whether functionality already exists.
+4. Identify relevant dependencies or cross-stack impacts.
+5. Propose a concise implementation plan tied to the Issue's requirements and acceptance criteria.
+6. **[GATE 1]** Stop and wait for the user to say `Proceed`.
 
-#### Step 2: Branch Creation & Implementation
-1. Create and switch to a new git branch: `feature/[Ticket-ID]-[short-kebab-case-description]`.
-2. Implement the code modifications across the codebase.
-3. Run the specific local test suites (e.g., `pytest` for worker modifications) to verify compliance.
-4. Do NOT execute any git commits yet. Instead, display a bulleted list of proposed atomic commits using the Conventional Commits specification. Include file paths underneath each message.
-5. **[GATE 2]**: Completely halt execution and wait for the user to say "Commit these changes".
+Do not modify code before Gate 1.
 
-#### Step 3: Git Operations & PR Creation
-1. Verify `git status` to ensure all changes are accounted for cleanly.
-2. Commit the modifications locally with the approved conventional commit structures.
-3. Update `BACKLOG.md` to reflect the ticket just shipped — check off / remove it from Tier 1 (or the relevant Tier 2 batch), and add a note in the file's existing "shipped" log style (see the "2026-08-31 shipped" entry for the format). Commit this as one more commit on the same branch — do not open a separate PR for it.
-4. Run `git push origin HEAD` to push the feature branch to GitHub.
-5. Use the GitHub CLI tool (`gh pr create`) to open a brand-new Pull Request. 
-   Title the PR using your primary conventional commit message. Draft a 
-   professional, clear 2-sentence description summarizing the structural 
-   alterations for an engineering reviewer. Apply labels matching the areas 
-   touched (e.g. `frontend`, `backend`, `worker`, `security`) based on the 
-   target files modified in this ticket.
+## Implementation
+
+1. Create a feature branch from `main`:
+
+   `feature/[issue-number]-[short-kebab-case-description]`
+
+2. Implement only the scope necessary to address the Issue.
+3. Run the relevant tests, linting, and build checks.
+4. Review the resulting diff for unintended changes.
+5. Do not commit automatically.
+6. Present the proposed Conventional Commit message(s) and affected files.
+7. **[GATE 2]** Stop and wait for the user to say `Commit these changes`.
+
+## Commit and PR
+
+After approval:
+
+1. Verify `git status` and review the final diff.
+2. Create the approved Conventional Commit(s).
+3. Push the feature branch to GitHub.
+4. Open a Pull Request referencing the GitHub Issue.
+5. Use a Conventional Commit-style PR title.
+6. Include a concise summary of the changes.
+7. Apply relevant GitHub labels.
+8. Do not merge the PR unless explicitly instructed by the user.
+
+## Cross-stack changes
+
+When an Issue changes behavior or data shared between the frontend, backend, and worker:
+
+1. Identify every affected layer before implementation.
+2. Read `data-flow.md` and the relevant source code.
+3. Update affected producers and consumers together.
+4. Run checks for each affected layer.
+5. Do not leave one layer using an outdated contract.
+
+## GitHub Issues
+
+Create or work from an Issue when the change is meaningful and independently trackable.
+
+Do not create Issues for:
+
+- trivial fixes
+- tiny cleanup
+- changes that naturally belong inside another Issue
+- work that has already shipped
+
+Use labels to categorize work, such as:
+
+- `frontend`
+- `backend`
+- `worker`
+- `security`
+- `testing`
+- `performance`
+- `bug`
+- `tech-debt`
+
+GitHub Issue numbers should be used for active work rather than maintaining a separate ticket-ID system.
+
+## Scope and engineering judgment
+
+- Avoid unrelated refactors while implementing an Issue.
+- Do not introduce dependencies or abstractions solely to make the project appear more production-grade.
+- Preserve existing ML fallback behavior unless the Issue explicitly changes it.
+- If requested functionality appears to already exist, verify the implementation before changing it.
+- If implementation reveals a larger architectural issue, explain it before expanding scope.
+- Prefer fixing the underlying problem over adding superficial checks or documentation.
