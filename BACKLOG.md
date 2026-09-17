@@ -37,9 +37,3 @@ Audit findings, prioritization history, and shipped-ticket log live in `[docs/au
 - [ ] **[BATCH-04]** Worker & eval housekeeping. *(WK-13, WK-17, EVAL-06, REPO-06 script half)*
 - [ ] **[BATCH-05]** UI consistency & accessibility. *(FE-08, FE-10, FE-13, FE-16)*
 - [ ] **[BATCH-06]** Frontend code-consistency. *(FE-12, FE-14)*
-
-
-
-## Deferred / Cleanup
-
-- [ ] **[BE-07]** Tear down the Render deployment once Vercel backend stability is confirmed.
