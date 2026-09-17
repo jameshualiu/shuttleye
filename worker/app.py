@@ -51,7 +51,6 @@ worker_image = (
     modal.Image.from_registry(
         "nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04",
         add_python="3.11",
-        force_build=True
     )
     .apt_install("libgl1-mesa-glx", "libglib2.0-0")
     .pip_install(
@@ -227,12 +226,14 @@ class BadmintonWorker:
 
         video_doc_ref = db.collection("users").document(user_id).collection("videos").document(video_id)
 
+        local_video = f"/tmp/{video_id}.mp4"
+        results_local = f"/tmp/{video_id}_analysis.json"
+
         try:
             # Step 1: Status Update
             video_doc_ref.update({"status": "running"})
 
             # Step 2: Download Raw Video
-            local_video = f"/tmp/{video_id}.mp4"
             print(f"[video] Downloading video: {video_e2_key} from {bucket}")
             try:
                 s3.download_file(bucket, video_e2_key, local_video)
@@ -283,7 +284,6 @@ class BadmintonWorker:
             results = pipeline.process_video(local_video)
 
             # Step 4: Save analysis.json and Upload back to E2
-            results_local = f"/tmp/{video_id}_analysis.json"
             with open(results_local, 'w') as f:
                 json.dump(results, f)
 
@@ -305,6 +305,13 @@ class BadmintonWorker:
             print(f"[ERROR] Error: {e}")
             video_doc_ref.update({"status": "failed", "error": str(e)})
             raise e
+        finally:
+            # Warm containers reuse the same /tmp across requests (WK-10), so
+            # leftover video/analysis files must be cleaned up on every path,
+            # not just success, or a busy container can exhaust its disk.
+            for path in (local_video, results_local):
+                if os.path.exists(path):
+                    os.remove(path)
 
 
 @app.local_entrypoint()

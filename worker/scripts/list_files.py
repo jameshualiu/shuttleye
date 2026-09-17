@@ -14,11 +14,11 @@ def list_e2_files():
     import boto3
     s3 = boto3.client(
         's3',
-        endpoint_url=os.environ["E2_ENDPOINT"],
-        aws_access_key_id=os.environ["E2_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["E2_SECRET_ACCESS_KEY"]
+        endpoint_url=os.environ["R2_ENDPOINT"],
+        aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"]
     )
-    bucket = os.environ["E2_BUCKET_NAME"]
+    bucket = os.environ["R2_BUCKET_NAME"]
     
     print(f"Listing files in bucket: {bucket}")
     prefix = "uploads/FuHuYchBOwMrF0ohbejJQJr5kIP2/5b173273-15df-4612-ac74-53e374637623/"

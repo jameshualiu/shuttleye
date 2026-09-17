@@ -1,0 +1,5 @@
+# Extra dependencies for worker/train/*.py (offline eval/training scripts,
+# not part of the runtime pipeline in worker_image). Install on top of
+# requirements.txt: pip install -r requirements.txt -r requirements-eval.txt
+pandas==2.2.2
+scikit-learn==1.4.2
