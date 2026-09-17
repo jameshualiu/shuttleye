@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 require("dotenv").config();
 
 const { db } = require("./config/firebase");
@@ -15,7 +16,16 @@ const app = express();
 // limiter see the real client IP from X-Forwarded-For instead of the proxy's.
 app.set("trust proxy", 1);
 
-app.use(cors());
+app.use(helmet());
+
+// CORS_ORIGIN is a comma-separated allowlist (e.g. the deployed frontend
+// domain); defaults to the local Vite dev server when unset.
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+app.use(cors({ origin: corsOrigins }));
+
 app.use(express.json());
 
 const apiRouter = express.Router();
