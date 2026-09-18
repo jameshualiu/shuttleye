@@ -1,3 +1,4 @@
+const path = require('path');
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { PutObjectCommand, GetObjectCommand, DeleteObjectsCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const { randomUUID } = require('crypto');
@@ -8,6 +9,17 @@ const logger = require('../utils/logger');
 // BE-11: matches the landing page's advertised "MP4, MOV or AVI · up to 2 GB".
 const ALLOWED_VIDEO_CONTENT_TYPES = new Set(['video/mp4', 'video/quicktime', 'video/x-msvideo']);
 const MAX_UPLOAD_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GiB
+const MAX_FILENAME_LENGTH = 200;
+
+// BE-18: client-supplied filenames land in the S3 key and the Firestore
+// title, so a raw filename could path-traverse the key (../../) or carry
+// characters that break either sink. path.basename strips any directory
+// component; the whitelist + length cap handle the rest.
+function sanitizeFilename(filename) {
+  const base = path.basename(filename);
+  const safe = base.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, MAX_FILENAME_LENGTH);
+  return safe || 'upload';
+}
 
 class VideoService {
   constructor(videoRepo) {
@@ -27,7 +39,8 @@ class VideoService {
     }
 
     const videoId = randomUUID();
-    const e2Key = `uploads/${userId}/${videoId}/${fileMeta.filename}`;
+    const safeFilename = sanitizeFilename(fileMeta.filename);
+    const e2Key = `uploads/${userId}/${videoId}/${safeFilename}`;
 
     // A. Generate Presigned PUT URL (valid for 1 hour). ContentLength is pinned
     // into the signature (via signableHeaders) so the actual uploaded bytes
@@ -49,7 +62,7 @@ class VideoService {
 
     // B. Create the DB Document immediately
     await this.repo.createVideoDoc(userId, videoId, {
-      title: fileMeta.filename.replace(/\.[^.]+$/, ""),
+      title: safeFilename.replace(/\.[^.]+$/, ""),
       input: {
         e2Key,
         contentType: fileMeta.contentType,

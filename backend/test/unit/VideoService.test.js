@@ -48,6 +48,37 @@ describe('VideoService', () => {
       expect(result.e2Key).toBe(data.input.e2Key);
     });
 
+    it('strips directory components from the filename so it cannot path-traverse the S3 key', async () => {
+      getSignedUrl.mockResolvedValue('https://r2.example/put-url');
+
+      const result = await service.initializeUpload('user-1', {
+        filename: '../../etc/passwd.mp4',
+        contentType: 'video/mp4',
+        size: 100,
+      });
+
+      expect(result.e2Key).toBe(`uploads/user-1/${result.videoId}/passwd.mp4`);
+    });
+
+    it('replaces unsafe characters and caps filename length before using it in the S3 key / title', async () => {
+      getSignedUrl.mockResolvedValue('https://r2.example/put-url');
+      const longName = `${'a'.repeat(250)}.mp4`;
+
+      const result = await service.initializeUpload('user-1', {
+        filename: `weird name!@#$.mp4`,
+        contentType: 'video/mp4',
+        size: 100,
+      });
+      const [, , data] = repo.createVideoDoc.mock.calls[0];
+      expect(data.input.e2Key).toBe(`uploads/user-1/${result.videoId}/weird_name____.mp4`);
+      expect(data.input.originalFilename).toBe('weird name!@#$.mp4');
+
+      repo.createVideoDoc.mockClear();
+      await service.initializeUpload('user-1', { filename: longName, contentType: 'video/mp4', size: 100 });
+      const [, , longData] = repo.createVideoDoc.mock.calls[0];
+      expect(longData.input.e2Key.length).toBeLessThanOrEqual(`uploads/user-1/${result.videoId}/`.length + 200);
+    });
+
     it('pins ContentLength into the signature so actual uploaded bytes cannot exceed the declared size', async () => {
       getSignedUrl.mockResolvedValue('https://r2.example/put-url');
 
