@@ -27,7 +27,7 @@ Do not modify code before Gate 1.
 3. Run the relevant tests, linting, and build checks.
 4. Review the resulting diff for unintended changes.
 5. Do not commit automatically.
-6. Present the proposed Conventional Commit message(s) and affected files.
+6. Present the proposed Conventional Commit message(s) and affected files. When an Issue's acceptance criteria cover multiple distinct changes, split the work into one commit per item instead of a single combined commit — each commit should be independently reviewable and pass tests on its own.
 7. **[GATE 2]** Stop and wait for the user to say `Commit these changes`.
 
 ## Commit and PR
@@ -35,7 +35,7 @@ Do not modify code before Gate 1.
 After approval:
 
 1. Verify `git status` and review the final diff.
-2. Create the approved Conventional Commit(s).
+2. Create the approved Conventional Commit(s), split per acceptance-criteria item as proposed at Gate 2.
 3. Push the feature branch to GitHub.
 4. Open a Pull Request referencing the GitHub Issue.
 5. Use a Conventional Commit-style PR title.
