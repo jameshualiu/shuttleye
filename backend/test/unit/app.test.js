@@ -8,6 +8,11 @@ jest.mock('../../src/config/firebase', () => ({
   },
   admin: { auth: jest.fn(() => ({ verifyIdToken: jest.fn() })) },
 }));
+jest.mock('../../src/config/r2', () => ({ send: jest.fn() }));
+jest.mock('../../src/config/modal', () => ({
+  MODAL_WEBHOOK_URL: 'https://modal.example/webhook',
+  MODAL_WEBHOOK_SECRET: 'test-secret',
+}));
 
 const request = require('supertest');
 const app = require('../../src/app');
