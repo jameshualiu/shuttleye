@@ -82,6 +82,16 @@ function buildStore(client, prefix) {
 }
 
 /**
+ * Keys the upload limiter on the authenticated uid (this always runs after
+ * authMiddleware), not IP -- an IP key lets multiple accounts behind the
+ * same NAT/proxy exhaust each other's quota, and lets one account dodge the
+ * limit by rotating IPs.
+ */
+function uploadLimiterKeyGenerator(req) {
+	return req.user.uid;
+}
+
+/**
  * Global Rate Limiter
  *
  * This protects your entire API from general "noise" and basic bots.
@@ -116,6 +126,7 @@ const uploadLimiter = rateLimit({
     },
 	standardHeaders: 'draft-7',
 	legacyHeaders: false,
+	keyGenerator: uploadLimiterKeyGenerator,
 	store: buildStore(redisClient, 'rl:upload:'),
 });
 
@@ -125,4 +136,5 @@ module.exports = {
     buildStore,
     sendCommandFor,
     FailOpenStore,
+    uploadLimiterKeyGenerator,
 };
