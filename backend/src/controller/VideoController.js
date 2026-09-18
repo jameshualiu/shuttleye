@@ -41,7 +41,7 @@ class VideoController {
     // 2. Trigger Modal AI Worker (Asynchronously)
     // We get the video record first to get the E2 key
     try {
-        const videoData = await this.service.repo.getVideo(userId, videoId);
+        const videoData = await this.service.getVideoRecord(userId, videoId);
         if (videoData && videoData.input && videoData.input.e2Key) {
             logger.info({ videoId }, "Triggering Modal AI");
 

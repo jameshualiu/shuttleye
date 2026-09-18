@@ -1,6 +1,6 @@
 const { RedisStore } = require('rate-limit-redis');
 const { createRedisClient } = require('../../src/config/redis');
-const { buildStore, sendCommandFor, FailOpenStore } = require('../../src/middleware/rateLimiter');
+const { buildStore, sendCommandFor, FailOpenStore, uploadLimiterKeyGenerator } = require('../../src/middleware/rateLimiter');
 
 describe('createRedisClient', () => {
   test('returns null when REDIS_URL is not configured (fall back to in-memory)', () => {
@@ -39,6 +39,13 @@ describe('sendCommandFor', () => {
     const result = sendCommand('EVALSHA', 'sha', '1', 'key');
     expect(fakeClient.call).toHaveBeenCalledWith('EVALSHA', 'sha', '1', 'key');
     expect(result).toBe('OK');
+  });
+});
+
+describe('uploadLimiterKeyGenerator', () => {
+  test('keys on the authenticated uid, not the request IP', () => {
+    const req = { user: { uid: 'user-1' }, ip: '203.0.113.5' };
+    expect(uploadLimiterKeyGenerator(req)).toBe('user-1');
   });
 });
 

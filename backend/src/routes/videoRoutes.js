@@ -8,6 +8,10 @@ const VideoController = require("../controller/VideoController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { uploadLimiter } = require("../middleware/rateLimiter");
 
+// Required only for its boot-time env var validation (BE-13); VideoController
+// reads the values itself at request time.
+require("../config/modal");
+
 // dependency injection
 const videoRepo = new VideoRepository(db);
 const videoService = new VideoService(videoRepo);
