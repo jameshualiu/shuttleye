@@ -29,6 +29,8 @@ backend/src/config/serviceAccount.json
 __pycache__/
 *.pyc
 .pytest_cache/
+.venv/
+venv/
 
 # OS / IDE
 .DS_Store
