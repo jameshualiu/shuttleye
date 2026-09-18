@@ -155,6 +155,10 @@ class VideoService {
   async markFailed(userId, videoId, errorMessage) {
     await this.repo.markFailed(userId, videoId, errorMessage);
   }
+
+  async getVideoRecord(userId, videoId) {
+    return this.repo.getVideo(userId, videoId);
+  }
 }
 
 module.exports = VideoService;

@@ -231,4 +231,15 @@ describe('VideoService', () => {
       expect(repo.markFailed).toHaveBeenCalledWith('user-1', 'video-1', 'boom');
     });
   });
+
+  describe('getVideoRecord', () => {
+    it('delegates to the repo', async () => {
+      repo.getVideo.mockResolvedValue({ status: 'queued' });
+
+      const result = await service.getVideoRecord('user-1', 'video-1');
+
+      expect(repo.getVideo).toHaveBeenCalledWith('user-1', 'video-1');
+      expect(result).toEqual({ status: 'queued' });
+    });
+  });
 });
