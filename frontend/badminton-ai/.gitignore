@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local-only demo clip for the landing page (never commit footage)
+public/demo-local/
