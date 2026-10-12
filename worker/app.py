@@ -64,7 +64,7 @@ worker_image = (
         "worker",
         remote_path="/root",
         # Weights come from the Modal volume; training data stays local
-        ignore=["weights/**", "train/features_v3/**", "**/__pycache__/**", ".pytest_cache/**"],
+        ignore=["weights/**", "train/features_v3/**", "**/__pycache__/**", ".pytest_cache/**", ".venv/**"],
     )
 )
 
