@@ -31,9 +31,19 @@ export function ShotLog({ shotEvents, fps, videoRef, status, store }: Props) {
     return idx;
   }, [shotEvents, currentTime, fps]);
 
+  // Scroll only the log's own container. scrollIntoView would also scroll the
+  // page whenever the log is partly offscreen (e.g. the landing-page demo).
   useEffect(() => {
-    if (currentShotIdx >= 0 && activeRowRef.current && shotLogRef.current) {
-      activeRowRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const row = activeRowRef.current;
+    const list = shotLogRef.current;
+    if (currentShotIdx < 0 || !row || !list) return;
+    const rowTop =
+      row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+    const rowBottom = rowTop + row.offsetHeight;
+    if (rowTop < list.scrollTop) {
+      list.scrollTo({ top: rowTop, behavior: "smooth" });
+    } else if (rowBottom > list.scrollTop + list.clientHeight) {
+      list.scrollTo({ top: rowBottom - list.clientHeight, behavior: "smooth" });
     }
   }, [currentShotIdx]);
 
