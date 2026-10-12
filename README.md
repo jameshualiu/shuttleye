@@ -122,16 +122,13 @@ cp backend/.env.example backend/.env
 
 Includes Firebase Admin credentials, S3/E2 storage keys, `MODAL_WEBHOOK_URL`, and an optional `REDIS_URL` (shared rate-limit store for serverless; falls back to in-memory when unset).
 
-**Frontend** — create `frontend/badminton-ai/.env.local`:
+**Frontend** — copy the example and fill it in:
 
 ```bash
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
+cp frontend/badminton-ai/.env.example frontend/badminton-ai/.env.local
 ```
+
+Includes the Firebase web app config and `VITE_API_BASE_URL` (only needed outside Docker; Compose sets it).
 
 ### Running each service directly
 
