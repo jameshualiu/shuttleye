@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { LogOut, Sun, Moon, Plus, ChevronDown, Sparkles } from "lucide-react";
+import { LogOut, Sun, Moon, Plus, ChevronDown } from "lucide-react";
 import { useAuthUser } from "../auth/hooks/useAuthUser";
 import { logout } from "../auth/authActions";
 import { useTheme } from "../context/useTheme";
@@ -51,9 +51,6 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
           className="cursor-pointer flex items-center gap-2 hover:opacity-80 transition-opacity"
           onClick={() => navigate("/dashboard")}
         >
-          <div className="p-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
           <span className="text-[17px] font-semibold tracking-tight text-foreground">
             Shuttleye
           </span>
