@@ -1,0 +1,27 @@
+{
+  "_status": "draft — James to review",
+
+  "shot.Net.top": "When your opponent drops short, meet it early and play a tight net shot back. It forces them to lift and hands you the attack.",
+  "shot.Net.bottom": "You don't have to fight at the net every time. Push or lift past your opponent instead and make them move to the back.",
+  "shot.Lift.top": "When you're under pressure, lift high to the back corners instead of forcing a drop. It buys you time to get back to the middle.",
+  "shot.Lift.bottom": "Try not to lift the shuttle up and give your opponent an easy smash. Keep it low with a net shot or a push when you can.",
+  "shot.Smash.top": "When you get a short, high lift, go for the smash. Aim at your opponent's body or the sidelines, not just hard down the middle.",
+  "shot.Smash.bottom": "You don't have to smash every high shuttle. A clear or a well-placed drop keeps you in control without wearing you out.",
+  "shot.Drop.top": "From the back, mix in drops so your opponent can't just wait deep. Make it look like a smash or a clear until the last moment.",
+  "shot.Drop.bottom": "When you're at the back, don't feel you have to drop. A steep smash or a deep clear can do the same job with less risk.",
+  "shot.Clear.top": "When you're stuck at the back, a high, deep clear resets the rally. Aim for the back line so your opponent can't attack it.",
+  "shot.Clear.bottom": "Try not to clear when your opponent is waiting at the back. Use a drop or a smash to keep them moving instead.",
+  "shot.Drive.top": "When the shuttle comes flat at shoulder height, drive it back flat and fast. It stops your opponent from getting set to attack.",
+  "shot.Drive.bottom": "You don't have to swap flat drives. Lift high or block short to change the pace and break your opponent's rhythm.",
+  "shot.Push.top": "When the shuttle is just above the net, push it flat into the midcourt gaps. It's hard to attack and keeps the pressure on.",
+  "shot.Push.bottom": "Don't just push from the front. A tight net shot or a high lift gives your opponent something harder to deal with.",
+  "shot.Net kill.top": "Stay close to the net with your racket up after a good net shot. If the reply floats up, hit it down straight away.",
+  "shot.Net kill.bottom": "You don't have to rush every loose net reply. A controlled net shot or push is safer than a kill into the tape.",
+
+  "band.short.strength": "Make the first few shots count. A tight serve and a sharp third shot can win the point before the rally settles.",
+  "band.short.weakness": "Watch the serve and the return closely. Most short rallies are lost on the first couple of shots, so get your racket up early.",
+  "band.mid.strength": "Once the rally has settled, look for the first loose shot and attack it. Don't wait for a perfect chance.",
+  "band.mid.weakness": "Once the rally settles, don't rush the attack. Keep the shuttle deep or low until you get a really loose reply.",
+  "band.long.strength": "Be patient in long rallies. Keep the shuttle deep and safe, get back to the middle after every shot, and wait for your opponent to make the mistake.",
+  "band.long.weakness": "If long rallies wear you down, go for a safe, deep shot and recover to the middle. Try to end the point when you get an easy chance rather than waiting."
+}

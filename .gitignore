@@ -53,6 +53,7 @@ worker/debug_hits.py
 
 # Datasets (huge; videos re-downloadable via ShuttleSet/download_videos.py)
 ShuttleSet/
+!tools/pro_profiles/tests/fixtures/**/ShuttleSet/
 
 # Model weights & training artifacts (live in Modal volume / R2, not git)
 worker/weights/
@@ -60,3 +61,6 @@ worker/train/features_v3/
 
 # Vendored-reference scratch (BST paper sources, validation script)
 .bst-ref/
+
+# Brainstorm mockups and agent workspaces
+.superpowers/

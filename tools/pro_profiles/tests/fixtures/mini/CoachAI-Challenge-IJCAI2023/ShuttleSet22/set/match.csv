@@ -1,0 +1,4 @@
+id,video,tournament,round,year,month,day,set,duration,winner,loser,downcourt,db
+1,M1,Test Open 2022,Finals,2022.0,3,5,2,40,Alpha ONE,Beta TWO,0,0
+2,M2,Test Open 2022,Quarter-finals,2022.0,3,3,2,40,Beta TWO,Alpha ONE,0,0
+3,GONE_Trim,Test Open 2022,Round of 16,2022.0,3,2,2,40,Beta TWO,Alpha ONE,0,0
