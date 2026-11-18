@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "motion/react";
 import { ChevronRight, Moon, Play, Sparkles, Sun, Zap } from "lucide-react";
@@ -302,6 +302,8 @@ export default function LandingPage() {
                             <Sun className={`absolute w-4 h-4 transition-all duration-200 ${isDark ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
                             <Moon className={`absolute w-4 h-4 transition-all duration-200 ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
                         </button>
+                        <Link to="/players" className="hidden sm:inline-flex items-center min-h-11 cursor-pointer px-3 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Players</Link>
+                        <Link to="/tournaments" className="hidden sm:inline-flex items-center min-h-11 cursor-pointer px-3 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Tournaments</Link>
                         <button onClick={() => navigate("/signin")} className="cursor-pointer px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
                             Sign In
                         </button>

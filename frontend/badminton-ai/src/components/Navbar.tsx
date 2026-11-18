@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LogOut, Sun, Moon, Plus, ChevronDown, Sparkles } from "lucide-react";
 import { useAuthUser } from "../auth/hooks/useAuthUser";
 import { logout } from "../auth/authActions";
@@ -92,6 +92,8 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
             <Plus className="w-3.5 h-3.5" />
             New Analysis
           </button>
+          <Link to="/players" className="inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Players</Link>
+          <Link to="/tournaments" className="inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Tournaments</Link>
         </nav>
       )}
 

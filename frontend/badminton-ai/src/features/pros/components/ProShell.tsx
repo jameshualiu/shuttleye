@@ -8,7 +8,7 @@ import { ProAttribution } from "./ProAttribution";
 const focus =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 const control = cn(
-  "inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors",
+  "inline-flex min-h-11 items-center whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors",
   focus,
 );
 
@@ -30,7 +30,7 @@ export function ProShell({ children }: { children: ReactNode }) {
           >
             Shuttleye
           </Link>
-          <nav aria-label="Pro data" className="flex items-center gap-1">
+          <nav aria-label="Pro data" className="flex items-center">
             {links.map((l) => (
               <NavLink
                 key={l.to}
@@ -60,7 +60,7 @@ export function ProShell({ children }: { children: ReactNode }) {
           </button>
           <Link
             to="/signin"
-            className={cn(control, "bg-primary px-4 text-primary-foreground hover:opacity-90")}
+            className={cn(control, "bg-primary px-3 text-primary-foreground hover:opacity-90")}
           >
             Sign in
           </Link>
