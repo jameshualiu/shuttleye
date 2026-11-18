@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Chrome, Lock, Mail, Sparkles, User } from "lucide-react";
+import { Chrome, Lock, Mail, User } from "lucide-react";
 import { signInWithGoogle, signUpWithEmail } from "../auth/authActions";
 import { useAuthUser } from "../auth/hooks/useAuthUser";
 
@@ -59,9 +59,6 @@ export default function SignUpPage() {
             onClick={() => navigate("/")}
             className="cursor-pointer flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="p-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-              <Sparkles className="w-4 h-4 text-primary" />
-            </div>
             <span className="text-[17px] font-semibold tracking-tight text-foreground">Shuttleye</span>
           </button>
         </div>
