@@ -63,3 +63,35 @@ jobs:
       - name: Run tests
         run: pytest tests/
         working-directory: worker
+
+  # Job 4: Check the pro profile build script and its committed JSON
+  pro-profiles-checks:
+    runs-on: ubuntu-latest
+    env:
+      DATASET_SHA: 45517f7d4cb936b03f3eabf939cc7959d39226fe
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pytest
+        run: pip install pytest
+      - name: Fetch pinned dataset
+        run: |
+          git init "$RUNNER_TEMP/coachai"
+          cd "$RUNNER_TEMP/coachai"
+          git remote add origin https://github.com/wywyWang/CoachAI-Projects.git
+          git sparse-checkout set ShuttleSet/set CoachAI-Challenge-IJCAI2023/ShuttleSet22/set
+          git fetch --depth 1 origin "$DATASET_SHA"
+          git checkout FETCH_HEAD
+      - name: Run tests
+        run: python -m pytest pro_profiles/tests
+        working-directory: tools
+        env:
+          SHUTTLESET_DIR: ${{ runner.temp }}/coachai
+      - name: Check committed JSON is up to date
+        run: |
+          python -m pro_profiles.build --source "$RUNNER_TEMP/coachai" --out "$RUNNER_TEMP/pro-data"
+          diff -r "$RUNNER_TEMP/pro-data" ../frontend/badminton-ai/public/pro-data
+        working-directory: tools

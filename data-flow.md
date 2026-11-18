@@ -186,6 +186,32 @@ The roadmap notes inspiration from swing.vision and ambition to compare a player
 
 ---
 
+## 5. Pro profile data (static JSON)
+
+Independent of the upload/analysis flow above. **Producer:** the offline build script `tools/pro_profiles/build.py` (see its README). **Consumer:** the frontend types in `frontend/badminton-ai/src/features/pros/types.ts`. No backend or Firestore involvement: the files are served with the SPA from `public/pro-data/` and only change when the script is re-run (CI fails if the committed JSON is stale). Keys are camelCase, files are compact and deterministic. Percentages are 0-100 rounded to 1 decimal, win rates and `typical` band values are whole numbers.
+
+| File | Shape |
+|---|---|
+| `players/index.json` | `{ generatedFrom: <dataset sha>, players: [{ id, name, event: "MS"\|"WS", matches, ranked, photo }] }`, men first, then by name |
+| `players/<id>.json` | `{ id, name, event, context: { matches, firstYear, lastYear, comparedWith }, summary: string\|null, photo, filters: [{ id, label, kind: "all"\|"tournament"\|"match", matches }], views: { <filterId>: View } }` |
+| `tournaments/index.json` | `{ editions: [{ id, name, season, matches }] }`, season descending then name |
+| `tournaments/<id>.json` | `{ id, name, season, matches: [{ id, round, date, winner: {id,name}, loser: {id,name}, games: [[a,b],...] }], players: [{ id, name, event }] }` |
+
+Filter ids are `all`, `t:<edition_id>` and `m:<match_id>`. `games` are points per set counted from rally winners, match winner's score first.
+
+```ts
+View    = { kind, shots, rallies, shotChoice: ShotRow[], bands: BandRow[], findings: Finding[], rallyBrowser: Clip[] }
+ShotRow = { group, share, count, rank: number|null, of: number|null, typical }   // typical = all-match median
+BandRow = { band: "short"|"mid"|"long", label, rallies, winRate: number|null, typical }  // winRate null under 30 rallies
+Finding = { key, kind: "style"|"strength"|"weakness", claim, figure, comparison, tip: string|null, clips: Clip[] }
+Clip    = { youtubeId, startSec, endSec, matchLabel, scoreLabel }
+Photo   = { src: "/pro-data/photos/<id>.jpg", credit, sourceUrl, focusX, focusY }   // focus 0-100
+```
+
+Rules: `findings` is non-empty only in the `all` view, `rallyBrowser` only in filtered views. Filtered views have `rank`/`of` null and `typical` from all matches. `context.comparedWith` is the comparison group size minus the player (39 grouped-shot-qualified players, so 38 for a ranked player). Players under 300 grouped shots are unranked: `ranked` false, all ranks null, no findings, `summary` null.
+
+---
+
 ## Summary: How data moves
 
 ```
