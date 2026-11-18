@@ -40,8 +40,14 @@ _ALLOWED = re.compile(
 )
 
 
+_RESTRICTED_TOKENS = {"nc", "nd"}  # NonCommercial / NoDerivatives, in any spelling
+
+
 def licence_allowed(short_name: str) -> bool:
-    return bool(_ALLOWED.match((short_name or "").strip()))
+    name = (short_name or "").strip()
+    if _RESTRICTED_TOKENS & set(re.split(r"[^a-z0-9]+", name.lower())):
+        return False
+    return bool(_ALLOWED.match(name))
 
 
 def _plain(markup: str) -> str:

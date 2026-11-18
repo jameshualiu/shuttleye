@@ -12,16 +12,22 @@ const rowButton = cn(
 
 type FindingsPanelProps = {
   findings: Finding[];
+  /** False for players under the shot threshold: never compared with others. */
+  ranked: boolean;
   selected: number;
   onSelect: (index: number) => void;
   className?: string;
 };
 
-export function FindingsPanel({ findings, selected, onSelect, className }: FindingsPanelProps) {
+export function FindingsPanel({ findings, ranked, selected, onSelect, className }: FindingsPanelProps) {
   if (findings.length === 0) {
     return (
       <Panel title="What stands out" className={className}>
-        <p className="text-muted-foreground">Nothing stands far out from other pros in this data</p>
+        <p className="text-muted-foreground">
+          {ranked
+            ? "Nothing stands far out from other pros in this data"
+            : "Too few shots in the data to compare with other pros."}
+        </p>
       </Panel>
     );
   }

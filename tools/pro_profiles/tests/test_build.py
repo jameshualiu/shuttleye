@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from pro_profiles.build import PINNED_SHA, build
-from pro_profiles.load import load_content, load_dataset
+from pro_profiles.build import PINNED_SHA, build, game_finished, game_scores
+from pro_profiles.load import Match, load_content, load_dataset
 
 SOURCES = {"M1": {"url": "https://www.youtube.com/watch?v=AAAAAAAAAAA", "offsetSec": 0}}
 
@@ -43,9 +43,12 @@ def test_match_view_has_no_ranks_or_findings(mini_out):
     assert seen >= 4
 
 
-def test_filtered_views_have_rally_browser_and_all_does_not(mini_out):
+def test_rally_browser_in_filtered_views_and_all_without_findings(mini_out):
     data = read(mini_out / "players" / "alpha-one.json")
-    assert data["views"]["all"]["rallyBrowser"] == []
+    # No findings (unranked): the all view gets up to 5 example rallies. Only
+    # M1 has a clip source, so they are its real rallies in (set, rally) order.
+    assert data["views"]["all"]["findings"] == []
+    assert [c["startSec"] for c in data["views"]["all"]["rallyBrowser"]] == [652, 688, 1798]
     clips = data["views"]["m:M1"]["rallyBrowser"]
     assert [c["startSec"] for c in clips] == [652, 688, 1798]  # (set, rally) order
     assert clips[0]["youtubeId"] == "AAAAAAAAAAA"
@@ -61,17 +64,33 @@ def test_unranked_player_all_view(mini_out):
     assert data["photo"] is None
 
 
-def test_tournament_games_from_rally_winners(mini_out):
+def test_tournament_games_from_max_roundscore(mini_out):
     t = read(mini_out / "tournaments" / "test-open-2022.json")
     m1 = next(m for m in t["matches"] if m["id"] == "M1")
-    # Set 1: A won rallies 1 and 2 (rally 3 has no winner); set 2: B won.
-    assert m1["games"] == [[2, 0], [0, 1]]
+    # Max roundscore per set, winner first. Set 1 rally 3 has no recorded
+    # winner but is still a point (2-1). Neither set is a finished game.
+    assert m1["games"] == [[2, 1], [0, 1]]
+    assert m1["incomplete"] == [0, 1]
     assert m1["winner"] == {"id": "alpha-one", "name": "Alpha One"}
     assert m1["loser"] == {"id": "beta-two", "name": "Beta Two"}
     assert [m["id"] for m in t["matches"]] == sorted(
         (m["id"] for m in t["matches"]), key=lambda i: ({"M2": "2022-03-03", "M3": "2022-03-04", "M1": "2022-03-05"}[i], i)
     )
     assert {p["id"] for p in t["players"]} == {"alpha-one", "beta-two"}
+
+
+@pytest.mark.parametrize("a,b,done", [
+    (21, 15, True), (24, 22, True), (30, 29, True), (29, 30, True), (21, 20, False),
+    (18, 15, False), (29, 28, False), (0, 0, False), (11, 21, True),
+])
+def test_game_finished(a, b, done):
+    assert game_finished(a, b) is done
+
+
+def test_game_scores_marks_incomplete_sets():
+    m = Match("x", "ShuttleSet", "e", "Finals", "2020-01-01", "w", "l", None, (),
+              set_scores=((21, 18), (18, 15)))
+    assert game_scores(m) == ([[21, 18], [18, 15]], [1])
 
 
 def test_output_is_deterministic(tmp_path, mini_source, mini_players, mini_tournaments):
@@ -151,7 +170,9 @@ def test_axelsen_file_shape(tmp_path):
 
 @needs_data
 def test_rally_browser_matches_independent_count(tmp_path):
-    """Browser length == the subset's real rallies (winner set) in matches with a clip source."""
+    """Filtered views: browser length == the subset's real rallies (winner set) in
+    matches with a clip source. All view: empty when there are findings, else
+    min(5, that count) clips from as many distinct matches as possible."""
     players, tournaments = load_content("players"), load_content("tournaments")
     sources = load_content("clip_sources")
     matches = load_dataset(Path(os.environ["SHUTTLESET_DIR"]), players, tournaments)
@@ -176,6 +197,17 @@ def test_rally_browser_matches_independent_count(tmp_path):
         data = read(p)
         for fid, view in data["views"].items():
             if fid == "all":
+                mine = [m for m in matches if data["id"] in (m.winner, m.loser)]
+                n = sum(1 for m in mine if m.id in sources for r in m.rallies
+                        if r.winner is not None and r.shots)
+                clips = view["rallyBrowser"]
+                if view["findings"]:
+                    assert clips == [], p.name
+                else:
+                    assert len(clips) == min(5, n), p.name
+                    playable = sum(1 for m in mine if m.id in sources)
+                    labels = {c["matchLabel"] for c in clips}
+                    assert len(labels) == min(len(clips), playable), p.name
                 continue
             checked += 1
             assert len(view["rallyBrowser"]) == expected(data["id"], fid), (p.name, fid)
@@ -184,3 +216,39 @@ def test_rally_browser_matches_independent_count(tmp_path):
         n = data["context"]["matches"]
         assert label == ("All 1 match" if n == 1 else f"All {n} matches")
     assert checked > 300
+
+
+@needs_data
+def test_real_game_scores(tmp_path):
+    """Every finished match's winner wins on games; known finals are exact."""
+    build(Path(os.environ["SHUTTLESET_DIR"]), tmp_path)
+    checked = 0
+    for p in (tmp_path / "tournaments").glob("*.json"):
+        if p.name == "index.json":
+            continue
+        for m in read(p)["matches"]:
+            assert all(0 <= i < len(m["games"]) for i in m["incomplete"]), m["id"]
+            if m["incomplete"]:
+                continue
+            won = sum(a > b for a, b in m["games"])
+            lost = sum(b > a for a, b in m["games"])
+            assert won == 2 and lost <= 1, (m["id"], m["games"])
+            checked += 1
+    assert checked > 60
+    mm = read(tmp_path / "tournaments" / "malaysia-masters-2020.json")["matches"]
+    final = next(m for m in mm if m["round"] == "Finals")
+    assert (final["winner"]["id"], final["loser"]["id"]) == ("kento-momota", "viktor-axelsen")
+    assert final["games"] == [[24, 22], [21, 11]] and final["incomplete"] == []
+
+
+@needs_data
+def test_wtf_2020_final_first_clip_starts_at_love_all():
+    players, tournaments = load_content("players"), load_content("tournaments")
+    matches = load_dataset(Path(os.environ["SHUTTLESET_DIR"]), players, tournaments)
+    m = next(m for m in matches
+             if m.id == "Anders_Antonsen_Viktor_Axelsen_HSBC_BWF_WORLD_TOUR_FINALS_2020_Finals")
+    from pro_profiles.clips import default_labels
+
+    first = min(m.rallies, key=lambda r: (r.set_no, r.number))
+    assert default_labels(m, first, m.winner, players, tournaments)[1] == "game 1 at 0–0"
+    assert m.set_scores == ((21, 16), (5, 21), (21, 17))

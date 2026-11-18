@@ -13,8 +13,8 @@ import os
 import statistics
 from pathlib import Path
 
-from .clips import Clip, clip_for_rally, make_labels
-from .findings import Finding, select_findings, summary
+from .clips import ROUND_WORDS, Clip, clip_for_rally, make_labels
+from .findings import Finding, sample_clips, select_findings, summary
 from .load import CONTENT_DIR, Match, load_content, load_dataset
 from .stats import (
     BANDS,
@@ -31,12 +31,6 @@ from .stats import (
 
 PINNED_SHA = "45517f7d4cb936b03f3eabf939cc7959d39226fe"
 PHOTOS_PATH = CONTENT_DIR / "photos.json"
-ROUND_WORDS = {
-    "Finals": "final",
-    "Semi-finals": "semi-final",
-    "Quarter-finals": "quarter-final",
-    "Group-Stage": "group stage",
-}
 
 
 def _pct(x: float) -> float:
@@ -111,6 +105,7 @@ def _view(
     *,
     ranked: bool,
     full: bool,
+    findings: list[Finding] | None = None,
     sources: dict,
     players: dict,
     tournaments: dict,
@@ -137,12 +132,11 @@ def _view(
         }
         for key, label, _lo, _hi in BANDS
     ]
-    findings: list[Finding] = []
+    findings = (findings or []) if full else []
     browser: list[Clip] = []
-    if full and ranked:
-        findings = select_findings(
-            player, all_stats, subset, sources, players=players, tournaments=tournaments
-        )
+    if full and not findings:
+        # No findings to watch: offer a few example rallies instead.
+        browser = sample_clips(player, subset, sources, players=players, tournaments=tournaments)
     if not full:
         labels = make_labels(player, players, tournaments)
         for m in sorted(subset, key=lambda m: (m.date, m.id)):
@@ -167,20 +161,38 @@ def _all_label(n: int) -> str:
     return f"All {n} match" if n == 1 else f"All {n} matches"
 
 
-def _game_scores(m: Match) -> list[list[int]]:
-    games = []
-    for set_no in sorted({r.set_no for r in m.rallies}):
-        won = sum(1 for r in m.rallies if r.set_no == set_no and r.winner == m.winner)
-        lost = sum(1 for r in m.rallies if r.set_no == set_no and r.winner == m.loser)
-        games.append([won, lost])
-    return games
+def game_finished(a: int, b: int) -> bool:
+    """A finished badminton game: 21+ points with a 2-point lead, or 30."""
+    hi = max(a, b)
+    return hi == 30 or (hi >= 21 and abs(a - b) >= 2)
+
+
+def game_scores(m: Match) -> tuple[list[list[int]], list[int]]:
+    """(games, incomplete): each set's max roundscore, match winner first, and
+    the 0-based indexes of sets whose recorded score isn't a finished game."""
+    games = [[a, b] for a, b in m.set_scores]
+    incomplete = [i for i, (a, b) in enumerate(m.set_scores) if not game_finished(a, b)]
+    return games, incomplete
+
+
+def _tournament_match_json(m: Match, players: dict) -> dict:
+    games, incomplete = game_scores(m)
+    return {
+        "id": m.id,
+        "round": m.round,
+        "date": m.date,
+        "winner": {"id": m.winner, "name": players[m.winner]["name"]},
+        "loser": {"id": m.loser, "name": players[m.loser]["name"]},
+        "games": games,
+        "incomplete": incomplete,
+    }
 
 
 def _match_label(m: Match, player: str, players: dict, tournaments: dict) -> str:
     e = tournaments[m.edition_id]
     opp = m.loser if player == m.winner else m.winner
     return (f"{e['name']} {e['season']} {ROUND_WORDS.get(m.round, m.round.lower())}"
-            f" vs {players[opp]['name']}")
+            f" against {players[opp]['name']}")
 
 
 def build(
@@ -219,7 +231,10 @@ def build(
             all_stats=all_stats, typical_share=typical_share, typical_win=typical_win,
             ranked=ranked, sources=sources, players=players, tournaments=tournaments,
         )
-        views = {"all": _view("all", pid, mine, full=True, **kw)}
+        findings = select_findings(
+            pid, all_stats, mine, sources, players=players, tournaments=tournaments
+        ) if ranked else []
+        views = {"all": _view("all", pid, mine, full=True, findings=findings, **kw)}
         filters = [{"id": "all", "label": _all_label(len(mine)), "kind": "all",
                     "matches": len(mine)}]
         editions = sorted(
@@ -237,9 +252,6 @@ def build(
             views[fid] = _view("match", pid, [m], full=False, **kw)
             filters.append({"id": fid, "kind": "match", "matches": 1,
                             "label": _match_label(m, pid, players, tournaments)})
-        findings = select_findings(
-            pid, all_stats, mine, sources, players=players, tournaments=tournaments
-        ) if ranked else []
         _write(out_dir / "players" / f"{pid}.json", {
             "id": pid,
             "name": info["name"],
@@ -271,14 +283,7 @@ def build(
             "id": eid,
             "name": e["name"],
             "season": e["season"],
-            "matches": [{
-                "id": m.id,
-                "round": m.round,
-                "date": m.date,
-                "winner": {"id": m.winner, "name": players[m.winner]["name"]},
-                "loser": {"id": m.loser, "name": players[m.loser]["name"]},
-                "games": _game_scores(m),
-            } for m in ems],
+            "matches": [_tournament_match_json(m, players) for m in ems],
             "players": [{"id": p, "name": players[p]["name"], "event": players[p]["event"]}
                         for p in sorted(ids, key=lambda p: (players[p]["event"] != "MS",
                                                             players[p]["name"], p))],

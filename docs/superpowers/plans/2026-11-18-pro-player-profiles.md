@@ -183,7 +183,7 @@
   - `claim.band.short.weakness`: `"Short rallies are where {he} loses"`
   - `comparison.band.short.weakness`: `"won in 4 shots or fewer. A typical pro: {typical}%."`
   - `phrase.shot.Lift.top1`: `"lifts more than anyone else in the data"`
-  - `phrase.band.long.strength`: `"lets rallies run long, where {he} wins far more than most"`
+  - `phrase.band.long.strength`: `"lets rallies run long, where {he} wins more often than most pros"`
   - `sentence.band.short.weakness`: `"Keep the rally short and {he}'s beatable."`
   - `verbs`: per group, `[verb, verb_s]`, e.g. `"Lift": ["lift", "lifts"], "Drop": ["drop", "drops"]`
   - Write the remaining band, shot and phrase keys in the same voice.
@@ -191,7 +191,7 @@
 
 - [ ] **Step 1: Write failing tests:**
   - `test_axelsen_findings` (real data): keys in order `["shot.Lift.top", "shot.Drop.bottom", "band.long.strength", "band.mid.strength"]` (no weakness: he's above typical in every band). Claims `"He lifts more than any other pro"`, `"He almost never drops"`, `"Long rallies go his way"`, `"Medium-length rallies go his way"`. Comparisons `"of his shots. A typical pro: 18.9%."`, `"Only one of 38 pros drops less."`, `"won past 8 shots. Better than 37 of 38 pros."`, `"won in 5 to 8 shots. Better than 34 of 35 pros."`.
-  - `test_axelsen_summary` equals `"He lifts more than anyone else in the data and lets rallies run long, where he wins far more than most."`
+  - `test_axelsen_summary` equals `"He lifts more than anyone else in the data and lets rallies run long, where he wins more often than most pros."`
   - `test_weakness_comparison_uses_typical` (fixture): a player below typical in one band gets `band.<band>.weakness` with comparison stating the typical %.
   - `test_womens_pronouns`: a WS fixture player gets "She"/"her".
   - `test_weakness_kept_when_more_than_four_candidates`.
@@ -221,14 +221,14 @@
     - filter ids: `"all"`, `"t:<edition_id>"`, `"m:<match_id>"`
   - `View`:
     - `{ "kind", "shots": number, "rallies": number, "shotChoice": [ShotRow], "bands": [BandRow], "findings": [Finding], "rallyBrowser": [Clip] }`
-    - `findings` is only non-empty in `"all"`. `rallyBrowser` is only non-empty in filtered views (that subset's rallies with clip sources, in order).
+    - `findings` is only non-empty in `"all"`. `rallyBrowser` lists the subset's real rallies with clip sources in filtered views; in `"all"` it holds up to 5 example rallies only when there are no findings.
   - `ShotRow`: `{ "group", "share": number, "count": number, "rank": number|null, "of": number|null, "typical": number }`. `rank`/`of` are null in filtered views and for unranked players. `typical` is always the all-match median.
   - `BandRow`: `{ "band": "short"|"mid"|"long", "label", "rallies": number, "winRate": number|null, "typical": number }`. `winRate` is null below 30 rallies.
   - `Finding`: `{ "key", "kind", "claim", "figure", "comparison", "tip": string|null, "clips": [Clip] }`
   - `Clip`: `{ "youtubeId", "startSec", "endSec", "matchLabel", "scoreLabel" }`
   - `Photo`: `{ "src": "/pro-data/photos/<id>.jpg", "credit": "Photo: <author>, <licence>", "sourceUrl", "focusX": 0-100, "focusY": 0-100 }`
   - `tournaments/index.json`: `{ "editions": [{ "id", "name", "season", "matches": number }] }`, sorted season descending, then name.
-  - `tournaments/<id>.json`: `{ "id", "name", "season", "matches": [{ "id", "round", "date", "winner": {"id","name"}, "loser": {"id","name"}, "games": [[a,b], ...] }], "players": [{ "id", "name", "event" }] }`. Games are points per set from rally winners, winner's score first.
+  - `tournaments/<id>.json`: `{ "id", "name", "season", "matches": [{ "id", "round", "date", "winner": {"id","name"}, "loser": {"id","name"}, "games": [[a,b], ...] }], "players": [{ "id", "name", "event" }] }`. Games are each set's max roundscore (winner first), with "incomplete": [setIndex] for sets the data leaves unfinished, winner's score first.
 - CLI: `python -m pro_profiles.build --source <checkout> --out ../frontend/badminton-ai/public/pro-data`. Run from `tools/`. Deterministic: same input gives byte-identical output, with keys sorted and lists in a defined order.
 
 - [ ] **Step 1: Write failing tests** (on the `mini` fixture unless noted):
@@ -320,7 +320,7 @@
   - Strength/Weakness tags appear on `kind` strength/weakness only.
   - Watch embeds an `<iframe>` (`youtube-nocookie`, `title="{matchLabel}"`, `allow="encrypted-media; picture-in-picture"`, `loading="lazy"`). Previous/next buttons (44px, `aria-label`) step through clips with a "1 of N" counter.
   - No clips → the text "No clips available for these matches yet".
-  - Findings `[]` → the line "Nothing stands far out from other pros in this data", and the Watch panel shows the first `rallyBrowser` clip, if any.
+  - Findings `[]` → "Nothing stands far out from other pros in this data" (ranked) or "Too few shots in the data to compare with other pros." (unranked), and the Watch panel shows the first `rallyBrowser` clip, if any.
   - Filtered view: Findings is replaced by a "Rallies in this selection" list from `rallyBrowser`. A note reads "Rankings and findings use all matches." Shot rows show share and count with "Typical pro {typical}%" instead of a rank bar. A band with `winRate` null shows "Too few to compare".
   - Shot choice bar width = `(of - rank) / (of - 1) * 100%`. Footnote "A longer bar means {he} plays that shot more often than most pros. It's about style, not skill."
   - Rally length: paired bars (player in ink, typical pro in muted) per band, with `{rallies} rallies`.

@@ -56,7 +56,11 @@ function PlayerList({ players }: { players: PlayerIndexEntry[] }) {
                     to={`/players/${encodeURIComponent(p.id)}`}
                     name={p.name}
                     photo={p.photo}
-                    detail={p.ranked ? matchCount(p.matches) : "Not enough data to rank"}
+                    detail={
+                      p.ranked
+                        ? matchCount(p.matches)
+                        : `${matchCount(p.matches)} · Not enough data to rank`
+                    }
                     muted={!p.ranked}
                   />
                 </li>

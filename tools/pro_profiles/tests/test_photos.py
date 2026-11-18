@@ -26,7 +26,8 @@ def test_licence_allowed(name):
 
 
 @pytest.mark.parametrize("name", ["CC BY-NC 2.0", "CC BY-ND 2.0", "CC BY-NC-SA 3.0", "Fair use",
-                                  "All rights reserved", ""])
+                                  "All rights reserved", "", "CC BY NC 2.0", "CC BY-ND",
+                                  "CC BY 2.0 NC", "CC BY-SA 4.0 (ND)", "cc by nc-sa 3.0"])
 def test_licence_rejected(name):
     assert not licence_allowed(name)
 

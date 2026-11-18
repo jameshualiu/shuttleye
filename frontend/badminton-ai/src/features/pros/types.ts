@@ -73,7 +73,9 @@ export type View = {
   shotChoice: ShotRow[];
   bands: BandRow[];
   findings: Finding[]; // non-empty only in the "all" view
-  rallyBrowser: Clip[]; // non-empty only in filtered views
+  // Filtered views: the selection's rallies. "all" view: up to 5 example
+  // rallies when there are no findings, otherwise empty.
+  rallyBrowser: Clip[];
 };
 
 export type PlayerFilter = {
@@ -120,7 +122,8 @@ export type TournamentMatch = {
   date: string;
   winner: PlayerRef;
   loser: PlayerRef;
-  games: [number, number][];
+  games: [number, number][]; // max recorded score per set, winner first
+  incomplete: number[]; // 0-based indexes into games whose score isn't a finished game
 };
 
 export type Tournament = {

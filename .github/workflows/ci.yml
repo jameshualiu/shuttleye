@@ -83,7 +83,7 @@ jobs:
           cd "$RUNNER_TEMP/coachai"
           git remote add origin https://github.com/wywyWang/CoachAI-Projects.git
           git sparse-checkout set ShuttleSet/set CoachAI-Challenge-IJCAI2023/ShuttleSet22/set
-          git fetch --depth 1 origin "$DATASET_SHA"
+          git fetch --depth 1 --filter=blob:none origin "$DATASET_SHA"
           git checkout FETCH_HEAD
       - name: Run tests
         run: python -m pytest pro_profiles/tests

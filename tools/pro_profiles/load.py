@@ -52,6 +52,9 @@ class Rally:
     number: int
     shots: tuple[Shot, ...]
     winner: str | None  # None when the data records no point winner
+    # Score BEFORE the rally (A = match winner). The CSV's roundscore is the
+    # score after the rally, so this is the previous rally's after-score in
+    # the same set, or 0-0 for the set's first rally.
     score_a: int
     score_b: int
 
@@ -67,6 +70,9 @@ class Match:
     loser: str
     youtube_url: str | None
     rallies: tuple[Rally, ...]
+    # Per set, in set order: (max roundscore_A, max roundscore_B) over the
+    # set's rows, i.e. the final score as recorded (A = match winner).
+    set_scores: tuple[tuple[int, int], ...] = ()
 
 
 def load_content(name: str) -> dict:
@@ -118,15 +124,27 @@ def _shot_group(shot_type: str) -> str | None:
 
 def _load_rallies(
     folder: Path, match_id: str, winner: str, loser: str
-) -> tuple[Rally, ...]:
+) -> tuple[tuple[Rally, ...], tuple[tuple[int, int], ...]]:
+    """The match's rallies and, per set, (max roundscore_A, max roundscore_B)."""
     side = {"A": winner, "B": loser}  # A is the match winner, B the loser
     rallies: list[Rally] = []
+    set_scores: list[tuple[int, int]] = []
     for path in sorted(folder.glob("set*.csv"), key=lambda p: int(re.sub(r"\D", "", p.stem))):
         set_no = int(re.sub(r"\D", "", path.stem))
+        csv_rows = _read_csv(path)
+        if not csv_rows:
+            continue
+        # Max, not the last row: some sets end with a stray earlier row.
+        set_scores.append((
+            max(_whole(r["roundscore_A"]) for r in csv_rows),
+            max(_whole(r["roundscore_B"]) for r in csv_rows),
+        ))
         by_rally: dict[int, list[dict]] = {}
-        for row in _read_csv(path):
+        for row in csv_rows:
             by_rally.setdefault(int(row["rally"]), []).append(row)
-        for number, rows in by_rally.items():
+        before = (0, 0)  # roundscore is the score after the rally
+        for number in sorted(by_rally):
+            rows = by_rally[number]
             # Some rallies (mostly a lone 未知球種 row) have no getpoint_player.
             # Keep their shots, but record no winner.
             point = rows[-1]["getpoint_player"]
@@ -152,11 +170,12 @@ def _load_rallies(
                     number=number,
                     shots=shots,
                     winner=side.get(point),
-                    score_a=int(rows[0]["roundscore_A"]),
-                    score_b=int(rows[0]["roundscore_B"]),
+                    score_a=before[0],
+                    score_b=before[1],
                 )
             )
-    return tuple(rallies)
+            before = (_whole(rows[-1]["roundscore_A"]), _whole(rows[-1]["roundscore_B"]))
+    return tuple(rallies), tuple(set_scores)
 
 
 def load_dataset(source_dir: Path, players: dict, tournaments: dict) -> list[Match]:
@@ -187,6 +206,7 @@ def load_dataset(source_dir: Path, players: dict, tournaments: dict) -> list[Mat
                 raise MappingError(
                     f"Unmapped tournament: {row['tournament']!r} {year} ({video})"
                 ) from None
+            rallies, set_scores = _load_rallies(folder, video, winner, loser)
             matches[video] = Match(
                 id=video,
                 source=source,
@@ -196,6 +216,7 @@ def load_dataset(source_dir: Path, players: dict, tournaments: dict) -> list[Mat
                 winner=winner,
                 loser=loser,
                 youtube_url=(row.get("url") or "").strip() or None,
-                rallies=_load_rallies(folder, video, winner, loser),
+                rallies=rallies,
+                set_scores=set_scores,
             )
     return list(matches.values())

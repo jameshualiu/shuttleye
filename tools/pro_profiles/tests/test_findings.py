@@ -322,6 +322,33 @@ def test_top_claim_uses_top1_only_for_rank_one():
     assert render("shot.Lift.top", "style", r1, "MS")[3] == "lifts more than anyone else in the data"
 
 
+def test_tie_for_first_is_not_more_than_any_other_pro():
+    tied = Ranked(0.277, 1, 39, 37, 0.189, 37 / 38 * 100)  # one other pro has the same share
+    claim, _, _, phrase = render("shot.Lift.top", "style", tied, "MS")
+    assert claim == "He lifts more than most pros"
+    assert phrase == "lifts more than most"
+
+
+def test_band_strength_better_than_every_other_pro():
+    top = Ranked(0.6, 1, 36, 35, 0.5, 100.0)
+    assert render("band.mid.strength", "strength", top, "MS")[2] == (
+        "won in 5 to 8 shots. Better than every other pro.")
+    second = Ranked(0.6, 2, 36, 34, 0.5, 34 / 35 * 100)
+    assert render("band.mid.strength", "strength", second, "MS")[2] == (
+        "won in 5 to 8 shots. Better than 34 of 35 pros.")
+    assert render("band.long.strength", "strength", top, "WS")[3] == (
+        "lets rallies run long, where she wins more often than most pros")
+
+
+def test_net_claims_read_naturally():
+    top1 = Ranked(0.4, 1, 39, 38, 0.3, 100.0)
+    top = Ranked(0.38, 3, 39, 36, 0.3, 36 / 38 * 100)
+    mild = Ranked(0.2, 38, 39, 1, 0.3, 1 / 38 * 100)
+    assert render("shot.Net.top", "style", top1, "MS")[0] == "He plays more net shots than any other pro"
+    assert render("shot.Net.top", "style", top, "MS")[0] == "He plays more net shots than most pros"
+    assert render("shot.Net.bottom", "style", mild, "WS")[0] == "She plays fewer net shots than most pros"
+
+
 # --- real data ---------------------------------------------------------------
 
 needs_data = pytest.mark.skipif(
@@ -374,5 +401,5 @@ def test_axelsen_summary(real):
     found = select_findings("viktor-axelsen", allst, matches, load_content("clip_sources"))
     assert summary("viktor-axelsen", found) == (
         "He lifts more than anyone else in the data and lets rallies run long, "
-        "where he wins far more than most."
+        "where he wins more often than most pros."
     )

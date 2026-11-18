@@ -100,7 +100,9 @@ The mockup numbers came from a throwaway analysis script. These definitions repr
 - **Shot share:** numerator = the player's shots of a grouped type. Denominator = **all the player's shots in the 8 grouped types**, net kill included. Serves (`發短球`, `發長球`) and unknown (`未知球種`) are excluded from both.
 - **Rally length** = number of rows in the rally, **serve included**. Bands: ≤4, 5–8, ≥9.
 - **Rally winner** = `getpoint_player` on the rally's last row. A player's band win rate = rallies won ÷ rallies played in that band.
-- **Rallies with no recorded winner are excluded from rally-band counts, win rates and game scores.** There are 267 of them, mostly single unlabelled rows (`未知球種`), not real rallies. Their shots still count in shot shares. (Corrected 2026-11-18: counting them as losses had produced a false short-rally weakness for Axelsen.)
+- **Rallies with no recorded winner are excluded from rally-band counts and win rates**, because their length is unknown (they are mostly a single unlabelled `未知球種` row). They are real points, though: the score advances in every one. Their shots still count in shot shares. (Corrected 2026-11-18: counting them as losses had produced a false short-rally weakness for Axelsen.)
+- **Game scores** come from each set's `roundscore_A/B`, using the maximum over the set's rows, not from rally winners. A set whose final score isn't a finished game is shown as incomplete in the data, never padded.
+- **`roundscore` is the score after the rally.** A clip's score label uses the score before the rally: the previous rally's score, or 0–0 for the first.
 - **Comparison group:** players with **300+ grouped shots**, men and women pooled (39 players). Ranks run **1 to 39, the player included** ("1st of 39"). "Better than N of 38 pros" counts the others below them.
 - **Typical pro** = the **median over the comparison group, the player included**. For rally bands, the group is players with **30+ rallies in that band**.
 - With these definitions, Axelsen comes out at: net 35.6%, lift 27.7% (1st), smash 15.6% (5th), push 6.4%, drop 5.0% (38th), drive 4.7%, clear 3.8% (36th), from 7,080 grouped shots. Rally bands: 349 / 344 / 695 rallies, won 56% / 60% / 58%; typical 50% / 51% / 49%. Snapshot-test these numbers.
@@ -115,7 +117,7 @@ Generated, not hand-written, so every profile works the same way:
 5. **Wording must not overstate.** "Almost never" is used only when the player's share is under half the typical pro's. Otherwise a bottom-4 shot finding says "{He} {verb_s} less than most pros". (Amended 2026-11-18.)
 6. Each finding type has a **claim template** ("He lifts more than any other pro", "He almost never drops", "Long rallies go his way", "Short rallies are where he loses"), with pronouns from the player's event (men's / women's singles).
 7. The header summary joins the top two or three findings into one sentence from templates.
-8. A player with no qualifying findings gets the line "Nothing stands far out from other pros in this data", and the page still shows the other panels.
+8. A ranked player with no qualifying findings gets the line "Nothing stands far out from other pros in this data" plus up to 5 example rallies; an unranked player gets "Too few shots in the data to compare with other pros.", and the page still shows the other panels.
 
 **"Try this" tips:** one hand-written tip per finding type (about 16 short tips in total), written for casual players and focused on tactics, not power. They are stored in a content file, not in code. James reviews the wording before launch.
 

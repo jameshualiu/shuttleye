@@ -22,6 +22,8 @@ function pronouns(player: PlayerProfile) {
 }
 
 function AllMatchesBody({ view }: { view: View }) {
+  // The all view carries ranks only for ranked players.
+  const ranked = view.shotChoice.some((r) => r.rank !== null);
   const [selected, setSelected] = useState(0);
   const [clipIndex, setClipIndex] = useState(0);
   const finding = view.findings[selected];
@@ -31,12 +33,14 @@ function AllMatchesBody({ view }: { view: View }) {
     setClipIndex(0);
   };
 
-  const clips = finding ? finding.clips : view.rallyBrowser.slice(0, 1);
+  // No findings: the build supplies up to 5 example rallies instead.
+  const clips = finding ? finding.clips : view.rallyBrowser;
 
   return (
     <>
       <FindingsPanel
         findings={view.findings}
+        ranked={ranked}
         selected={selected}
         onSelect={select}
         className={span.findings}

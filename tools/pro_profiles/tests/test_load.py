@@ -76,12 +76,33 @@ def test_rally_without_winner_is_kept_with_none(mini):
     ]
 
 
-def test_rally_scores_and_set(mini):
+def test_rally_scores_are_before_the_rally(mini):
+    # roundscore is the score AFTER a rally; Rally carries the score before it.
     r = mini["M1"].rallies[1]
     assert (r.match_id, r.set_no, r.number) == ("M1", 1, 2)
-    assert (r.score_a, r.score_b) == (1, 0)
-    assert mini["M1"].rallies[3].set_no == 2
-    assert (mini["M2"].rallies[0].score_a, mini["M2"].rallies[0].score_b) == (3, 4)
+    assert [(r.set_no, r.score_a, r.score_b) for r in mini["M1"].rallies] == [
+        (1, 0, 0),  # first rally of a set starts at 0-0
+        (1, 1, 0),  # rally 1 ended 1-0
+        (1, 2, 0),
+        (2, 0, 0),  # resets in set 2
+    ]
+    assert (mini["M2"].rallies[0].score_a, mini["M2"].rallies[0].score_b) == (0, 0)
+
+
+def test_set_scores_are_max_roundscore(mini):
+    # Set 1 rally 3 has no winner but still advanced the score to 2-1.
+    assert mini["M1"].set_scores == ((2, 1), (0, 1))
+    assert mini["M2"].set_scores == ((3, 4),)
+
+
+def test_set_scores_use_max_not_last_row(mini_source, mini_players, mini_tournaments, tmp_path):
+    root = tmp_path / "src"
+    shutil.copytree(mini_source, root)
+    csv_path = root / SS / "M1" / "set1.csv"
+    # A stray trailing row repeating an earlier rally (as in the WTF 2020 final).
+    csv_path.write_text(csv_path.read_text() + "1,4.0,00:13:00,1,0,A,未知球種,\n")
+    m = {m.id: m for m in load_dataset(root, mini_players, mini_tournaments)}["M1"]
+    assert m.set_scores[0] == (2, 1)
 
 
 def test_time_parsing(mini):

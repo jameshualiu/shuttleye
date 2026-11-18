@@ -195,9 +195,9 @@ Independent of the upload/analysis flow above. **Producer:** the offline build s
 | `players/index.json` | `{ generatedFrom: <dataset sha>, players: [{ id, name, event: "MS"\|"WS", matches, ranked, photo }] }`, men first, then by name |
 | `players/<id>.json` | `{ id, name, event, context: { matches, firstYear, lastYear, comparedWith }, summary: string\|null, photo, filters: [{ id, label, kind: "all"\|"tournament"\|"match", matches }], views: { <filterId>: View } }` |
 | `tournaments/index.json` | `{ editions: [{ id, name, season, matches }] }`, season descending then name |
-| `tournaments/<id>.json` | `{ id, name, season, matches: [{ id, round, date, winner: {id,name}, loser: {id,name}, games: [[a,b],...] }], players: [{ id, name, event }] }` |
+| `tournaments/<id>.json` | `{ id, name, season, matches: [{ id, round, date, winner: {id,name}, loser: {id,name}, games: [[a,b],...], incomplete: [setIndex,...] }], players: [{ id, name, event }] }` |
 
-Filter ids are `all`, `t:<edition_id>` and `m:<match_id>`. `games` are points per set counted from rally winners, match winner's score first.
+Filter ids are `all`, `t:<edition_id>` and `m:<match_id>`. `games` are each set's maximum `roundscore_A`/`roundscore_B` over its rows (not counted from rally winners), match winner's score first. `incomplete` lists the 0-based indexes of sets whose recorded score isn't a finished game (21+ with a 2-point lead, or 30); the UI marks them "incomplete in the data" and never pads them. A clip's `scoreLabel` is the score before the rally (`roundscore` is the score after it), so a set's first rally reads "game N at 0–0".
 
 ```ts
 View    = { kind, shots, rallies, shotChoice: ShotRow[], bands: BandRow[], findings: Finding[], rallyBrowser: Clip[] }
@@ -208,7 +208,7 @@ Clip    = { youtubeId, startSec, endSec, matchLabel, scoreLabel }
 Photo   = { src: "/pro-data/photos/<id>.jpg", credit, sourceUrl, focusX, focusY }   // focus 0-100
 ```
 
-Rules: `findings` is non-empty only in the `all` view, `rallyBrowser` only in filtered views. Filtered views have `rank`/`of` null and `typical` from all matches. `context.comparedWith` is the comparison group size minus the player (39 grouped-shot-qualified players, so 38 for a ranked player). Players under 300 grouped shots are unranked: `ranked` false, all ranks null, no findings, `summary` null.
+Rules: `findings` is non-empty only in the `all` view. `rallyBrowser` holds the selection's rallies in filtered views; in the `all` view it is empty when there are findings, otherwise up to 5 example rallies (distinct matches first, then date, set, rally). Filtered views have `rank`/`of` null and `typical` from all matches. `context.comparedWith` is the comparison group size minus the player (39 grouped-shot-qualified players, so 38 for a ranked player). Players under 300 grouped shots are unranked: `ranked` false, all ranks null, no findings, `summary` null.
 
 ---
 

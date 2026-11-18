@@ -38,7 +38,8 @@ export function WatchPanel({
             key={`${clip.youtubeId}-${clip.startSec}`}
             src={`https://www.youtube-nocookie.com/embed/${clip.youtubeId}?start=${clip.startSec}&end=${clip.endSec}`}
             title={clip.matchLabel}
-            allow="encrypted-media; picture-in-picture"
+            allow="encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
             className="block aspect-video w-full rounded-xl bg-muted"

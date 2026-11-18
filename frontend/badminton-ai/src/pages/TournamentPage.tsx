@@ -9,9 +9,12 @@ import type { PlayerIndexEntry, Tournament } from "@/features/pros/types";
 const linkClass =
   "inline-flex min-h-11 items-center rounded-md font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
-/** Winner's score first in each game: "21–15, 18–21, 21–12". */
-function formatGames(games: [number, number][]): string {
-  return games.map(([w, l]) => `${w}–${l}`).join(", ");
+/** Winner's score first in each game: "21–15, 18–21, 21–12". A set whose
+ * recorded score isn't a finished game says so instead of being padded. */
+function formatGames(games: [number, number][], incomplete: number[]): string {
+  return games
+    .map(([w, l], i) => (incomplete.includes(i) ? `${w}–${l} (incomplete in the data)` : `${w}–${l}`))
+    .join(", ");
 }
 
 function Detail({ tournament }: { tournament: Tournament }) {
@@ -48,7 +51,7 @@ function Detail({ tournament }: { tournament: Tournament }) {
                   </Link>
                 </span>
                 <span className="text-sm tabular-nums text-muted-foreground">
-                  {formatGames(m.games)}
+                  {formatGames(m.games, m.incomplete)}
                 </span>
               </li>
             ))}

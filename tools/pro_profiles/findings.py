@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from functools import cache
-from typing import Literal
+from typing import Callable, Literal
 
 from .clips import Clip, clip_for_rally, make_labels
 from .load import Match, Rally, load_content
@@ -69,16 +69,22 @@ def render(key: str, kind: Kind, r: Ranked, event: str) -> tuple[str, str, str, 
         verb, verb_s = t["verbs"][name]
         words.update(verb=verb, verb_s=verb_s, typical=f"{r.typical * 100:.1f}")
         figure = f"{r.value * 100:.1f}%"
+
+        def shot_claim(variant: str) -> str:
+            # A shot can override the generic claim ("plays more net shots").
+            return t.get(f"claim.shot.{name}.{variant}", t[f"claim.shot.{variant}"])
+
         if side == "top":
-            variant = "top1" if r.rank == 1 else "top"
-            claim = t[f"claim.shot.{variant}"]
+            # "More than any other pro" only when strictly above everyone else.
+            variant = "top1" if r.below == r.of - 1 else "top"
+            claim = shot_claim(variant)
             comparison = t["comparison.shot.top"]
             phrase = t[f"phrase.shot.{name}.{variant}"]
         else:
             # Same key either way; the wording softens unless the share is
             # under half the typical pro's.
             variant = "bottom" if r.value < ALMOST_NEVER * r.typical else "bottom_mild"
-            claim = t[f"claim.shot.{variant}"]
+            claim = shot_claim(variant)
             phrase = t[f"phrase.shot.{name}.{variant}"]
             if r.below == 0:
                 comparison = t["comparison.shot.bottom0"]
@@ -91,6 +97,9 @@ def render(key: str, kind: Kind, r: Ranked, event: str) -> tuple[str, str, str, 
         figure = f"{round(r.value * 100)}%"
         claim = t[f"claim.band.{name}.{side}"]
         comparison = t[f"comparison.band.{name}.{side}"]
+        if side == "strength":
+            words["better"] = (t["better.all"] if r.below == r.of - 1
+                               else t["better.some"]).format(**words)
         phrase = t[f"phrase.band.{name}.strength" if side == "strength"
                    else f"sentence.band.{name}.weakness"]
     return (
@@ -148,18 +157,17 @@ def _shows(key: str, player: str, rally: Rally) -> bool:
     return (rally.winner == player) == (side == "strength")
 
 
-def pick_clips(
+def _spread_clips(
     player: str,
-    key: str,
     matches: list[Match],
     sources: dict,
-    *,
-    players: dict | None = None,
-    tournaments: dict | None = None,
+    shows: Callable[[Rally], bool],
+    players: dict | None,
+    tournaments: dict | None,
 ) -> list[Clip]:
-    """Up to 5 rallies that show the finding `key`, from matches with a clip
-    source. One per match first (earliest date first), then second picks, and
-    so on; within a match, by (set, rally number)."""
+    """Up to 5 rallies passing `shows`, from matches with a clip source. One per
+    match first (earliest date first), then second picks, and so on; within a
+    match, by (set, rally number)."""
     players = players if players is not None else load_content("players")
     tournaments = tournaments if tournaments is not None else load_content("tournaments")
     labels = make_labels(player, players, tournaments)
@@ -167,9 +175,7 @@ def pick_clips(
     for m in sorted(matches, key=lambda m: (m.date, m.id)):
         if player not in (m.winner, m.loser) or m.id not in sources:
             continue
-        rallies = sorted(
-            (r for r in m.rallies if _shows(key, player, r)), key=lambda r: (r.set_no, r.number)
-        )
+        rallies = sorted((r for r in m.rallies if shows(r)), key=lambda r: (r.set_no, r.number))
         if rallies:
             queues.append((m, rallies))
     clips: list[Clip] = []
@@ -182,6 +188,37 @@ def pick_clips(
                     clips.append(clip)
         depth += 1
     return clips
+
+
+def pick_clips(
+    player: str,
+    key: str,
+    matches: list[Match],
+    sources: dict,
+    *,
+    players: dict | None = None,
+    tournaments: dict | None = None,
+) -> list[Clip]:
+    """Up to 5 rallies that show the finding `key` (see _spread_clips for order)."""
+    return _spread_clips(
+        player, matches, sources, lambda r: _shows(key, player, r), players, tournaments
+    )
+
+
+def sample_clips(
+    player: str,
+    matches: list[Match],
+    sources: dict,
+    *,
+    players: dict | None = None,
+    tournaments: dict | None = None,
+) -> list[Clip]:
+    """Up to 5 of the player's real rallies (winner recorded), in the same order
+    as finding clips. Used when the all-matches view has no findings."""
+    return _spread_clips(
+        player, matches, sources, lambda r: r.winner is not None and bool(r.shots),
+        players, tournaments,
+    )
 
 
 def select_findings(
