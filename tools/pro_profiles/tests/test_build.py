@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from pro_profiles.build import PINNED_SHA, build
-from pro_profiles.load import load_content
+from pro_profiles.load import load_content, load_dataset
 
 SOURCES = {"M1": {"url": "https://www.youtube.com/watch?v=AAAAAAAAAAA", "offsetSec": 0}}
 
@@ -47,7 +47,7 @@ def test_filtered_views_have_rally_browser_and_all_does_not(mini_out):
     data = read(mini_out / "players" / "alpha-one.json")
     assert data["views"]["all"]["rallyBrowser"] == []
     clips = data["views"]["m:M1"]["rallyBrowser"]
-    assert [c["startSec"] for c in clips] == [652, 688, 718, 1798]  # (set, rally) order
+    assert [c["startSec"] for c in clips] == [652, 688, 1798]  # (set, rally) order
     assert clips[0]["youtubeId"] == "AAAAAAAAAAA"
     assert data["views"]["m:M2"]["rallyBrowser"] == []  # no clip source
 
@@ -115,6 +115,22 @@ def test_photo_from_photos_json(tmp_path, mini_source, mini_players, mini_tourna
     assert idx[0]["photo"] == photo and idx[1]["photo"] is None
 
 
+def test_rally_browser_skips_rallies_without_winner(mini_out):
+    # M1 set 1 rally 3 has no winner: 3 real rallies with clips, not 4.
+    view = read(mini_out / "players" / "alpha-one.json")["views"]["m:M1"]
+    assert view["rallies"] == 3
+    assert [c["startSec"] for c in view["rallyBrowser"]] == [652, 688, 1798]
+
+
+def test_all_filter_label_singular(mini_out):
+    from pro_profiles.build import _all_label
+
+    assert _all_label(1) == "All 1 match"
+    assert _all_label(2) == "All 2 matches"
+    labels = [f["label"] for f in read(mini_out / "players" / "alpha-one.json")["filters"]]
+    assert labels[0] == "All 3 matches"
+
+
 needs_data = pytest.mark.skipif(
     not os.environ.get("SHUTTLESET_DIR"), reason="needs SHUTTLESET_DIR"
 )
@@ -131,3 +147,40 @@ def test_axelsen_file_shape(tmp_path):
     assert (lift["share"], lift["rank"], lift["of"]) == (27.7, 1, 39)
     assert len(list((tmp_path / "players").glob("*.json"))) == 44
     assert len(list((tmp_path / "tournaments").glob("*.json"))) == 32
+
+
+@needs_data
+def test_rally_browser_matches_independent_count(tmp_path):
+    """Browser length == the subset's real rallies (winner set) in matches with a clip source."""
+    players, tournaments = load_content("players"), load_content("tournaments")
+    sources = load_content("clip_sources")
+    matches = load_dataset(Path(os.environ["SHUTTLESET_DIR"]), players, tournaments)
+    by_id = {m.id: m for m in matches}
+
+    def expected(pid, fid):
+        if fid.startswith("m:"):
+            subset = [by_id[fid[2:]]]
+        else:
+            subset = [m for m in matches
+                      if m.edition_id == fid[2:] and pid in (m.winner, m.loser)]
+        return sum(
+            1 for m in subset if m.id in sources for r in m.rallies
+            if r.winner is not None and r.shots
+        )
+
+    build(Path(os.environ["SHUTTLESET_DIR"]), tmp_path)
+    checked = 0
+    for p in (tmp_path / "players").glob("*.json"):
+        if p.name == "index.json":
+            continue
+        data = read(p)
+        for fid, view in data["views"].items():
+            if fid == "all":
+                continue
+            checked += 1
+            assert len(view["rallyBrowser"]) == expected(data["id"], fid), (p.name, fid)
+            assert len(view["rallyBrowser"]) <= view["rallies"], (p.name, fid)
+        label = data["filters"][0]["label"]
+        n = data["context"]["matches"]
+        assert label == ("All 1 match" if n == 1 else f"All {n} matches")
+    assert checked > 300

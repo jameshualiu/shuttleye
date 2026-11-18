@@ -147,6 +147,8 @@ def _view(
         labels = make_labels(player, players, tournaments)
         for m in sorted(subset, key=lambda m: (m.date, m.id)):
             for r in sorted(m.rallies, key=lambda r: (r.set_no, r.number)):
+                if r.winner is None:
+                    continue  # not a real rally: excluded from `rallies` too
                 clip = clip_for_rally(m, r, sources, labels)
                 if clip is not None:
                     browser.append(clip)
@@ -159,6 +161,10 @@ def _view(
         "findings": [_finding_json(f) for f in findings],
         "rallyBrowser": [_clip_json(c) for c in browser],
     }
+
+
+def _all_label(n: int) -> str:
+    return f"All {n} match" if n == 1 else f"All {n} matches"
 
 
 def _game_scores(m: Match) -> list[list[int]]:
@@ -214,7 +220,7 @@ def build(
             ranked=ranked, sources=sources, players=players, tournaments=tournaments,
         )
         views = {"all": _view("all", pid, mine, full=True, **kw)}
-        filters = [{"id": "all", "label": f"All {len(mine)} matches", "kind": "all",
+        filters = [{"id": "all", "label": _all_label(len(mine)), "kind": "all",
                     "matches": len(mine)}]
         editions = sorted(
             {m.edition_id for m in mine},
