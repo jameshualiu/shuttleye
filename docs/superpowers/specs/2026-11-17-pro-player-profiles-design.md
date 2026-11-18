@@ -16,7 +16,7 @@ It must be **legal** and **small**: no downloading or hosting of broadcast video
 2. **Every claim opens the rallies behind it**, played from BWF's own YouTube video at the right moment.
 3. **Browse by tournament**: a list of tournaments, and a page per tournament edition showing its matches and the players in it, with links into profiles filtered to that tournament.
 4. A **player list** to find profiles.
-5. Pages are **public** (no sign-in), so casual players can find them.
+5. Pages are **behind sign-in**, inside the signed-in app alongside the dashboard. (Changed 2026-11-18 at James's request; the pages were public before. The static JSON is still downloadable by URL, which is acceptable because it comes from a public dataset.)
 
 ## Non-goals (v1)
 
@@ -144,7 +144,7 @@ All 43 players, split into men's and women's singles, with photo, name and match
 
 ### Navigation
 
-Add "Players" and "Tournaments" to the public nav (landing page header) and the signed-in app navbar.
+Add "Players" and "Tournaments" to the signed-in app navbar only. The landing page is unchanged.
 
 ## Photos
 

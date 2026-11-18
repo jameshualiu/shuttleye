@@ -92,8 +92,28 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
             <Plus className="w-3.5 h-3.5" />
             New Analysis
           </button>
-          <Link to="/players" className="inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Players</Link>
-          <Link to="/tournaments" className="inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">Tournaments</Link>
+          <Link
+            to="/players"
+            aria-current={pathname.startsWith("/players") ? "page" : undefined}
+            className={`inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              pathname.startsWith("/players")
+                ? "bg-primary/10 text-primary"
+                : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
+            }`}
+          >
+            Players
+          </Link>
+          <Link
+            to="/tournaments"
+            aria-current={pathname.startsWith("/tournaments") ? "page" : undefined}
+            className={`inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              pathname.startsWith("/tournaments")
+                ? "bg-primary/10 text-primary"
+                : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
+            }`}
+          >
+            Tournaments
+          </Link>
         </nav>
       )}
 

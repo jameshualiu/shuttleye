@@ -36,10 +36,6 @@ function ThemedApp() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/players" element={<PlayersPage />} />
-          <Route path="/players/:playerId" element={<PlayerProfilePage />} />
-          <Route path="/tournaments" element={<TournamentsPage />} />
-          <Route path="/tournaments/:editionId" element={<TournamentPage />} />
 
           <Route
             element={
@@ -50,6 +46,10 @@ function ThemedApp() {
           >
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/analysis/:videoId" element={<AnalysisPage />} />
+            <Route path="/players" element={<PlayersPage />} />
+            <Route path="/players/:playerId" element={<PlayerProfilePage />} />
+            <Route path="/tournaments" element={<TournamentsPage />} />
+            <Route path="/tournaments/:editionId" element={<TournamentPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
