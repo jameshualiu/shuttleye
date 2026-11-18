@@ -14,7 +14,7 @@ type WatchPanelProps = {
 };
 
 const pagerButton = cn(
-  "inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-muted text-foreground transition-opacity disabled:cursor-default disabled:opacity-40",
+  "inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-muted text-foreground transition-opacity aria-disabled:cursor-default aria-disabled:opacity-40",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
 );
 
@@ -52,8 +52,8 @@ export function WatchPanel({
                 <button
                   type="button"
                   aria-label="Previous rally"
-                  disabled={current === 0}
-                  onClick={() => onIndexChange(current - 1)}
+                  aria-disabled={current === 0}
+                  onClick={() => current > 0 && onIndexChange(current - 1)}
                   className={pagerButton}
                 >
                   <ChevronLeft aria-hidden="true" className="size-4" />
@@ -64,8 +64,8 @@ export function WatchPanel({
                 <button
                   type="button"
                   aria-label="Next rally"
-                  disabled={current === clips.length - 1}
-                  onClick={() => onIndexChange(current + 1)}
+                  aria-disabled={current === clips.length - 1}
+                  onClick={() => current < clips.length - 1 && onIndexChange(current + 1)}
                   className={pagerButton}
                 >
                   <ChevronRight aria-hidden="true" className="size-4" />

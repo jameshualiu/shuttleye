@@ -14,8 +14,18 @@ const groups: { kind: PlayerFilter["kind"]; label: string }[] = [
   { kind: "match", label: "Matches" },
 ];
 
+function contextLine(player: PlayerProfile): string {
+  const { matches, firstYear, lastYear, comparedWith } = player.context;
+  const count = `${matches} ${matches === 1 ? "match" : "matches"}`;
+  const span = firstYear === lastYear ? `in ${firstYear}` : `from ${firstYear} to ${lastYear}`;
+  const ranked = player.views.all?.shotChoice.some((r) => r.rank !== null) ?? false;
+  const tail = ranked
+    ? `compared with ${comparedWith} other pros.`
+    : "not ranked: under 300 shots in the data.";
+  return `${count} ${span}, ${tail}`;
+}
+
 export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderProps) {
-  const { context } = player;
   const filtered = viewId !== "all";
   const eventLabel = player.event === "WS" ? "Women's" : "Men's";
   const allFilters = player.filters.filter((f) => f.kind === "all");
@@ -27,12 +37,14 @@ export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderPro
           photo={player.photo}
           name={player.name}
           size={132}
-          className="rounded-[20px] max-[900px]:hidden"
+          radius={20}
+          className="max-[900px]:hidden"
         />
         <PlayerPhoto
           photo={player.photo}
           name={player.name}
           size={88}
+          radius={16}
           className="min-[901px]:hidden"
         />
         <div className="min-w-0">
@@ -40,8 +52,7 @@ export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderPro
             {player.name}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {eventLabel} singles. {context.matches} {context.matches === 1 ? "match" : "matches"} from {context.firstYear} to{" "}
-            {context.lastYear}, compared with {context.comparedWith} other pros.
+            {eventLabel} singles. {contextLine(player)}
           </p>
           {!filtered && player.summary && (
             <p className="mt-4 max-w-[68ch] text-[19px] leading-normal text-foreground">

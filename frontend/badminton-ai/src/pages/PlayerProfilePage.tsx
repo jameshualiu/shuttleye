@@ -43,7 +43,11 @@ function AllMatchesBody({ view }: { view: View }) {
       />
       <WatchPanel
         title={finding ? finding.claim : "Example rallies"}
-        subtitle={clips.length > 0 ? `${clips.length} example rallies` : undefined}
+        subtitle={
+          clips.length > 0
+            ? `${clips.length} example ${clips.length === 1 ? "rally" : "rallies"}`
+            : undefined
+        }
         clips={clips}
         index={clipIndex}
         onIndexChange={setClipIndex}
@@ -62,13 +66,13 @@ function FilteredBody({ view }: { view: View }) {
     <>
       <RallyListPanel
         clips={clips}
+        rallies={view.rallies}
         selected={clipIndex}
         onSelect={setClipIndex}
         className={span.findings}
       />
       <WatchPanel
         title="Watch a rally"
-        subtitle={clips.length > 0 ? `${clips.length.toLocaleString("en-US")} rallies` : undefined}
         clips={clips}
         index={clipIndex}
         onIndexChange={setClipIndex}

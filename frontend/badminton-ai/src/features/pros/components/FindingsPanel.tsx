@@ -62,18 +62,20 @@ export function FindingsPanel({ findings, selected, onSelect, className }: Findi
 
 type RallyListPanelProps = {
   clips: Clip[];
+  /** The selection's rally count from the JSON (view.rallies). */
+  rallies: number;
   selected: number;
   onSelect: (index: number) => void;
   className?: string;
 };
 
 /** Filtered views: replaces the findings with a list of the selection's rallies. */
-export function RallyListPanel({ clips, selected, onSelect, className }: RallyListPanelProps) {
+export function RallyListPanel({ clips, rallies, selected, onSelect, className }: RallyListPanelProps) {
   const multiMatch = new Set(clips.map((c) => c.matchLabel)).size > 1;
   return (
     <Panel
       title="Rallies in this selection"
-      subtitle={`${clips.length.toLocaleString("en-US")} rallies`}
+      subtitle={`${rallies.toLocaleString("en-US")} rallies`}
       className={className}
     >
       {clips.length === 0 ? (

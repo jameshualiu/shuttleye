@@ -6,6 +6,8 @@ type PlayerPhotoProps = {
   name: string;
   /** Square edge length in px. */
   size: number;
+  /** Corner radius in px for the image or placeholder. Defaults to 16. */
+  radius?: number;
   className?: string;
 };
 
@@ -17,15 +19,15 @@ function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function PlayerPhoto({ photo, name, size, className }: PlayerPhotoProps) {
+export function PlayerPhoto({ photo, name, size, radius = 16, className }: PlayerPhotoProps) {
   if (!photo) {
     return (
       <div
         role="img"
         aria-label={name}
-        style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
+        style={{ width: size, height: size, borderRadius: radius, fontSize: Math.round(size * 0.36) }}
         className={cn(
-          "flex shrink-0 items-center justify-center rounded-2xl bg-muted font-semibold text-foreground",
+          "flex shrink-0 items-center justify-center bg-muted font-semibold text-foreground",
           className,
         )}
       >
@@ -42,9 +44,10 @@ export function PlayerPhoto({ photo, name, size, className }: PlayerPhotoProps) 
         style={{
           width: size,
           height: size,
+          borderRadius: radius,
           objectPosition: `${photo.focusX}% ${photo.focusY}%`,
         }}
-        className="rounded-2xl object-cover"
+        className="object-cover"
       />
       <figcaption className="mt-1 text-xs text-muted-foreground">{photo.credit}</figcaption>
     </figure>
