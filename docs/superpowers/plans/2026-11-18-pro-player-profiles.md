@@ -35,6 +35,7 @@
 
 ## Review Focus
 
+0. **Rallies with no recorded winner** (267 in the data): excluded from band counts, win rates and game scores, never counted as a loss. → Task 2 test `test_rally_without_winner_excluded_from_bands`. Task 5 test `test_tournament_games_from_rally_winners` uses a fixture with one such rally.
 1. **A player who ranks in nothing** (no extreme stat and no band below typical, or under 300 shots): the page still renders with "Nothing stands far out from other pros in this data" and unranked rows. → Task 4 test `test_no_findings_player`. Task 8 renders `findings: []`.
 2. **A filtered view with tiny samples** (one match): rows show raw counts and "Too few to compare". Never a rank or a finding. → Task 5 test `test_match_view_has_no_ranks_or_findings`.
 3. **Findings whose matches have no clip source** (2022-only players): "No clips available for these matches yet" instead of an empty player. → Task 4 test `test_finding_without_clip_sources`. Task 8 renders empty `clips`.
@@ -120,7 +121,7 @@
   - `test_axelsen_snapshot` (skipped unless `SHUTTLESET_DIR` is set), asserting to 1 decimal place:
     - shares: Net 35.6, Lift 27.7, Smash 15.6, Push 6.4, Drop 5.0, Drive 4.7, Clear 3.8; `grouped_shots == 7080`
     - Lift rank 1 of 39; Smash 5; Drop 38; Clear 36
-    - bands: rallies `{"short": 472, "mid": 351, "long": 700}`, win rates 41/60/58 (rounded %), typical 44/51/49
+    - bands: rallies `{"short": 349, "mid": 344, "long": 695}`, win rates 56/60/58 (rounded %), typical 50/51/49 (rallies with no recorded winner excluded; see spec "Stat definitions")
 - [ ] **Step 2:** Run the tests. Expected: FAIL.
 - [ ] **Step 3:** Implement `stats.py`.
 - [ ] **Step 4:** Run with `SHUTTLESET_DIR` set. Expected: PASS. If the snapshot differs, the spec's "Stat definitions" section is the reference. Fix the code, not the numbers.
@@ -177,6 +178,8 @@
   - `comparison.shot.bottom`: `"Only {below_word} of {others} pros {verb_s} less."` (`below_word` is "one" for 1, otherwise the digits)
   - `claim.band.long.strength`: `"Long rallies go {his} way"`
   - `comparison.band.long.strength`: `"won past 8 shots. Better than {below} of {others} pros."`
+  - `claim.band.mid.strength`: `"Medium-length rallies go {his} way"`
+  - `comparison.band.mid.strength`: `"won in 5 to 8 shots. Better than {below} of {others} pros."`
   - `claim.band.short.weakness`: `"Short rallies are where {he} loses"`
   - `comparison.band.short.weakness`: `"won in 4 shots or fewer. A typical pro: {typical}%."`
   - `phrase.shot.Lift.top1`: `"lifts more than anyone else in the data"`
@@ -187,8 +190,9 @@
 - `tips.json`: one tip per finding key (8 shot groups × top/bottom + 3 bands × strength/weakness = 22). Casual-player, tactics-only voice. `"shot.Lift.top"` is exactly the mockup's tip: "When you're under pressure, lift high to the back corners instead of forcing a drop. It buys you time to get back to the middle." Mark the file `"_status": "draft — James to review"`.
 
 - [ ] **Step 1: Write failing tests:**
-  - `test_axelsen_findings` (real data): keys in order `["shot.Lift.top", "shot.Drop.bottom", "band.long.strength", "band.short.weakness"]`. Claims `"He lifts more than any other pro"`, `"He almost never drops"`, `"Long rallies go his way"`, `"Short rallies are where he loses"`. Comparisons `"of his shots. A typical pro: 18.9%."`, `"Only one of 38 pros drops less."`, `"won past 8 shots. Better than 37 of 38 pros."`, `"won in 4 shots or fewer. A typical pro: 44%."`.
-  - `test_axelsen_summary` equals `"He lifts more than anyone else in the data and lets rallies run long, where he wins far more than most. Keep the rally short and he's beatable."`
+  - `test_axelsen_findings` (real data): keys in order `["shot.Lift.top", "shot.Drop.bottom", "band.long.strength", "band.mid.strength"]` (no weakness: he's above typical in every band). Claims `"He lifts more than any other pro"`, `"He almost never drops"`, `"Long rallies go his way"`, `"Medium-length rallies go his way"`. Comparisons `"of his shots. A typical pro: 18.9%."`, `"Only one of 38 pros drops less."`, `"won past 8 shots. Better than 37 of 38 pros."`, `"won in 5 to 8 shots. Better than 34 of 35 pros."`.
+  - `test_axelsen_summary` equals `"He lifts more than anyone else in the data and lets rallies run long, where he wins far more than most."`
+  - `test_weakness_comparison_uses_typical` (fixture): a player below typical in one band gets `band.<band>.weakness` with comparison stating the typical %.
   - `test_womens_pronouns`: a WS fixture player gets "She"/"her".
   - `test_weakness_kept_when_more_than_four_candidates`.
   - `test_no_findings_player`: returns `[]` and `summary(...)` is None.

@@ -53,6 +53,7 @@ worker/debug_hits.py
 
 # Datasets (huge; videos re-downloadable via ShuttleSet/download_videos.py)
 ShuttleSet/
+!tools/pro_profiles/tests/fixtures/**/ShuttleSet/
 
 # Model weights & training artifacts (live in Modal volume / R2, not git)
 worker/weights/

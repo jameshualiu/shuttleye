@@ -100,16 +100,17 @@ The mockup numbers came from a throwaway analysis script. These definitions repr
 - **Shot share:** numerator = the player's shots of a grouped type. Denominator = **all the player's shots in the 8 grouped types**, net kill included. Serves (`發短球`, `發長球`) and unknown (`未知球種`) are excluded from both.
 - **Rally length** = number of rows in the rally, **serve included**. Bands: ≤4, 5–8, ≥9.
 - **Rally winner** = `getpoint_player` on the rally's last row. A player's band win rate = rallies won ÷ rallies played in that band.
+- **Rallies with no recorded winner are excluded from rally-band counts, win rates and game scores.** There are 267 of them, mostly single unlabelled rows (`未知球種`), not real rallies. Their shots still count in shot shares. (Corrected 2026-11-18: counting them as losses had produced a false short-rally weakness for Axelsen.)
 - **Comparison group:** players with **300+ grouped shots**, men and women pooled (39 players). Ranks run **1 to 39, the player included** ("1st of 39"). "Better than N of 38 pros" counts the others below them.
 - **Typical pro** = the **median over the comparison group, the player included**. For rally bands, the group is players with **30+ rallies in that band**.
-- With these definitions, Axelsen comes out at: net 35.6%, lift 27.7% (1st), smash 15.6% (5th), push 6.4%, drop 5.0% (38th), drive 4.7%, clear 3.8% (36th), from 7,080 grouped shots. Rally bands: 472 / 351 / 700 rallies, won 41% / 60% / 58%; typical 44% / 51% / 49%. Snapshot-test these numbers.
+- With these definitions, Axelsen comes out at: net 35.6%, lift 27.7% (1st), smash 15.6% (5th), push 6.4%, drop 5.0% (38th), drive 4.7%, clear 3.8% (36th), from 7,080 grouped shots. Rally bands: 349 / 344 / 695 rallies, won 56% / 60% / 58%; typical 50% / 51% / 49%. Snapshot-test these numbers.
 
 ### Findings
 
 Generated, not hand-written, so every profile works the same way:
 1. Compute candidate findings: each shot-type share, and each rally-band win rate, for players who clear the thresholds.
 2. **(My call.)** A candidate qualifies when it ranks in the **top 4 or bottom 4** of the comparison group for that measure. Shot-type findings are **style** (no tag). Rally-band findings in the top 4 are a **Strength**.
-3. **Weakness rule:** a player's **lowest rally-band win rate, if it's below the typical pro's**, is always a candidate tagged Weakness, even when it isn't bottom 4. Its comparison line states the gap ("A typical pro: 44%"), not a rank, so it never claims more than the data shows. Axelsen's short-rally weakness (41% vs 44%) comes from this rule.
+3. **Weakness rule:** a player's **lowest rally-band win rate, if it's below the typical pro's**, is always a candidate tagged Weakness, even when it isn't bottom 4. Its comparison line states the gap ("A typical pro: 50%"), not a rank, so it never claims more than the data shows. A player who is above typical in every band has no Weakness (Axelsen, after the 2026-11-18 correction).
 4. Order candidates by **distance of their percentile from 50**. Take **at most 4**, always keeping the Weakness if there is one.
 5. Each finding type has a **claim template** ("He lifts more than any other pro", "He almost never drops", "Long rallies go his way", "Short rallies are where he loses"), with pronouns from the player's event (men's / women's singles).
 6. The header summary joins the top two or three findings into one sentence from templates.

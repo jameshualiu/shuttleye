@@ -1,0 +1,4 @@
+rally,ball_round,time,roundscore_A,roundscore_B,player,type,getpoint_player
+1,1.0,00:30:00,0,0,B,發短球,
+1,2.0,00:30:01,0,0,A,挑球,
+1,3.0,00:30:03,0,0,B,過渡切球,B

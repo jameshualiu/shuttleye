@@ -1,0 +1,4 @@
+id,video,tournament,round,year,month,day,set,duration,winner,loser,downcourt,url
+1,M1,Test Open 2022,Finals,2022,3,5,2,40,Alpha ONE,Beta TWO,0,https://www.youtube.com/watch?v=AAAAAAAAAAA
+2,M3,Test Open 2022,Semi-finals,2022,3,4,2,40,Beta TWO,Alpha ONE,0,
+3,GONE,Test Open 2022,Quarter-finals,2022,3,3,2,40,Beta TWO,Alpha ONE,0,
