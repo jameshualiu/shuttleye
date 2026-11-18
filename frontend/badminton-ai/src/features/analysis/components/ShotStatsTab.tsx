@@ -76,7 +76,7 @@ export function ShotStatsTab({
       <div className="flex flex-wrap gap-2">
         {["all", ...shotTypes].map((type) => {
           const active = selectedType === type;
-          const color = type === "all" ? "#3B82F6" : shotColor(type);
+          const color = type === "all" ? "#E5E5E5" : shotColor(type);
           return (
             <button
               key={type}
@@ -91,7 +91,7 @@ export function ShotStatsTab({
                     }
                   : {
                       borderColor: "rgba(255,255,255,0.10)",
-                      color: "rgba(147,197,253,0.55)",
+                      color: "rgba(238,242,234,0.6)",
                       background: "transparent",
                     }
               }
@@ -295,7 +295,7 @@ export function ShotStatsTab({
                           : {
                               background: "rgba(255,255,255,0.03)",
                               borderColor: "rgba(255,255,255,0.08)",
-                              color: "rgba(147,197,253,0.55)",
+                              color: "rgba(238,242,234,0.6)",
                             }
                       }
                     >

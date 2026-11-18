@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { motion } from "motion/react";
-import { ChevronRight, Moon, Play, Sparkles, Sun, Zap } from "lucide-react";
+import { MotionConfig, motion } from "motion/react";
+import { ChevronRight, Moon, Sun } from "lucide-react";
 import { useAuthUser } from "../auth/hooks/useAuthUser";
 import { useTheme } from "../context/useTheme";
 
@@ -53,8 +53,8 @@ function ProcessingPanel() {
                         <rect width="400" height="130" fill="#060d14" />
                         <rect x="60" y="10" width="280" height="110" fill="rgba(22,78,46,0.5)" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
                         <line x1="60" y1="65" x2="340" y2="65" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
-                        <circle cx="150" cy="32" r="4" fill="#89c2d9" />
-                        <circle cx="260" cy="90" r="4" fill="#2c7da0" />
+                        <circle cx="150" cy="32" r="4" fill="#F5F5F4" />
+                        <circle cx="260" cy="90" r="4" fill="#A3A3A3" />
                         <circle cx="205" cy="58" r="3" fill="#fff" /><circle cx="205" cy="58" r="6" fill="rgba(255,255,255,0.12)" />
                     </svg>
                 </div>
@@ -62,11 +62,11 @@ function ProcessingPanel() {
                     {steps.map((s) => (
                         <div key={s.label} className="flex items-center gap-2.5 text-[12px]">
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.done ? "#10b981" : s.pulse ? "var(--color-primary)" : "#424960" }} />
-                            <span className={`flex-1 ${s.waiting ? "text-muted-foreground/40" : "text-muted-foreground"}`}>{s.label}</span>
+                            <span className="flex-1 text-muted-foreground">{s.label}</span>
                             <div className="w-20 h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
                                 <div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: s.done ? "#10b981" : s.pulse ? "var(--color-primary)" : "transparent" }} />
                             </div>
-                            <span className={`text-[11px] font-semibold w-7 text-right ${s.done ? "text-[#10b981]" : s.pulse ? "text-primary" : "text-muted-foreground/30"}`}>
+                            <span className={`text-[11px] font-semibold w-7 text-right ${s.done ? "text-[#10b981]" : s.pulse ? "text-primary" : "text-muted-foreground"}`}>
                                 {s.done ? "Done" : s.pulse ? "72%" : "—"}
                             </span>
                         </div>
@@ -102,7 +102,7 @@ function ResultsPanel() {
                             <span className="text-primary font-bold w-7 flex-shrink-0">{s.t}</span>
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
                             <span className={`font-semibold flex-1 ${s.hi ? "text-primary" : "text-muted-foreground"}`}>{s.name}</span>
-                            <span className="text-[9px] text-muted-foreground/40">{s.pos}</span>
+                            <span className="text-[9px] text-muted-foreground tabular-nums">{s.pos}</span>
                         </div>
                     ))}
                 </div>
@@ -129,7 +129,7 @@ function ShotLogPanel() {
                         <span className="text-primary font-bold w-7 flex-shrink-0">{r.t}</span>
                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: r.color }} />
                         <span className={`font-semibold flex-1 ${r.hi ? "text-primary" : "text-muted-foreground"}`}>{r.name}</span>
-                        <span className="text-[9px] text-muted-foreground/40">{r.pos}</span>
+                        <span className="text-[9px] text-muted-foreground tabular-nums">{r.pos}</span>
                     </div>
                 ))}
             </div>
@@ -155,22 +155,22 @@ function HeatmapPanel() {
                     <line x1="16" y1="136" x2="114" y2="136" stroke="rgba(255,255,255,0.9)" strokeWidth="2" />
                     <line x1="16" y1="105" x2="114" y2="105" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
                     <line x1="16" y1="167" x2="114" y2="167" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
-                    <circle cx="32" cy="45" r="3.5" fill="var(--color-primary,#796faa)" opacity="0.85" />
-                    <circle cx="80" cy="55" r="3.5" fill="var(--color-primary,#796faa)" opacity="0.85" />
-                    <circle cx="55" cy="40" r="3.5" fill="var(--color-primary,#796faa)" opacity="0.85" />
+                    <circle cx="32" cy="45" r="3.5" fill="var(--color-primary)" opacity="0.85" />
+                    <circle cx="80" cy="55" r="3.5" fill="var(--color-primary)" opacity="0.85" />
+                    <circle cx="55" cy="40" r="3.5" fill="var(--color-primary)" opacity="0.85" />
                     <circle cx="72" cy="115" r="3.5" fill="#f59e0b" opacity="0.85" />
                     <circle cx="38" cy="125" r="3.5" fill="#f59e0b" opacity="0.85" />
                     <circle cx="60" cy="230" r="3.5" fill="#10b981" opacity="0.85" />
                     <circle cx="45" cy="220" r="3.5" fill="#10b981" opacity="0.85" />
                     <circle cx="65" cy="180" r="3.5" fill="#8b5cf6" opacity="0.85" />
                     <circle cx="52" cy="175" r="3.5" fill="#8b5cf6" opacity="0.85" />
-                    <circle cx="30" cy="200" r="3.5" fill="var(--color-primary,#796faa)" opacity="0.85" />
+                    <circle cx="30" cy="200" r="3.5" fill="var(--color-primary)" opacity="0.85" />
                 </svg>
                 <div className="flex-1 flex flex-col justify-center gap-2.5 py-1">
                     {legend.map((l) => (
                         <div key={l.label} className="flex items-center gap-2 text-[11px]">
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: l.color }} />
-                            <span className="text-muted-foreground/60 w-8 flex-shrink-0">{l.label}</span>
+                            <span className="text-muted-foreground w-10 flex-shrink-0">{l.label}</span>
                             <div className="flex-1 h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
                                 <div className="h-full rounded-full" style={{ width: l.w, background: l.color }} />
                             </div>
@@ -200,12 +200,12 @@ function RallyPanel() {
                 </div>
                 {[
                     { n:"#1", time:"0:12–0:35", grad:"linear-gradient(90deg,#f59e0b,#d97706)", w:"100%", shots:14, c:"text-amber-400", dots:dots1 },
-                    { n:"#2", time:"0:42–0:58", grad:"linear-gradient(90deg,var(--color-primary),#0891b2)", w:"64%", shots:9, c:"", dots:dots2 },
+                    { n:"#2", time:"0:42–0:58", grad:"linear-gradient(90deg,var(--color-primary),#737373)", w:"64%", shots:9, c:"", dots:dots2 },
                 ].map((r) => (
                     <div key={r.n} className="flex items-center gap-2.5 text-[11px] border-b border-white/[0.05] pb-2">
                         <span className="text-muted-foreground font-bold w-4">{r.n}</span>
                         <div className="flex-1">
-                            <div className="text-[9px] text-muted-foreground/40 mb-1">{r.time}</div>
+                            <div className="text-[9px] text-muted-foreground mb-1">{r.time}</div>
                             <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden mb-1.5">
                                 <div className="h-full rounded-full" style={{ width: r.w, background: r.grad }} />
                             </div>
@@ -226,40 +226,44 @@ function RallyPanel() {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-const STATS = [
-    { value: "99.9%", label: "Shot Detection Accuracy" },
-    { value: "<30s",  label: "Average Analysis Time" },
-    { value: "FREE",  label: "Lifetime Access" },
-];
+// One button system for the page: a solid primary and an outlined secondary,
+// same shape and label size, each with a visible keyboard focus ring.
+const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+const BTN_BASE = `cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[translate,background-color] duration-150 hover:-translate-y-0.5 active:translate-y-0 ${FOCUS}`;
+const BTN_PRIMARY = `${BTN_BASE} bg-primary text-primary-foreground hover:bg-primary/90`;
+const BTN_SECONDARY = `${BTN_BASE} bg-white dark:bg-card text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-border hover:bg-slate-50 dark:hover:bg-white/10`;
+const BTN_LG = "px-7 py-3.5 text-[15px]";
+const BTN_SM = "px-4 py-2 text-sm";
+
+const MAIN_ACTION = "Analyse a match";
+
 
 const HOW_STEPS = [
-    { n: "1", title: "Upload your match", desc: "Drop in an MP4. Shuttleye accepts any standard court recording.", panel: <UploadPanel /> },
-    { n: "2", title: "AI analyses everything", desc: "YOLOv8 detects players and shots. TrackNetV2 tracks the shuttle frame by frame.", panel: <ProcessingPanel /> },
-    { n: "3", title: "Explore your results", desc: "Shot log, court heatmap, rally breakdown — ready in under 30 seconds.", panel: <ResultsPanel /> },
+    { n: "1", title: "Upload a match recording", desc: "Drop one match recording into your dashboard.", panel: <UploadPanel /> },
+    { n: "2", title: "Shuttleye tracks the rally", desc: "It maps the court, follows the shuttle frame by frame and tracks both players.", panel: <ProcessingPanel /> },
+    { n: "3", title: "Read the match report", desc: "Shot log, court heatmap and rally breakdown, all linked to the video.", panel: <ResultsPanel /> },
 ];
 
 const FEATURES = [
     {
-        tag: "Shot Log", title: "Every stroke, timestamped and colour-coded",
-        desc: "A complete scrollable record of every stroke — colour-coded by type, with court coordinates and timestamps.",
-        bullets: ["Click any row to jump to that moment in the video", "Active shot highlights as video plays", "Clears, smashes, drops, nets, drives and more"],
+        title: "Shot log: every hit in the match, timed and typed",
+        desc: "Each hit is labelled clear, smash, drop, drive, net or lob, with its time in the video and its court position.",
+        bullets: ["Click a row to jump to that hit in the video", "The current shot highlights as the video plays", "Filter the log by shot type"],
         panel: <ShotLogPanel />, reverse: false,
     },
     {
-        tag: "Court Heatmap", title: "See exactly where you play on court",
-        desc: "Every shot mapped to a precise court coordinate. Filter by type to reveal patterns you never noticed.",
-        bullets: ["Court geometry auto-detected from video", "Filter dots by shot type with one click", "Spot if you're over-relying on one zone"],
+        title: "Court heatmap: where each shot in the match was played",
+        desc: "Shuttleye finds the court lines in your video and places every shot on a top-down court.",
+        bullets: ["Court geometry detected from the video", "Filter the dots by shot type", "See which zones you rely on"],
         panel: <HeatmapPanel />, reverse: true,
     },
     {
-        tag: "Rally Analysis", title: "Rally by rally, shot by shot",
-        desc: "Rallies grouped and ranked by length. See your longest exchanges, average depth, and the exact shot sequence.",
-        bullets: ["Click any rally to jump to it in the video", "Shot-type dots show the sequence at a glance", "Total, longest, avg, % over 5 shots"],
+        title: "Rally breakdown: each rally in the match, shot by shot",
+        desc: "Rallies are grouped and ranked by length, with the sequence of shot types for each one.",
+        bullets: ["Click a rally to jump to it in the video", "Coloured dots show the shot sequence", "Total, longest and average rally length"],
         panel: <RallyPanel />, reverse: false,
     },
 ];
-
-const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.5 } };
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -279,142 +283,121 @@ export default function LandingPage() {
     }
 
     return (
+        <MotionConfig reducedMotion="user">
         <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+
+            <a href="#main" className={`sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-card focus:text-foreground focus:border focus:border-border ${FOCUS}`}>
+                Skip to content
+            </a>
 
             {/* Background */}
             <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
                 <div className="dot-grid absolute inset-0 opacity-[0.45]" style={{ backgroundSize: "22px 22px" }} />
-                <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[100px]" />
-                <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/6 blur-[90px]" />
             </div>
 
             {/* Navbar */}
             <nav className="sticky top-0 z-50 w-full bg-white/90 dark:bg-background/90 backdrop-blur-xl border-b border-slate-200 dark:border-border">
-                <div className="max-w-[1400px] mx-auto px-8 h-[70px] flex items-center justify-between">
-                    <motion.div className="flex items-center gap-2" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-                        <div className="p-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-                            <Sparkles className="w-4 h-4 text-primary" />
-                        </div>
+                <div className="max-w-7xl mx-auto px-6 h-[70px] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                         <span className="text-[17px] font-semibold tracking-tight">Shuttleye</span>
-                    </motion.div>
-                    <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-                        <button onClick={toggle} aria-label="Toggle dark mode" className="cursor-pointer relative w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-foreground transition-all duration-150">
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button onClick={toggle} aria-label="Toggle dark mode" className={`cursor-pointer relative w-10 h-10 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-foreground transition-all duration-150 ${FOCUS}`}>
                             <Sun className={`absolute w-4 h-4 transition-all duration-200 ${isDark ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
                             <Moon className={`absolute w-4 h-4 transition-all duration-200 ${isDark ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
                         </button>
-                        <button onClick={() => navigate("/signin")} className="cursor-pointer px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
-                            Sign In
+                        <button onClick={() => navigate("/signin")} className={`${BTN_SECONDARY} ${BTN_SM}`}>
+                            Sign in
                         </button>
-                    </motion.div>
+                    </div>
                 </div>
             </nav>
 
-            {/* Hero */}
-            <section className="relative z-10 pt-32 pb-40 px-6 text-center">
-                <div className="max-w-4xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full mb-8 text-sm font-medium text-primary">
-                            <Sparkles className="w-3.5 h-3.5" />
-                            AI-Powered Performance Analysis
-                        </div>
-                    </motion.div>
-                    <motion.h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[1.05] mb-6" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
-                        Elevate Your<br /><span className="text-primary">Game</span>
-                    </motion.h1>
-                    <motion.p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
-                        Transform your badminton performance with AI-powered video analysis, intelligent insights, and precision shot tracking.
-                    </motion.p>
-                    <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
-                        <button onClick={() => navigate("/signup")} className="cursor-pointer flex items-center gap-2 px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
-                            Get Started <ChevronRight className="w-4 h-4" />
+            <main id="main">
+
+            {/* Hero: one screen below the nav */}
+            <section className="relative z-10 min-h-[calc(100svh-70px)] flex items-center px-6 py-16 text-center">
+                <motion.div className="max-w-4xl mx-auto" data-enter initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6">
+                        Badminton match analysis <span className="text-muted-foreground">from your video</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-foreground/75 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Upload a match recording. Shuttleye tracks the shuttle, finds every hit and labels it as one of six shot types.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <button onClick={() => navigate("/signup")} className={`${BTN_PRIMARY} ${BTN_LG}`}>
+                            {MAIN_ACTION} <ChevronRight className="w-4 h-4" aria-hidden="true" />
                         </button>
-                        <button className="cursor-pointer flex items-center gap-2 px-8 py-3.5 bg-white dark:bg-card text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-border rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-white/10 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
-                            <Play className="w-4 h-4" /> Watch Demo
-                        </button>
-                    </motion.div>
-                </div>
+                    </div>
+                    <p className="mt-6 text-sm text-foreground/75">MP4, MOV or AVI · up to 2 GB · free to use</p>
+                </motion.div>
             </section>
 
             {/* How it works */}
             <section className="relative z-10 max-w-7xl mx-auto px-6 py-24">
-                <motion.div className="text-center mb-14" {...fade}>
-                    <div className="text-[11px] font-bold tracking-[2.5px] uppercase text-primary mb-3">How it works</div>
-                    <h2 className="text-4xl font-bold tracking-tight">From footage to insights in seconds</h2>
-                </motion.div>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {HOW_STEPS.map((s, i) => (
-                        <motion.div key={i} {...fade} transition={{ duration: 0.5, delay: i * 0.1 }}>
-                            <div className="flex items-center gap-3 mb-4">
+                <div className="text-center mb-14">
+                    <div className="text-[11px] font-bold tracking-[2.5px] uppercase text-muted-foreground mb-3">How it works</div>
+                    <h2 className="text-4xl font-bold tracking-tight">How Shuttleye analyses a match</h2>
+                </div>
+                <div className="grid md:grid-cols-3 md:grid-rows-[auto_auto] gap-x-6 gap-y-4">
+                    {HOW_STEPS.map((s) => (
+                        <div key={s.n} className="grid gap-4 md:row-span-2 md:grid-rows-subgrid">
+                            <div className="flex items-start gap-3">
                                 <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-black flex items-center justify-center flex-shrink-0">{s.n}</div>
                                 <div>
-                                    <div className="text-sm font-bold">{s.title}</div>
-                                    <div className="text-xs text-muted-foreground leading-relaxed">{s.desc}</div>
+                                    <h3 className="text-sm font-bold">{s.title}</h3>
+                                    <p className="text-sm text-foreground/75 leading-relaxed">{s.desc}</p>
                                 </div>
                             </div>
                             {s.panel}
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </section>
 
             {/* Feature deep-dives */}
             <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 space-y-32">
-                <motion.div className="text-center" {...fade}>
-                    <div className="text-[11px] font-bold tracking-[2.5px] uppercase text-primary mb-3">Features</div>
-                    <h2 className="text-4xl font-bold tracking-tight">Everything in your match,<br />laid out clearly</h2>
-                </motion.div>
-                {FEATURES.map((f, i) => (
-                    <motion.div key={i} {...fade} transition={{ duration: 0.5, delay: 0.1 }}>
-                        <div className={`grid md:grid-cols-2 gap-12 items-center ${f.reverse ? "md:[direction:rtl]" : ""}`}>
-                            <div className="md:[direction:ltr]">{f.panel}</div>
-                            <div className="md:[direction:ltr]">
-                                <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 border border-primary/25 rounded px-2.5 py-1 mb-4">{f.tag}</span>
-                                <h3 className="text-2xl font-bold tracking-tight mb-3">{f.title}</h3>
-                                <p className="text-[15px] text-muted-foreground leading-relaxed mb-5">{f.desc}</p>
-                                <ul className="space-y-2.5">
-                                    {f.bullets.map((b) => (
-                                        <li key={b} className="flex items-center gap-2.5 text-[13px] text-muted-foreground">
-                                            <span className="w-1 h-1 rounded-full bg-primary flex-shrink-0" />
-                                            {b}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                <div className="text-center">
+                    <div className="text-[11px] font-bold tracking-[2.5px] uppercase text-muted-foreground mb-3">The match report</div>
+                    <h2 className="text-4xl font-bold tracking-tight">What the Shuttleye report shows</h2>
+                </div>
+                {FEATURES.map((f) => (
+                    <div key={f.title} className={`grid md:grid-cols-2 gap-12 items-center ${f.reverse ? "md:[direction:rtl]" : ""}`}>
+                        <div className="md:[direction:ltr]">{f.panel}</div>
+                        <div className="md:[direction:ltr]">
+                            <h3 className="text-2xl font-bold tracking-tight mb-3">{f.title}</h3>
+                            <p className="text-base text-foreground/75 leading-relaxed mb-5">{f.desc}</p>
+                            <ul className="space-y-2.5">
+                                {f.bullets.map((b) => (
+                                    <li key={b} className="flex items-center gap-2.5 text-[15px] text-foreground/75">
+                                        <span className="w-1 h-1 rounded-full bg-primary flex-shrink-0" aria-hidden="true" />
+                                        {b}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    </motion.div>
+                    </div>
                 ))}
             </section>
 
-            {/* Stats */}
-            <motion.section className="relative z-10 max-w-7xl mx-auto px-6 py-20" {...fade}>
-                <div className="bg-white dark:bg-card border border-slate-300 dark:border-border rounded-2xl p-10 shadow-sm">
-                    <div className="grid md:grid-cols-3 gap-10 text-center divide-y md:divide-y-0 md:divide-x divide-slate-200 dark:divide-border">
-                        {STATS.map((s, i) => (
-                            <div key={i} className="pt-6 md:pt-0 first:pt-0">
-                                <div className="text-5xl font-bold text-primary mb-1.5">{s.value}</div>
-                                <div className="text-sm text-muted-foreground font-medium">{s.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </motion.section>
-
-            {/* CTA */}
-            <motion.section className="relative z-10 max-w-7xl mx-auto px-6 py-24 text-center" {...fade}>
-                <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Ready to transform your game?</h2>
-                <p className="text-muted-foreground text-lg mb-10">Join the future of badminton performance analysis. Free forever.</p>
-                <button onClick={() => navigate("/signup")} className="cursor-pointer inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
-                    <Zap className="w-5 h-5" />
-                    Start Analysing Now
+            {/* Close */}
+            <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 text-center">
+                <h2 className="text-4xl font-bold tracking-tight mb-4">Analyse your next badminton match</h2>
+                <p className="text-foreground/75 text-lg mb-10">Sign up, upload a recording and get the shot log, heatmap and rallies. Free to use.</p>
+                <button onClick={() => navigate("/signup")} className={`${BTN_PRIMARY} ${BTN_LG}`}>
+                    {MAIN_ACTION} <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
-            </motion.section>
+            </section>
 
-            {/* Footer */}
+            </main>
+
             <footer className="border-t border-slate-200 dark:border-border py-7">
                 <div className="max-w-7xl mx-auto px-6 text-center text-sm text-muted-foreground">
-                    © 2026 Shuttleye. Powered by YOLOv8 and TrackNetV2.
+                    © 2026 Shuttleye
                 </div>
             </footer>
+
         </div>
+        </MotionConfig>
     );
 }

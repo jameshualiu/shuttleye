@@ -110,7 +110,7 @@ The dashboard uses Firestore `onSnapshot` for real-time video status updates. Th
 
 `src/lib/result.ts` defines the `Result<T, E>` discriminated union. Prefer it over exceptions for expected failure paths where callers should explicitly branch on success/failure.
 
-The current UI theme is blue-black (`theme-ai-saas`) with `#3B82F6` as the primary color. Tailwind v4 configuration lives in `src/styles/tailwind.css`.
+The current UI theme is neutral black and white (`theme-ai-saas` class): dark mode uses a `#0A0A0A` ground with `#F5F5F4` text and primary buttons, light mode uses `#FAFAF9` with `#171717`. Colour is reserved for data (shot types, status). Tailwind v4 configuration lives in `src/styles/tailwind.css`.
 
 ## Working across the stack
 

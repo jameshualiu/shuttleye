@@ -59,9 +59,9 @@ function timeAgo(ts: Timestamp | undefined): string {
 
 function ThumbnailFallback() {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0f2942] via-[#071828] to-[#07101A]">
-      <div className="w-10 h-10 rounded-full border border-blue-500/30 flex items-center justify-center">
-        <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-blue-500/50 ml-0.5" />
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1C1C1C] via-[#121212] to-[#0A0A0A]">
+      <div className="w-10 h-10 rounded-full border border-primary/30 flex items-center justify-center">
+        <div className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-primary/50 ml-0.5" />
       </div>
     </div>
   );
@@ -78,8 +78,8 @@ function VideoThumbnail({ url, title }: { url: string; title: string }) {
         className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-all duration-500"
         onError={() => setBroken(true)}
       />
-      <div className="absolute inset-0 bg-blue-500/[0.18]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#07101A] via-[#07101A]/30 to-transparent" />
+      <div className="absolute inset-0 bg-primary/[0.10]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/30 to-transparent" />
     </>
   );
 }
@@ -162,7 +162,7 @@ export default function DashboardPage() {
   };
 
   const dotColor = (status: VideoStatus | undefined) =>
-    status === "done" ? "#2563EB" : status === "failed" ? "rgba(200,80,80,0.65)" : "rgba(37,99,235,0.25)";
+    status === "done" ? "var(--color-primary)" : status === "failed" ? "rgba(200,80,80,0.65)" : "color-mix(in srgb, var(--color-primary) 30%, transparent)";
 
   const statusLabel = (s: VideoStatus | undefined) =>
     s === "done" ? "Done" : s === "failed" ? "Failed" : s === "running" ? "Processing" : "Queued";
