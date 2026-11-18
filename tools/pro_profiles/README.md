@@ -44,6 +44,18 @@ afterwards.
 
 ## Photos
 
-Photos are fetched and cropped by a separate CLI (added in a later task and
-documented here then). It writes `content/photos.json` and the images under
-`public/pro-data/photos/`.
+Photos come from Wikimedia Commons, only under CC BY, CC BY-SA, CC0 or public
+domain, and only after a human approves each one. Run from `tools/`:
+
+1. `python -m pro_profiles.photos candidates` looks up each player's English
+   Wikipedia page image and writes `.superpowers/photo-candidates/contact-sheet.html`
+   (gitignored) plus `candidates.json`. It sleeps 2s between requests, retries
+   on HTTP 429, and uses the User-Agent `shuttleye-photo-fetch/0.1`.
+2. Open the contact sheet, judge each photo, and adjust the focus point
+   (percent X,Y of the crop, default 50,30).
+3. `python -m pro_profiles.photos approve <player_id> --focus X,Y` records the
+   approval in `content/photos.json`.
+4. `python -m pro_profiles.photos download` fetches approved images (400px wide)
+   into `public/pro-data/photos/`.
+5. Rebuild the JSON (see Run it) and commit `photos.json`, the images and the
+   JSON. CI excludes `photos/` from its diff because the build does not write it.
