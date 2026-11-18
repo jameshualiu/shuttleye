@@ -110,11 +110,12 @@ The mockup numbers came from a throwaway analysis script. These definitions repr
 Generated, not hand-written, so every profile works the same way:
 1. Compute candidate findings: each shot-type share, and each rally-band win rate, for players who clear the thresholds.
 2. **(My call.)** A candidate qualifies when it ranks in the **top 4 or bottom 4** of the comparison group for that measure. Shot-type findings are **style** (no tag). Rally-band findings in the top 4 are a **Strength**.
-3. **Weakness rule:** a player's **lowest rally-band win rate, if it's below the typical pro's**, is always a candidate tagged Weakness, even when it isn't bottom 4. Its comparison line states the gap ("A typical pro: 50%"), not a rank, so it never claims more than the data shows. A player who is above typical in every band has no Weakness (Axelsen, after the 2026-11-18 correction).
+3. **Weakness rule:** a player's **lowest rally-band win rate, if it's at least 3 percentage points below the typical pro's**, is always a candidate tagged Weakness, even when it isn't bottom 4. A gap under 3 points isn't a weakness (it's noise; e.g. 50% vs 51%). (Amended 2026-11-18.) Its comparison line states the gap ("A typical pro: 50%"), not a rank, so it never claims more than the data shows. A player who is above typical in every band has no Weakness (Axelsen, after the 2026-11-18 correction).
 4. Order candidates by **distance of their percentile from 50**. Take **at most 4**, always keeping the Weakness if there is one.
-5. Each finding type has a **claim template** ("He lifts more than any other pro", "He almost never drops", "Long rallies go his way", "Short rallies are where he loses"), with pronouns from the player's event (men's / women's singles).
-6. The header summary joins the top two or three findings into one sentence from templates.
-7. A player with no qualifying findings gets the line "Nothing stands far out from other pros in this data", and the page still shows the other panels.
+5. **Wording must not overstate.** "Almost never" is used only when the player's share is under half the typical pro's. Otherwise a bottom-4 shot finding says "{He} {verb_s} less than most pros". (Amended 2026-11-18.)
+6. Each finding type has a **claim template** ("He lifts more than any other pro", "He almost never drops", "Long rallies go his way", "Short rallies are where he loses"), with pronouns from the player's event (men's / women's singles).
+7. The header summary joins the top two or three findings into one sentence from templates.
+8. A player with no qualifying findings gets the line "Nothing stands far out from other pros in this data", and the page still shows the other panels.
 
 **"Try this" tips:** one hand-written tip per finding type (about 16 short tips in total), written for casual players and focused on tactics, not power. They are stored in a content file, not in code. James reviews the wording before launch.
 
