@@ -30,7 +30,7 @@ const RALLY_TILE_BORDER = "1px solid rgba(255,255,255,0.07)";
 const RALLY_PROGRESS_TRACK_BG = "rgba(255,255,255,0.06)";
 const RALLY_LONG_BORDER = "2px solid rgba(245,158,11,0.4)";
 const RALLY_GRADIENT_LONG = "linear-gradient(90deg,#f59e0b,#d97706)";
-const RALLY_GRADIENT_DEFAULT = "linear-gradient(90deg,#3B82F6,#0891b2)";
+const RALLY_GRADIENT_DEFAULT = "linear-gradient(90deg,var(--color-primary),#737373)";
 
 function fmtDate(ts: Timestamp | undefined): string {
   if (!ts?.toDate) return "";
