@@ -12,6 +12,7 @@ const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const AnalysisPage = lazy(() => import("./pages/AnalysisPage"));
+const PlayerProfilePage = lazy(() => import("./pages/PlayerProfilePage"));
 const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const PrivateLayout = lazy(() => import("./layouts/PrivateLayout"));
 
@@ -32,6 +33,7 @@ function ThemedApp() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/players/:playerId" element={<PlayerProfilePage />} />
 
           <Route
             element={
