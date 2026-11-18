@@ -60,3 +60,6 @@ worker/train/features_v3/
 
 # Vendored-reference scratch (BST paper sources, validation script)
 .bst-ref/
+
+# Brainstorm mockups and agent workspaces
+.superpowers/
