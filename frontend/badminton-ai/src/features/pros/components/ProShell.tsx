@@ -7,13 +7,20 @@ export function ProShell({
   source,
 }: {
   children: ReactNode;
-  source?: "singles" | "doubles";
+  source?: "singles" | "doubles" | "both";
 }) {
   return (
     <div className="mx-auto w-full max-w-[1600px] px-4 py-8 min-[760px]:px-12">
       <main>{children}</main>
       <footer className="pt-10">
-        <ProAttribution source={source} />
+        {source === "both" ? (
+          <div className="grid gap-3">
+            <ProAttribution source="singles" />
+            <ProAttribution source="doubles" />
+          </div>
+        ) : (
+          <ProAttribution source={source} />
+        )}
       </footer>
     </div>
   );
