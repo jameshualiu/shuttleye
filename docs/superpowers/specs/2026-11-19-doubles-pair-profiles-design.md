@@ -119,18 +119,18 @@ These are **builder defaults**, and James can change them.
 
 All are counted from the pair's own serves and returns.
 - **Serve mix:** the share of their serves that are short.
-- **Serve placement:** where the receiver met the serve (`return_x`/`return_y` on the serve shot). It's split into **centre, middle and wide**, relative to the receiver's service court. Zones are measured from the centre line: for a short serve, centre is within 1.0 m of the centre line, wide is within 0.8 m of the sideline, and middle is everything between. Long serves are counted separately as **back-centre** or **back-wide**. **(My call; the builder should check the boundaries against the data's coordinates and record what they used.)**
+- **Serve placement:** where the receiver met the serve (`return_x`/`return_y` on the serve shot). It's split into **centre, middle and wide**, relative to the receiver's service court. Zones, checked against the data (2026-11-19): for a short serve, centre if |x − 30.5| ≤ 10, wide if x ≤ 14 or x ≥ 46, middle otherwise. Long serves are counted as back-wide (x ≤ 14 or ≥ 46) or back-centre. Serves whose return position is outside the court are ignored. On the real data, short serves come out 90% centre, 5% middle and 5% wide.
 - **Serving win rate:** the share of rallies they serve that they win.
-- **Third shot down:** in rallies they serve that reach shot 3, the share where their third shot is an **attacking shot** (smash, drop or push). The builder should check whether `ball_up_down` agrees with this mapping and document the result. If it's clearly the authors' "down" flag, prefer it.
+- **Third shot down:** in rallies they serve where their own third shot has a known type, the share where that shot is an **attacking shot** (smash, drop or push). `ball_up_down` isn't used.
 - **Return mix:** the shares of their returns that are net shot, push, smash, lift, drive, clear or drop.
-- **Attacking return:** the share of their returns that are a smash, push or drop. This stands in for "rush/attack the serve", which the data has no label for.
+- **Attacking return:** the share of their returns that are a smash, drop or push. This stands in for "rush/attack the serve", which the data has no label for.
 - **Receiving win rate:** the share of rallies they receive that they win.
 - **First 4 shots:** the share of their rallies that end within 4 shots, and their win rate in those rallies.
 - **Mixed only:** who serves (the man's share against the woman's) and who receives.
 
 ### The rest of the rally
 
-- **Attacking share:** the share of the pair's shots that are attacking (smash, drop or push).
+- **Attacking share:** the share of the pair's non-serve shots that are attacking (smash, drop or push). Formation share also excludes serves.
 - **Formation:** the share of the pair's shots hit in the authors' `player_formation` Attack state.
 - **Who plays which shots:** each partner's share of the pair's smashes and of its net shots, naming the player.
 - **How points end:** for rallies they lost, the split by `lose_reason`, normalised to clean labels and noting whether the fault was theirs. For rallies they won, the share won by a winner (Opp Grounded within Boundaries) against an opponent's error.
@@ -139,11 +139,11 @@ All are counted from the pair's own serves and returns.
 
 Findings use the singles mechanism: templates, a summary sentence and draft tips. The bar is stricter because the groups are small. **(My call.)**
 - **A candidate qualifies** only if the pair ranks **top 2 or bottom 2** of its event's comparison group **and** sits at least **5 percentage points** from the typical pair. **In a comparison group of fewer than 8 pairs (mixed doubles, 5 ranked), only top 1 or bottom 1 qualifies.** (My call.)
-- **A weakness** is the pair's lowest win rate among serving, receiving and first-4-shot, provided it's at least **3 points below** typical, as in singles.
+- **A weakness** is the pair's win rate (serving, receiving or first-4-shot) that sits **furthest below** its typical value, provided the gap is at least **3 points**. (Amended 2026-11-19: the lowest raw win rate almost always picked serving, because serve win rates are lower for every pair, and that hid real weaknesses.)
 - **At most 4 findings**, with **serve and receive first**: serve/receive findings outrank rest-of-rally findings when tied.
 - **The summary** leads with a serve or receive finding.
 - **Wording rules from singles carry over:**
-  - "almost never" only below half the typical rate
+  - "rarely" (singles says "almost never") only below half the typical rate and at 15% or less
   - "more than any other pair" only when strictly first
   - "Better than every other pair" when it beats the whole group
   - no "far" without a large gap

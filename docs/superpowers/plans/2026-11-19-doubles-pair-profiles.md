@@ -30,7 +30,7 @@
   - A weakness is the lowest of the serving, receiving and first-4 win rates, when it's **3 or more points below** typical.
   - At most **4** findings, with serve and receive first.
   - The summary leads with a serve or receive finding.
-  - Wording rules from singles: "almost never" only below 0.5× typical, "more than any other pair" only when strictly first, "Better than every other pair" when it beats the whole group, and no "far".
+  - Wording rules from singles, adapted: "rarely" (singles: "almost never") only below 0.5× typical, "more than any other pair" only when strictly first, "Better than every other pair" when it beats the whole group, and no "far".
 - **Definitions:**
   - attacking shot = smash, drop or push
   - rally winner = from the score change
@@ -162,7 +162,7 @@
 - Consumes: Task 2. `Finding` from `findings.py` (reuse the dataclass; `clips` is always `[]` here).
 - Produces:
   - `EDGE = 2`, `EDGE_SMALL = 1`, `SMALL_GROUP = 8`, `MIN_GAP = 0.05`, `WEAKNESS_GAP = 0.03`
-  - `def select_pair_findings(pair_id: str, all_stats, pairs) -> list[Finding]`. Keys look like `serve.short_share.top`, `receive.win_rate.bottom` and `first4.win_rate.weakness`. Order: serve and receive measures before `rally.*` when tied on percentile distance. Weakness last. At most 4.
+  - `def select_pair_findings(pair_id: str, all_stats, pairs) -> list[Finding]`. Keys look like `serve.short_share.top`, `receive.attack_share.bottom` and `first4.win_rate.weakness` (a win rate is only ever `.top` or `.weakness`; one weakness per pair). Order: serve and receive measures before `rally.*` when tied on percentile distance. Weakness last. At most 4.
   - `def pair_summary(pair_id, findings, pairs, players) -> str | None`. It starts with the first serve or receive finding's phrase, and names the pair by last names ("Baek and Lee …").
 - Templates use `{pair}` and plural verbs ("They serve short more than any other pair"). Tips cover every reachable key.
 

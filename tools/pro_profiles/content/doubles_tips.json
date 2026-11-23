@@ -1,0 +1,22 @@
+{
+  "_status": "draft — James to review",
+
+  "serve.short_share.top": "Serve short and low so the receiver can't attack it. Get your racket up straight after the serve, ready for a push or net shot back.",
+  "serve.short_share.bottom": "Mix in a flick or a long serve now and then, especially if the receiver crowds the front line. Make sure your partner is ready to cover the back.",
+  "serve.third_down.top": "After you serve, be ready to hit the next shot down. If the return floats up, push or drop it straight away instead of lifting.",
+  "serve.third_down.bottom": "You don't have to lift the third shot. If the return is loose, step in and push or drop it so your pair keeps the attack.",
+  "receive.attack_share.top": "Stand close to the front service line with your racket up. If the serve is even a little high, attack it down with a push or a smash.",
+  "receive.attack_share.bottom": "Try to meet the serve earlier. A quick push into the midcourt or a tight net return stops the serving pair from taking the attack.",
+  "first4.share.top": "Treat the serve, return and next two shots as the most important part of the rally. Be ready from the very first shot, not just once the rally settles.",
+  "first4.share.bottom": "Long rallies take patience. Keep the shuttle low or deep, cover your half with your partner, and wait for a loose shot to attack.",
+  "rally.attack_share.top": "When the shuttle is above the net, hit it down. Smashes, drops and pushes keep the other pair lifting and your pair on the attack.",
+  "rally.attack_share.bottom": "Look for chances to hit down instead of lifting. Even a flat push into the midcourt can turn defence into attack.",
+  "rally.formation_attack.top": "When your pair is attacking, play front and back: the back player hits down, and the front player stays close to the net to finish loose replies.",
+  "rally.formation_attack.bottom": "If you spend a lot of time side by side defending, look for a flat or short reply that lets your pair switch to front and back and attack.",
+  "serve.win_rate.top": "Your serve is a chance to start on top. Serve tight, then work with your partner to hit the third shot down.",
+  "serve.win_rate.weakness": "Practise your short serve until it sits low over the net. A loose serve hands the other pair the first attack.",
+  "receive.win_rate.top": "Receiving is a chance to attack first. Stand ready on the front line and hit any loose serve down.",
+  "receive.win_rate.weakness": "Be ready on the return. Racket up, weight forward, and aim to keep your reply low so the serving pair can't attack it.",
+  "first4.win_rate.top": "Make the first few shots count. A tight serve or a sharp return can win the point before the rally settles.",
+  "first4.win_rate.weakness": "Watch the serve and the return closely. Most short rallies are won or lost on the first couple of shots, so get your racket up early."
+}
