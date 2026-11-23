@@ -17,7 +17,7 @@ from pathlib import Path
 
 from .build import _finding_json, _pct, _write, game_finished
 from .clips import ROUND_WORDS
-from .doubles_findings import _title, pair_name, pair_summary, select_pair_findings
+from .doubles_findings import full_name, pair_name, pair_summary, select_pair_findings
 from .doubles_load import DMatch, DPlayer, Pair, load_doubles, verify_checksums
 from .doubles_stats import (
     MEASURES,
@@ -57,10 +57,9 @@ def edition_names(doubles_tournaments: dict, singles_tournaments: dict) -> dict[
 
 
 def _player_name(p: DPlayer) -> str:
-    """player.csv's full name; all-capital words (the surname in "KIM Gi Jung")
-    are title-cased. The display last-name override only changes the short name
-    used in pair names, never the full name."""
-    return " ".join(_title(w) if w.isupper() else w for w in p.name.split())
+    """The display full name (doubles_findings.full_name). The display
+    last-name override only changes the short name used in pair names."""
+    return full_name(p)
 
 
 def _names(pair_id: str, pairs: dict[str, Pair], players: dict[str, DPlayer]) -> str:
@@ -150,6 +149,7 @@ def _view(
             "pointsWon": _dist(st, "points.won", {"winner": "winner", "oppError": "opp_error"}),
         },
         "ranks": ranks,
+        "samples": dict(st.samples),
         "typical": typical,
         "findings": [_finding_json(f) for f in findings],
     }

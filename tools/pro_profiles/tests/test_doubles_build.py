@@ -66,11 +66,18 @@ def test_unranked_pair_json(mini_out):
     assert view["kind"] == "all" and view["ranks"] == {} and view["findings"] == []
     assert view["mixed"] is None
     assert set(view) == {"kind", "rallies", "serve", "receive", "first4", "mixed", "rest",
-                         "ranks", "findings", "typical"}
+                         "ranks", "samples", "findings", "typical"}
     assert set(view["serve"]["placement"]) == {"centre", "middle", "wide", "backCentre", "backWide"}
     assert [r["playerId"] for r in view["rest"]["roles"]] == ["1", "2"]
     # Below 30 samples every value is null; only the counts show.
     assert view["serve"]["shortShare"] is None and view["serve"]["serves"] == 4
+    # Each measure's own sample count, so the page can say "4 serves" beside it.
+    assert set(MEASURES) <= set(view["samples"])
+    assert view["samples"]["serve.short_share"] == view["serve"]["serves"]
+    assert view["samples"]["receive.attack_share"] == view["receive"]["returns"]
+    assert view["samples"]["first4.share"] == view["rallies"]
+    assert view["samples"]["first4.win_rate"] <= view["samples"]["first4.share"]
+    assert "mixed.serve_by" not in view["samples"]
     assert view["typical"] == {}
     assert [f["id"] for f in d["filters"]] == ["all", "t:indonesia-open-2023", "m:1"]
     assert d["filters"][0] == {"id": "all", "kind": "all", "label": "All 1 match", "matches": 1}
@@ -85,6 +92,8 @@ def test_mixed_block_only_for_xd(loaded, tmp_path):
     write_doubles(tmp_path, matches, {**pairs, "kim-lee-md": xd}, players, EDITIONS)
     mixed = read(tmp_path / "pairs" / "kim-lee-md.json")["views"]["all"]["mixed"]
     assert set(mixed) == {"serveBy", "receiveBy"} and set(mixed["serveBy"]) == {"man", "woman"}
+    samples = read(tmp_path / "pairs" / "kim-lee-md.json")["views"]["all"]["samples"]
+    assert {"mixed.serve_by", "mixed.receive_by"} <= set(samples)
 
 
 def test_filtered_view_has_no_ranks_or_findings(ranked_out):
@@ -244,7 +253,19 @@ def test_real_build(tmp_path):
     d = read(out / "pairs" / "baek-lee-sh.json")
     assert d["ranked"] is True and d["context"]["matches"] == 10
     assert d["context"]["comparedWith"] == 10  # 11 ranked women's pairs
-    assert d["summary"]
+    assert d["summary"].startswith("Baek and Lee So Hee ")
+    # Two WD pairs would both be "Baek / Lee": the varying partner gets a full name.
+    shown = {(p["id"], p["names"]) for f in (out / "tournaments").glob("*.json")
+             if f.name != "index.json" for p in read(f)["pairs"]}
+    baek = {n for pid, n in shown if pid.startswith("baek-lee")}
+    assert baek == {"Baek / Lee So Hee", "Baek / Lee Yu Lim"}
+    labels = [f["label"] for f in read(out / "pairs" / "baek-lee-yl.json")["filters"]]
+    assert not any(label.endswith("against Baek / Lee") for label in labels)
+    # Western players stored surname-first display given name first.
+    ast = read(out / "pairs" / "astrup-rasmussen.json")
+    assert [p["name"] for p in ast["players"]] == ["Kim Astrup", "Anders Skaarup Rasmussen"]
+    v = d["views"]["all"]
+    assert v["samples"]["first4.win_rate"] < v["samples"]["first4.share"] == v["rallies"]
     ids = {e["id"] for e in read(out / "tournaments" / "index.json")["editions"]}
     assert "indonesia-open-2023" in ids
     assert len(list((out / "tournaments").glob("*.json"))) == len(ids) + 1

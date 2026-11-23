@@ -12,7 +12,7 @@ export function PairCard({ pair }: { pair: PairIndexEntry }) {
     >
       <span className="flex shrink-0 gap-1">
         {pair.players.map((p) => (
-          <PlayerPhoto key={p.id} photo={null} name={p.name} size={44} radius={10} />
+          <PlayerPhoto key={p.id} photo={null} name={p.name} size={44} radius={10} decorative />
         ))}
       </span>
       <span className="min-w-0">

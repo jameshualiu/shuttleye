@@ -12,6 +12,7 @@ from pro_profiles.doubles_findings import (
     WEAKNESS_GAP,
     all_keys,
     display_last_name,
+    full_name,
     given_name,
     pair_name,
     pair_summary,
@@ -331,6 +332,39 @@ def test_pair_name_shared_last_name_uses_given_names():
     )
 
 
+def test_pair_name_clash_uses_full_name_of_varying_partner():
+    players = {
+        "14": DPlayer("14", "BAEK Ha Na", "BAEK", "Female", "Korea"),
+        "15": DPlayer("15", "LEE Yu Lim", "LEE", "Female", "Korea"),
+        "33": DPlayer("33", "Lee So Hee", "Lee", "Female", "Korea"),
+        "62": DPlayer("62", "LEE Yang", "LEE", "Male", "X"),
+        "1": DPlayer("1", "BAEK Other", "BAEK", "Male", "X"),
+    }
+    pairs = {
+        "sh": Pair("sh", "WD", ("14", "33")),
+        "yl": Pair("yl", "WD", ("14", "15")),
+        "md": Pair("md", "MD", ("1", "62")),  # same short name, other event
+    }
+    assert pair_name("sh", pairs, players, {}, " / ", {}) == "Baek / Lee So Hee"
+    assert pair_name("yl", pairs, players, {}, " / ", {}) == "Baek / Lee Yu Lim"
+    assert pair_name("md", pairs, players, {}, " / ", {}) == "Baek / Lee"
+    # Without the clash, the short name.
+    assert pair_name("sh", {"sh": pairs["sh"]}, players, {}, " / ", {}) == "Baek / Lee"
+
+
+def test_full_name():
+    kim = DPlayer("85", "ASTRUP Kim", "ASTRUP", "Male", "Denmark")
+    assert full_name(kim) == "Kim Astrup"  # the content override
+    assert full_name(kim, {}) == "Astrup Kim"
+    assert full_name(DPlayer("5", "KIM Gi Jung", "KIM", "Male", "Korea"), {}) == "Kim Gi Jung"
+    assert display_last_name(kim) == "Astrup"
+    full = load_content("doubles_full_names")
+    assert {k: v for k, v in full.items() if not k.startswith("_")} == {
+        "28": "Shevon Jemie Lai", "85": "Kim Astrup", "86": "Anders Skaarup Rasmussen",
+        "87": "Vinson Chiu", "88": "Joshua Yuan",
+    }
+
+
 def test_summary_never_pairs_first4_share_with_first4_win_rate():
     top = lambda v, rest: [v] + [rest] * 9  # noqa: E731
     # first4.share and first4.win_rate tie at the top; the rally finding is
@@ -389,8 +423,8 @@ def test_real_pairs():
                 assert text and "{" not in text and " far " not in text
     found = select_pair_findings("baek-lee-sh", all_stats, pairs)
     assert pair_summary("baek-lee-sh", found, pairs, players) == (
-        "Baek and Lee serve short more than any other pair and win more of the rallies "
-        "they serve than any other pair."
+        "Baek and Lee So Hee serve short more than any other pair and win more of the "
+        "rallies they serve than any other pair."
     )
     # Weakness = largest gap below typical (unrounded, >= 3 points).
     weak = {
@@ -410,4 +444,6 @@ def test_real_pairs():
     }
     assert pair_name("aimsaard-aimsaard", pairs, players) == "Benyapa and Nuntakarn Aimsaard"
     assert pair_name("pearly-tan-muralitharan", pairs, players) == "Tan and Muralitharan"
+    assert pair_name("baek-lee-sh", pairs, players, sep=" / ") == "Baek / Lee So Hee"
+    assert pair_name("baek-lee-yl", pairs, players, sep=" / ") == "Baek / Lee Yu Lim"
     assert players["44"].last_name == "Pearly Tan"  # the id the display override targets

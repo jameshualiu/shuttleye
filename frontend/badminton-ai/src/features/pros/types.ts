@@ -167,6 +167,16 @@ export type PairMeasureKey =
 // Shares are 0-100. null means under the minimum sample (30 serves, returns or rallies).
 export type Share = number | null;
 
+/** Keys of PairView.samples: every measure, the display distributions and (XD only) the mixed splits. */
+export type PairSampleKey =
+  | PairMeasureKey
+  | "serve.placement"
+  | "receive.mix"
+  | "points.lost"
+  | "points.won"
+  | "mixed.serve_by"
+  | "mixed.receive_by";
+
 export type PairView = {
   kind: ViewKind;
   rallies: number;
@@ -196,6 +206,8 @@ export type PairView = {
     pointsWon: { winner: Share; oppError: Share };
   };
   ranks: Partial<Record<PairMeasureKey, { rank: number; of: number; typical: number }>>;
+  /** The count behind each value: serves, returns, rallies or shots. mixed.* only for XD. */
+  samples: Partial<Record<PairSampleKey, number>>;
   typical: Partial<Record<PairMeasureKey, number>>;
   findings: Finding[]; // clips are always [] for doubles
 };

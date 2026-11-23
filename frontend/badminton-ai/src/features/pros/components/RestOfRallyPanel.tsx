@@ -1,7 +1,7 @@
-import { compare, count, isShown, pct } from "../pairFormat";
+import { compare, isRallyFinding, isShown, pct, sample } from "../pairFormat";
 import type { PairPlayer, PairView } from "../types";
 import { Panel } from "./Panel";
-import { ShareList, StatRow, Subsection } from "./PairStat";
+import { FindingList, ShareList, StatRow, Subsection } from "./PairStat";
 
 type RestOfRallyPanelProps = {
   view: PairView;
@@ -60,12 +60,18 @@ function Roles({ view, players }: RestOfRallyPanelProps) {
 
 export function RestOfRallyPanel({ view, players, className }: RestOfRallyPanelProps) {
   const { rest } = view;
+  const findings = view.findings.filter(isRallyFinding);
   return (
     <Panel
       title="The rest of the rally"
-      subtitle={count(view.rallies, "rally", "rallies")}
+      subtitle="Their shots after the serve, who plays them and how points end."
       className={className}
     >
+      {findings.length > 0 && (
+        <Subsection title="What stands out" className="mb-8">
+          <FindingList findings={findings} className="grid-cols-2 max-[900px]:grid-cols-1" />
+        </Subsection>
+      )}
       <div className="grid grid-cols-3 gap-x-10 gap-y-8 max-[1180px]:grid-cols-2 max-[760px]:grid-cols-1">
         <Subsection title="How they play">
           <StatRow
@@ -89,10 +95,12 @@ export function RestOfRallyPanel({ view, players, className }: RestOfRallyPanelP
         <Subsection title="How points end">
           <ShareList
             title="Points lost"
+            sample={sample(view, "points.lost")}
             rows={lostLabels.map(([key, label]) => ({ label, value: rest.pointsLost[key] ?? null }))}
           />
           <ShareList
             title="Points won"
+            sample={sample(view, "points.won")}
             rows={[
               { label: "Their winner", value: rest.pointsWon.winner },
               { label: "Opponent's error", value: rest.pointsWon.oppError },

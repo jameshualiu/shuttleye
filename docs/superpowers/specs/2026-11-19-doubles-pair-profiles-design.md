@@ -241,3 +241,4 @@ Doubles players aren't linked to singles player profiles, even when the same per
 - Doubles player photos.
 - Per-player views across partners.
 - Court maps of serve placement.
+- Clips: wire `clip_sources_doubles.json` into the build (currently unread).

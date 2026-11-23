@@ -53,6 +53,12 @@ def _display_names() -> dict:
     return {k: v for k, v in names.items() if not k.startswith("_")}
 
 
+@cache
+def _full_names() -> dict:
+    names = load_content("doubles_full_names")
+    return {k: v for k, v in names.items() if not k.startswith("_")}
+
+
 def all_keys() -> list[str]:
     """Every finding key select_pair_findings can produce."""
     return [f"{m}.{side}" for m in SHARES for side in ("top", "bottom")] + [
@@ -230,17 +236,52 @@ def given_name(player: DPlayer, names: dict[str, str] | None = None) -> str:
     return _title(rest) if rest.isupper() else rest
 
 
-def pair_name(
-    pair_id: str, pairs: dict[str, Pair], players: dict[str, DPlayer],
-    names: dict[str, str] | None = None, sep: str = " and ",
+def full_name(player: DPlayer, full: dict[str, str] | None = None) -> str:
+    """The player's display full name. `full` (default: the doubles_full_names
+    content) overrides by player id, for Western players stored surname-first
+    ("ASTRUP Kim" -> "Kim Astrup"). Otherwise player.csv's name with all-capital
+    words (the surname in "KIM Gi Jung") title-cased."""
+    full = _full_names() if full is None else full
+    if player.id in full:
+        return full[player.id]
+    return " ".join(_title(w) if w.isupper() else w for w in player.name.split())
+
+
+def _short_name(
+    pair: Pair, players: dict[str, DPlayer], names: dict[str, str] | None, sep: str
 ) -> str:
-    """"Baek and Lee"; partners sharing a last name get their given names:
-    "Benyapa and Nuntakarn Aimsaard". `sep` joins the two ("Baek / Lee")."""
-    a, b = (players[p] for p in pairs[pair_id].players)
+    a, b = (players[p] for p in pair.players)
     la, lb = display_last_name(a, names), display_last_name(b, names)
     if la.casefold() == lb.casefold():
         return f"{given_name(a, names)}{sep}{given_name(b, names)} {la}"
     return f"{la}{sep}{lb}"
+
+
+def pair_name(
+    pair_id: str, pairs: dict[str, Pair], players: dict[str, DPlayer],
+    names: dict[str, str] | None = None, sep: str = " and ",
+    full: dict[str, str] | None = None,
+) -> str:
+    """"Baek and Lee"; partners sharing a last name get their given names:
+    "Benyapa and Nuntakarn Aimsaard". `sep` joins the two ("Baek / Lee").
+    When another pair in the same event would get the same name, each partner
+    who is not in both pairs is shown by full name: "Baek and Lee So Hee" next
+    to "Baek and Lee Yu Lim". The one name helper for pair pages, tournament
+    pages, filter labels and summaries."""
+    pair = pairs[pair_id]
+    mine = _short_name(pair, players, names, sep).casefold()
+    clash = [
+        q for qid, q in pairs.items()
+        if qid != pair_id and q.event == pair.event
+        and _short_name(q, players, names, sep).casefold() == mine
+    ]
+    if not clash:
+        return _short_name(pair, players, names, sep)
+    common = set(pair.players).intersection(*(q.players for q in clash))
+    return sep.join(
+        display_last_name(players[p], names) if p in common else full_name(players[p], full)
+        for p in pair.players
+    )
 
 
 def pair_summary(

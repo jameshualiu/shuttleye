@@ -92,7 +92,8 @@ and `git diff`. CI's singles stale check ignores the `doubles/` folder.
 
 **Content files:** `doubles_tournaments.json` (DShuttleNet tournament ids to
 edition ids, plus names for doubles-only editions and match overrides),
-`doubles_player_aliases.json`, `doubles_display_names.json`,
+`doubles_player_aliases.json`, `doubles_display_names.json` (short last names),
+`doubles_full_names.json` (given-name-first full names for Western players),
 `doubles_templates.json`, `doubles_tips.json`, `clip_sources_doubles.json`
 (empty until doubles clips exist).
 
