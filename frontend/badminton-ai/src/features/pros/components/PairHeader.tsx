@@ -38,7 +38,7 @@ export function PairHeader({ pair, viewId, onViewChange }: PairHeaderProps) {
     <header className="flex items-start justify-between gap-8 pb-8 max-[900px]:flex-col max-[900px]:gap-4">
       <div className="flex min-w-0 flex-1 items-start gap-8 max-[900px]:flex-col max-[900px]:gap-4">
         <Tiles pair={pair} size={88} radius={16} className="max-[900px]:hidden" />
-        <Tiles pair={pair} size={64} radius={14} className="min-[901px]:hidden" />
+        <Tiles pair={pair} size={64} radius={14} className="min-[900px]:hidden" />
         <div className="min-w-0">
           <h1 className="text-[48px] font-semibold leading-[1.05] tracking-[-0.035em] max-[900px]:text-[36px] max-[760px]:text-[30px]">
             {pairName(pair.players)}

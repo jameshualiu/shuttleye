@@ -44,7 +44,7 @@ export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderPro
           name={player.name}
           size={88}
           radius={16}
-          className="min-[901px]:hidden"
+          className="min-[900px]:hidden"
         />
         <div className="min-w-0">
           <h1 className="text-[56px] font-semibold leading-none tracking-[-0.04em] max-[900px]:text-[44px]">
