@@ -76,8 +76,8 @@ function Body() {
 export default function PairsPage() {
   return (
     <ProShell source="doubles">
-      <title>Pro pairs | Shuttleye</title>
-      <h1 className="text-[32px] font-semibold tracking-tight">Pro pairs</h1>
+      <title>Doubles pairs | Shuttleye</title>
+      <h1 className="text-[32px] font-semibold tracking-tight">Doubles pairs</h1>
       <p className="mt-2 text-muted-foreground">
         Doubles pairs from BWF World Tour matches, 2022 to 2025.
       </p>

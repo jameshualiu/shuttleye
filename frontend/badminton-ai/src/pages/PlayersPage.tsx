@@ -87,8 +87,8 @@ function Body() {
 export default function PlayersPage() {
   return (
     <ProShell>
-      <title>Pro players | Shuttleye</title>
-      <h1 className="text-[32px] font-semibold tracking-tight">Pro players</h1>
+      <title>Singles players | Shuttleye</title>
+      <h1 className="text-[32px] font-semibold tracking-tight">Singles players</h1>
       <p className="mt-2 text-muted-foreground">
         Singles players from BWF World Tour matches, 2018 to 2022.
       </p>

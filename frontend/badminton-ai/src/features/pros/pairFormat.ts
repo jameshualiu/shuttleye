@@ -1,4 +1,4 @@
-import type { Finding, PairEvent, PairIndexPlayer, PairMeasureKey, PairSampleKey, PairView, Share } from "./types";
+import type { PairEvent, PairIndexPlayer, PairMeasureKey, PairSampleKey, PairView, Share } from "./types";
 
 // Display helpers for the doubles pages. They format JSON values; no statistics here.
 
@@ -74,6 +74,3 @@ export const compare = (view: PairView, key: PairMeasureKey) => ({
   rank: view.ranks[key],
   sample: sample(view, key),
 });
-
-/** rally.* findings belong to the rest-of-the-rally panel; the rest to serve & receive. */
-export const isRallyFinding = (f: Finding) => f.key.startsWith("rally.");

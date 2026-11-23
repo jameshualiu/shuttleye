@@ -98,7 +98,7 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
                 : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
             }`}
           >
-            Players
+            Singles
           </Link>
           <Link
             to="/pairs"
@@ -109,7 +109,7 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
                 : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
             }`}
           >
-            Pairs
+            Doubles
           </Link>
           <Link
             to="/tournaments"

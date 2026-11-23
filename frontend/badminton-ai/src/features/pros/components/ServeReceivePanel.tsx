@@ -1,17 +1,9 @@
-import { compare, isRallyFinding, sample } from "../pairFormat";
+import { useState } from "react";
+import { compare, sample } from "../pairFormat";
 import type { Finding, PairPlayer, PairView } from "../types";
+import { KindBadge } from "./FindingsPanel";
 import { Panel } from "./Panel";
-import { FindingList, ShareList, StatRow, Subsection } from "./PairStat";
-
-type ServeReceivePanelProps = {
-  view: PairView;
-  players: [PairPlayer, PairPlayer];
-  /** False for one-match pairs: no ranks, findings or summary. */
-  ranked: boolean;
-  /** True in a tournament or match view. */
-  filtered: boolean;
-  className?: string;
-};
+import { Group, MoreDetails, ShareList, StatRow, StatStack } from "./PairStat";
 
 const placementLabels = [
   ["centre", "Centre"],
@@ -31,141 +23,148 @@ const returnLabels: [string, string][] = [
   ["drop", "Drop"],
 ];
 
-/** Serve, receive and first-4 findings; rally.* ones are in the rest-of-the-rally panel. */
-function Findings({ findings, ranked, filtered }: { findings: Finding[]; ranked: boolean; filtered: boolean }) {
-  const mine = findings.filter((f) => !isRallyFinding(f));
-  const empty = filtered
-    ? "Findings use all matches. Choose All matches to see them."
-    : ranked
-      ? findings.length > 0
-        ? "Nothing about their serve or receive stands far out from other pairs."
-        : "Nothing stands far out from other pairs in this data."
-      : "Not ranked: only one match in the data.";
+type CardProps = { view: PairView; className?: string };
+type PairCardProps = CardProps & { players: [PairPlayer, PairPlayer] };
+
+type FindingsCardProps = {
+  findings: Finding[];
+  /** False for one-match pairs: no ranks, findings or summary. */
+  ranked: boolean;
+  /** True in a tournament or match view. */
+  filtered: boolean;
+  className?: string;
+};
+
+/** What stands out, in the singles style: pick a finding to see its tip. */
+export function PairFindingsPanel({ findings, ranked, filtered, className }: FindingsCardProps) {
+  const [selected, setSelected] = useState(0);
+  const finding = findings[selected];
+
+  if (findings.length === 0) {
+    const empty = filtered
+      ? "Findings use all matches. Choose All matches to see them."
+      : ranked
+        ? "Nothing stands far out from other pairs in this data."
+        : "Not ranked: only one match in the data.";
+    return (
+      <Panel title="What stands out" className={className}>
+        <p className="text-muted-foreground">{empty}</p>
+      </Panel>
+    );
+  }
 
   return (
-    <Subsection title="What stands out">
-      {mine.length === 0 ? <p className="text-muted-foreground">{empty}</p> : <FindingList findings={mine} />}
-    </Subsection>
+    <Panel title="What stands out" subtitle="Pick one for a tip" className={className}>
+      <ul className="grid gap-1">
+        {findings.map((f, i) => (
+          <li key={f.key}>
+            <button
+              type="button"
+              aria-pressed={i === selected}
+              onClick={() => setSelected(i)}
+              className="grid min-h-11 w-full cursor-pointer grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 rounded-xl p-4 text-left transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-pressed:bg-muted"
+            >
+              <span className="font-medium">
+                <KindBadge kind={f.kind} />
+                {f.claim}
+              </span>
+              <span className="font-semibold tabular-nums">{f.figure}</span>
+              <span className="col-span-full text-sm text-muted-foreground">{f.comparison}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {finding?.tip && (
+        <p aria-live="polite" className="mt-4 rounded-xl border border-border p-4">
+          <strong className="font-semibold">Try this.</strong> {finding.tip}
+        </p>
+      )}
+    </Panel>
   );
 }
 
-/** Who serves / who receives, by the man's and woman's share (mixed doubles only). */
-function MixedSplit({ view, players }: { view: PairView; players: [PairPlayer, PairPlayer] }) {
+type MixedSplitProps = PairCardProps & {
+  title: string;
+  split: "serveBy" | "receiveBy";
+  sampleKey: "mixed.serve_by" | "mixed.receive_by";
+};
+
+/** Mixed doubles only: the man's and woman's share of a pair's serves or returns. */
+function MixedSplit({ view, players, title, split, sampleKey }: MixedSplitProps) {
   if (!view.mixed) return null;
-  const man = players.find((p) => p.gender === "Male");
-  const woman = players.find((p) => p.gender === "Female");
-  const manName = man?.name ?? "The man";
-  const womanName = woman?.name ?? "The woman";
-  const { serveBy, receiveBy } = view.mixed;
-
+  const man = players.find((p) => p.gender === "Male")?.name ?? "The man";
+  const woman = players.find((p) => p.gender === "Female")?.name ?? "The woman";
+  const shares = view.mixed[split];
   return (
-    <div className="grid grid-cols-2 gap-x-10 gap-y-6 max-[760px]:grid-cols-1">
-      <Subsection title="Who serves">
-        <ShareList
-          title="Share of their serves"
-          sample={sample(view, "mixed.serve_by")}
-          rows={[
-            { label: manName, value: serveBy.man },
-            { label: womanName, value: serveBy.woman },
-          ]}
-        />
-      </Subsection>
-      <Subsection title="Who receives">
-        <ShareList
-          title="Share of their returns"
-          sample={sample(view, "mixed.receive_by")}
-          rows={[
-            { label: manName, value: receiveBy.man },
-            { label: womanName, value: receiveBy.woman },
-          ]}
-        />
-      </Subsection>
-    </div>
+    <Group title={title}>
+      <ShareList
+        sample={sample(view, sampleKey)}
+        rows={[
+          { label: man, value: shares.man },
+          { label: woman, value: shares.woman },
+        ]}
+      />
+    </Group>
   );
 }
 
-export function ServeReceivePanel({ view, players, ranked, filtered, className }: ServeReceivePanelProps) {
-  const { serve, receive, first4 } = view;
-
+export function ServePanel({ view, players, className }: PairCardProps) {
+  const { serve } = view;
   return (
-    <Panel
-      title="Serve & receive"
-      subtitle="Where doubles rallies are won and lost: the serve, the return and the first shots after them."
-      className={className}
-    >
-      <div className="grid grid-cols-12 gap-x-10 gap-y-8 max-[1180px]:grid-cols-1">
-        <div className="col-span-4 min-w-0 max-[1180px]:col-span-1">
-          <Findings findings={view.findings} ranked={ranked} filtered={filtered} />
-        </div>
+    <Panel title="When they serve" className={className}>
+      <StatStack>
+        <StatRow label="Short serves" value={serve.shortShare} {...compare(view, "serve.short_share")} />
+        <StatRow label="Rallies won" value={serve.winRate} {...compare(view, "serve.win_rate")} />
+        <StatRow
+          label="Third shot hit down"
+          hint="A smash, drop or push"
+          value={serve.thirdDown}
+          {...compare(view, "serve.third_down")}
+        />
+      </StatStack>
+      <MixedSplit view={view} players={players} title="Who serves" split="serveBy" sampleKey="mixed.serve_by" />
+      <MoreDetails title="Where the receiver met the serve">
+        <ShareList
+          sample={sample(view, "serve.placement")}
+          rows={placementLabels.map(([key, label]) => ({ label, value: serve.placement[key] }))}
+        />
+      </MoreDetails>
+    </Panel>
+  );
+}
 
-        <div className="col-span-8 grid min-w-0 gap-y-8 max-[1180px]:col-span-1">
-          <div className="grid grid-cols-2 gap-x-10 gap-y-8 max-[760px]:grid-cols-1">
-            <Subsection title="When they serve">
-              <StatRow label="Short serves" value={serve.shortShare} {...compare(view, "serve.short_share")} />
-              <StatRow
-                label="Rallies won"
-                hint="Of the rallies they serve"
-                value={serve.winRate}
-                {...compare(view, "serve.win_rate")}
-              />
-              <StatRow
-                label="Third shot down"
-                hint="Their third shot is a smash, drop or push"
-                value={serve.thirdDown}
-                {...compare(view, "serve.third_down")}
-              />
-              <ShareList
-                title="Where the receiver met the serve"
-                sample={sample(view, "serve.placement")}
-                rows={placementLabels.map(([key, label]) => ({ label, value: serve.placement[key] }))}
-              />
-            </Subsection>
+export function ReceivePanel({ view, players, className }: PairCardProps) {
+  const { receive } = view;
+  return (
+    <Panel title="When they receive" className={className}>
+      <StatStack>
+        <StatRow
+          label="Attacking returns"
+          hint="A smash, drop or push off the serve"
+          value={receive.attackShare}
+          {...compare(view, "receive.attack_share")}
+        />
+        <StatRow label="Rallies won" value={receive.winRate} {...compare(view, "receive.win_rate")} />
+      </StatStack>
+      <MixedSplit view={view} players={players} title="Who receives" split="receiveBy" sampleKey="mixed.receive_by" />
+      <MoreDetails title="Return mix">
+        <ShareList
+          sample={sample(view, "receive.mix")}
+          rows={returnLabels.map(([key, label]) => ({ label, value: receive.mix[key] ?? null }))}
+        />
+      </MoreDetails>
+    </Panel>
+  );
+}
 
-            <Subsection title="When they receive">
-              <StatRow
-                label="Attacking returns"
-                hint="A smash, drop or push off the serve"
-                value={receive.attackShare}
-                {...compare(view, "receive.attack_share")}
-              />
-              <StatRow
-                label="Rallies won"
-                hint="Of the rallies they receive"
-                value={receive.winRate}
-                {...compare(view, "receive.win_rate")}
-              />
-              <ShareList
-                title="Return mix"
-                sample={sample(view, "receive.mix")}
-                rows={returnLabels.map(([key, label]) => ({ label, value: receive.mix[key] ?? null }))}
-              />
-            </Subsection>
-          </div>
-
-          <Subsection title="First 4 shots">
-            <div className="grid grid-cols-2 gap-x-10 max-[760px]:grid-cols-1">
-              <div>
-                <StatRow
-                  label="Rallies over within 4 shots"
-                  hint="Of the rallies with a known winner"
-                  value={first4.share}
-                  {...compare(view, "first4.share")}
-                />
-              </div>
-              <div>
-                <StatRow
-                  label="Won of those rallies"
-                  hint="Rallies of 4 shots or fewer"
-                  value={first4.winRate}
-                  {...compare(view, "first4.win_rate")}
-                />
-              </div>
-            </div>
-          </Subsection>
-
-          <MixedSplit view={view} players={players} />
-        </div>
-      </div>
+export function First4Panel({ view, className }: CardProps) {
+  const { first4 } = view;
+  return (
+    <Panel title="The first 4 shots" subtitle="The serve, the return and the next two" className={className}>
+      <StatStack>
+        <StatRow label="Rallies over within 4 shots" value={first4.share} {...compare(view, "first4.share")} />
+        <StatRow label="Won of those rallies" value={first4.winRate} {...compare(view, "first4.win_rate")} />
+      </StatStack>
     </Panel>
   );
 }

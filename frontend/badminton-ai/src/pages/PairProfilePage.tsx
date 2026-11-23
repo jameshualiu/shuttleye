@@ -1,13 +1,27 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Panel } from "@/features/pros/components/Panel";
 import { PairHeader } from "@/features/pros/components/PairHeader";
 import { ProShell } from "@/features/pros/components/ProShell";
-import { RestOfRallyPanel } from "@/features/pros/components/RestOfRallyPanel";
-import { ServeReceivePanel } from "@/features/pros/components/ServeReceivePanel";
+import { AttackPanel, PointsPanel } from "@/features/pros/components/RestOfRallyPanel";
+import {
+  First4Panel,
+  PairFindingsPanel,
+  ReceivePanel,
+  ServePanel,
+} from "@/features/pros/components/ServeReceivePanel";
 import { useProData } from "@/features/pros/hooks/useProData";
 import { pairName } from "@/features/pros/pairFormat";
 import { fetchPair } from "@/features/pros/proData";
 import type { PairProfile } from "@/features/pros/types";
+
+// Serve and receive lead (first row); the rest of the rally follows.
+const span = {
+  findings: "col-span-4 max-[1180px]:col-span-12",
+  card: "col-span-4 max-[1180px]:col-span-6 max-[760px]:col-span-12",
+  // No findings: a slim note across the top, and the last two cards share the second row.
+  note: "col-span-12",
+  half: "col-span-6 max-[760px]:col-span-12",
+  points: "col-span-4 max-[1180px]:col-span-12",
+};
 
 function Profile({ pair }: { pair: PairProfile }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +29,7 @@ function Profile({ pair }: { pair: PairProfile }) {
   const viewId = pair.views[requested] ? requested : "all";
   const view = pair.views[viewId];
   const filtered = viewId !== "all";
+  const hasFindings = (view?.findings.length ?? 0) > 0;
 
   const changeView = (id: string) => {
     setSearchParams(
@@ -34,19 +49,17 @@ function Profile({ pair }: { pair: PairProfile }) {
       <PairHeader pair={pair} viewId={viewId} onViewChange={changeView} />
       {view && (
         <div key={viewId} className="grid grid-cols-12 gap-6 max-[900px]:gap-4">
-          <ServeReceivePanel
-            view={view}
-            players={pair.players}
+          <PairFindingsPanel
+            findings={view.findings}
             ranked={pair.ranked}
             filtered={filtered}
-            className="col-span-12"
+            className={hasFindings ? span.findings : span.note}
           />
-          <RestOfRallyPanel view={view} players={pair.players} className="col-span-12" />
-          <Panel title="Watch" className="col-span-12">
-            <p className="text-muted-foreground">
-              Clips for doubles are coming. They'll be added match by match.
-            </p>
-          </Panel>
+          <ServePanel view={view} players={pair.players} className={span.card} />
+          <ReceivePanel view={view} players={pair.players} className={span.card} />
+          <First4Panel view={view} className={span.card} />
+          <AttackPanel view={view} players={pair.players} className={hasFindings ? span.card : span.half} />
+          <PointsPanel view={view} className={hasFindings ? span.points : span.half} />
         </div>
       )}
     </>
