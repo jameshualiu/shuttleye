@@ -133,3 +133,110 @@ export type Tournament = {
   matches: TournamentMatch[];
   players: { id: string; name: string; event: ProEvent }[];
 };
+
+// Doubles pair JSON contract (data-flow.md section 6).
+// Producer: tools/pro_profiles/doubles_build.py. Keep names identical.
+
+export type PairEvent = "MD" | "WD" | "XD";
+
+export type PairIndexEntry = {
+  id: string;
+  event: PairEvent;
+  players: [PairIndexPlayer, PairIndexPlayer];
+  matches: number;
+  ranked: boolean;
+};
+
+export type PairIndexPlayer = { id: string; name: string; nationality: string };
+
+export type PairIndex = { pairs: PairIndexEntry[] };
+
+export type PairPlayer = PairIndexPlayer & { gender: string };
+
+export type PairMeasureKey =
+  | "serve.short_share"
+  | "serve.win_rate"
+  | "serve.third_down"
+  | "receive.attack_share"
+  | "receive.win_rate"
+  | "first4.share"
+  | "first4.win_rate"
+  | "rally.attack_share"
+  | "rally.formation_attack";
+
+// Shares are 0-100. null means under the minimum sample (30 serves, returns or rallies).
+export type Share = number | null;
+
+export type PairView = {
+  kind: ViewKind;
+  rallies: number;
+  serve: {
+    shortShare: Share;
+    winRate: Share;
+    thirdDown: Share;
+    placement: { centre: Share; middle: Share; wide: Share; backCentre: Share; backWide: Share };
+    serves: number;
+  };
+  receive: {
+    attackShare: Share;
+    winRate: Share;
+    mix: Record<string, Share>;
+    returns: number;
+  };
+  first4: { share: Share; winRate: Share };
+  mixed: {
+    serveBy: { man: Share; woman: Share };
+    receiveBy: { man: Share; woman: Share };
+  } | null;
+  rest: {
+    attackShare: Share;
+    formationAttack: Share;
+    roles: { playerId: string; smashShare: Share; netShare: Share }[];
+    pointsLost: Record<string, Share>;
+    pointsWon: { winner: Share; oppError: Share };
+  };
+  ranks: Partial<Record<PairMeasureKey, { rank: number; of: number; typical: number }>>;
+  typical: Partial<Record<PairMeasureKey, number>>;
+  findings: Finding[]; // clips are always [] for doubles
+};
+
+export type PairProfile = {
+  id: string;
+  event: PairEvent;
+  players: [PairPlayer, PairPlayer];
+  context: PlayerContext;
+  ranked: boolean;
+  summary: string | null;
+  filters: PlayerFilter[];
+  views: Record<string, PairView>;
+};
+
+export type DoublesTournamentEdition = {
+  id: string;
+  name: string;
+  season: number;
+  doublesMatches: number;
+};
+
+export type DoublesTournamentIndex = { editions: DoublesTournamentEdition[] };
+
+export type PairRef = { id: string; names: string };
+
+export type DoublesTournamentMatch = {
+  id: string;
+  event: PairEvent;
+  round: string;
+  date: string;
+  winner: PairRef;
+  loser: PairRef;
+  games: [number, number][];
+  incomplete: number[];
+};
+
+export type DoublesTournament = {
+  id: string;
+  name: string;
+  season: number;
+  matches: DoublesTournamentMatch[];
+  pairs: { id: string; event: PairEvent; names: string }[];
+};

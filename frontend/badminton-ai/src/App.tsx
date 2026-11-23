@@ -14,6 +14,8 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const AnalysisPage = lazy(() => import("./pages/AnalysisPage"));
 const PlayerProfilePage = lazy(() => import("./pages/PlayerProfilePage"));
 const PlayersPage = lazy(() => import("./pages/PlayersPage"));
+const PairsPage = lazy(() => import("./pages/PairsPage"));
+const PairProfilePage = lazy(() => import("./pages/PairProfilePage"));
 const TournamentsPage = lazy(() => import("./pages/TournamentsPage"));
 const TournamentPage = lazy(() => import("./pages/TournamentPage"));
 const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
@@ -48,6 +50,8 @@ function ThemedApp() {
             <Route path="/analysis/:videoId" element={<AnalysisPage />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/players/:playerId" element={<PlayerProfilePage />} />
+            <Route path="/pairs" element={<PairsPage />} />
+            <Route path="/pairs/:pairId" element={<PairProfilePage />} />
             <Route path="/tournaments" element={<TournamentsPage />} />
             <Route path="/tournaments/:editionId" element={<TournamentPage />} />
           </Route>

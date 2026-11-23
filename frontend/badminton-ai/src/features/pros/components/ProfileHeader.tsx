@@ -28,7 +28,6 @@ function contextLine(player: PlayerProfile): string {
 export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderProps) {
   const filtered = viewId !== "all";
   const eventLabel = player.event === "WS" ? "Women's" : "Men's";
-  const allFilters = player.filters.filter((f) => f.kind === "all");
 
   return (
     <header className="flex items-start justify-between gap-8 pb-8 max-[900px]:flex-col max-[900px]:gap-4">
@@ -62,48 +61,64 @@ export function ProfileHeader({ player, viewId, onViewChange }: ProfileHeaderPro
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-2 max-[900px]:items-start">
-        <label htmlFor="match-filter" className="sr-only">
-          Matches
-        </label>
-        <div className="relative">
-          <select
-            id="match-filter"
-            value={viewId}
-            onChange={(e) => onViewChange(e.target.value)}
-            className={cn(
-              "min-h-11 max-w-[320px] cursor-pointer appearance-none truncate rounded-full border border-border bg-card py-2.5 pl-4 pr-10 text-[15px] text-foreground",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-            )}
-          >
-            {allFilters.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.label}
-              </option>
-            ))}
-            {groups.map((g) => {
-              const items = player.filters.filter((f) => f.kind === g.kind);
-              if (items.length === 0) return null;
-              return (
-                <optgroup key={g.kind} label={g.label}>
-                  {items.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-          </select>
-          <ChevronDown
-            aria-hidden="true"
-            className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-        </div>
-        {filtered && (
-          <p className="text-sm text-muted-foreground">Rankings and findings use all matches.</p>
-        )}
-      </div>
+      <MatchFilter filters={player.filters} viewId={viewId} onViewChange={onViewChange} />
     </header>
+  );
+}
+
+type MatchFilterProps = {
+  filters: PlayerFilter[];
+  viewId: string;
+  onViewChange: (viewId: string) => void;
+};
+
+/** The "All matches / Tournaments / Matches" select, shared by player and pair headers. */
+export function MatchFilter({ filters, viewId, onViewChange }: MatchFilterProps) {
+  const filtered = viewId !== "all";
+  const allFilters = filters.filter((f) => f.kind === "all");
+
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-2 max-[900px]:items-start">
+      <label htmlFor="match-filter" className="sr-only">
+        Matches
+      </label>
+      <div className="relative">
+        <select
+          id="match-filter"
+          value={viewId}
+          onChange={(e) => onViewChange(e.target.value)}
+          className={cn(
+            "min-h-11 max-w-[320px] cursor-pointer appearance-none truncate rounded-full border border-border bg-card py-2.5 pl-4 pr-10 text-[15px] text-foreground",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          )}
+        >
+          {allFilters.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+          {groups.map((g) => {
+            const items = filters.filter((f) => f.kind === g.kind);
+            if (items.length === 0) return null;
+            return (
+              <optgroup key={g.kind} label={g.label}>
+                {items.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
+        </select>
+        <ChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+      </div>
+      {filtered && (
+        <p className="text-sm text-muted-foreground">Rankings and findings use all matches.</p>
+      )}
+    </div>
   );
 }
