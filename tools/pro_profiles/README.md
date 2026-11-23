@@ -59,3 +59,44 @@ domain, and only after a human approves each one. Run from `tools/`:
    into `public/pro-data/photos/`.
 5. Rebuild the JSON (see Run it) and commit `photos.json`, the images and the
    JSON. CI excludes `photos/` from its diff because the build does not write it.
+
+## Doubles pair profiles
+
+A second build, `doubles_build.py`, reads the DShuttleNet dataset and writes the
+doubles pair and tournament JSON to `public/pro-data/doubles/` (`LICENSE`,
+`pairs/`, `tournaments/`). It is separate from the singles build and never
+writes outside `--out`. The contract is in `data-flow.md`, section 6.
+
+**Get the data.** DShuttleNet is on Kaggle
+(`anonymousay58dki/dshuttlenet`, <https://www.kaggle.com/datasets/anonymousay58dki/dshuttlenet>).
+Downloading needs a free Kaggle sign-in. Unzip it and keep the seven CSVs
+(`match`, `player`, `rally`, `set`, `shot`, `shot_merge_all`, `tournament`) in
+one directory. The CSVs are not committed.
+
+**Checksums.** The uploader is anonymous, so the dataset could change.
+`content/doubles_checksums.json` records each file's SHA-256, and the build
+verifies them first and stops with a `ChecksumError` on any difference. If the
+dataset legitimately changes, inspect it before updating the checksums.
+
+**Run it.** From `tools/`:
+
+```bash
+python -m pro_profiles.doubles_build --source <dir with the CSVs> --out ../frontend/badminton-ai/public/pro-data/doubles
+DSHUTTLENET_DIR=<dir> python -m pytest pro_profiles/tests   # also runs the real-data doubles tests
+```
+
+`--source` defaults to `$DSHUTTLENET_DIR`. Output is deterministic. The fixture
+tests (`tests/fixtures/doubles_mini`) run without the dataset. CI does not
+download from Kaggle, so the committed doubles JSON is checked locally: rebuild
+and `git diff`. CI's singles stale check ignores the `doubles/` folder.
+
+**Content files:** `doubles_tournaments.json` (DShuttleNet tournament ids to
+edition ids, plus names for doubles-only editions and match overrides),
+`doubles_player_aliases.json`, `doubles_display_names.json`,
+`doubles_templates.json`, `doubles_tips.json`, `clip_sources_doubles.json`
+(empty until doubles clips exist).
+
+**Licence.** DShuttleNet is CC BY-NC-SA 4.0. The derived doubles JSON is shared
+under the same licence, for non-commercial use only, and `doubles/LICENSE`
+states it with the attribution the doubles pages show in their footer. Singles
+output keeps its own licence and attribution; no file mixes the two.

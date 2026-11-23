@@ -232,15 +232,15 @@ def given_name(player: DPlayer, names: dict[str, str] | None = None) -> str:
 
 def pair_name(
     pair_id: str, pairs: dict[str, Pair], players: dict[str, DPlayer],
-    names: dict[str, str] | None = None,
+    names: dict[str, str] | None = None, sep: str = " and ",
 ) -> str:
     """"Baek and Lee"; partners sharing a last name get their given names:
-    "Benyapa and Nuntakarn Aimsaard"."""
+    "Benyapa and Nuntakarn Aimsaard". `sep` joins the two ("Baek / Lee")."""
     a, b = (players[p] for p in pairs[pair_id].players)
     la, lb = display_last_name(a, names), display_last_name(b, names)
     if la.casefold() == lb.casefold():
-        return f"{given_name(a, names)} and {given_name(b, names)} {la}"
-    return f"{la} and {lb}"
+        return f"{given_name(a, names)}{sep}{given_name(b, names)} {la}"
+    return f"{la}{sep}{lb}"
 
 
 def pair_summary(

@@ -212,6 +212,43 @@ Rules: `findings` is non-empty only in the `all` view. `rallyBrowser` holds the 
 
 ---
 
+## 6. Doubles pair data (static JSON, CC BY-NC-SA)
+
+Independent of sections 1-5. **Producer:** `tools/pro_profiles/doubles_build.py` (see its README), which verifies the DShuttleNet CSV checksums first. **Consumer:** the frontend pair pages and the doubles part of tournament pages. Files live under `public/pro-data/doubles/` only, so none mixes the singles (MIT/ShuttleSet) and doubles (CC BY-NC-SA 4.0, DShuttleNet from Kaggle) licences; `doubles/LICENSE` states the licence and attribution. Keys are camelCase, files are compact and deterministic, shares are 0-100 rounded to 1 decimal. The singles `diff -r` stale check in CI ignores `doubles/`; the doubles JSON is rebuilt and checked locally.
+
+| File | Shape |
+|---|---|
+| `pairs/index.json` | `{ pairs: [{ id, event: "MD"\|"WD"\|"XD", players: [{ id, name, nationality }, x2], matches, ranked }] }`, by event, then the two names |
+| `pairs/<id>.json` | `{ id, event, players: [{ id, name, nationality, gender }, x2], context: { matches, firstYear, lastYear, comparedWith }, ranked, summary: string\|null, filters: [{ id, label, kind: "all"\|"tournament"\|"match", matches }], views: { <filterId>: PairView } }` |
+| `tournaments/index.json` | `{ editions: [{ id, name, season, doublesMatches }] }`, season descending then name |
+| `tournaments/<edition>.json` | `{ id, name, season, matches: [{ id, event, round, date, winner: { id, names }, loser: { id, names }, games: [[a,b],...], incomplete: [setIndex,...] }], pairs: [{ id, event, names }] }` |
+| `LICENSE` | CC BY-NC-SA 4.0, the footer attribution text and the Kaggle link |
+
+Edition ids match singles (`tournaments/<edition>.json` outside `doubles/`). For editions shared with singles, `name` and `season` come from `content/tournaments.json`; doubles-only editions take them from `content/doubles_tournaments.json`. A tournament page loads both files and treats a missing one as "none". `names` is the pair's display name, "Baek / Lee" (partners sharing a last name use given names: "Benyapa / Nuntakarn Aimsaard"). `games` and `incomplete` follow the singles rules (each set's maximum score, match winner first; `incomplete` marks sets that are not a finished game). Filter ids are `all`, `t:<edition_id>` and `m:<match_id>`; a match label reads "<Tournament> <season> <round> against <opponent pair>".
+
+```ts
+PairView = {
+  kind, rallies,                                  // rallies: those with a known winner
+  serve:   { shortShare, winRate, thirdDown, placement: { centre, middle, wide, backCentre, backWide }, serves },
+  receive: { attackShare, winRate, mix: { <shot type>: share }, returns },
+  first4:  { share, winRate },
+  mixed:   { serveBy: { man, woman }, receiveBy: { man, woman } } | null,   // XD only
+  rest:    { attackShare, formationAttack, roles: [{ playerId, smashShare, netShare }, x2],
+             pointsLost: { <reason>: share }, pointsWon: { winner, oppError } },
+  ranks:   { <measureKey>: { rank, of, typical } },
+  typical: { <measureKey>: number },
+  findings: Finding[]                              // singles Finding, clips always []
+}
+```
+
+Rules:
+- Every value is a number, or null below its minimum sample (30 serves, returns or rallies; distributions are null as a whole under 30). `serves` and `returns` are the counts behind `shortShare` and the return mix.
+- `measureKey` is one of `serve.short_share`, `serve.win_rate`, `serve.third_down`, `receive.attack_share`, `receive.win_rate`, `first4.share`, `first4.win_rate`, `rally.attack_share`, `rally.formation_attack`.
+- `ranks` and `findings` are non-empty only in the `all` view of a ranked pair (2 or more matches); they are empty in tournament and match views and for unranked pairs. `ranked` is false and `summary` null for unranked pairs, and `comparedWith` is the event group size minus the pair (0 when unranked).
+- `typical` is the median over the event's ranked pairs, always from all matches, and is present in every view (including filtered ones and unranked pairs' pages) so the UI can show "Typical pair x%". A measure no ranked pair has a value for is missing. In the `all` view of a ranked pair, `ranks[k].typical` equals `typical[k]`.
+
+---
+
 ## Summary: How data moves
 
 ```
