@@ -89,6 +89,11 @@ def _rank(values: dict[str, float], player: str) -> Ranked:
     )
 
 
+def rank_value(values: dict[str, float], player: str) -> Ranked:
+    """Rank `player` among `values` (higher is better); `typical` is the median."""
+    return _rank(values, player)
+
+
 def rank_shot_share(all_stats: dict[str, PlayerStats], player: str, group: str) -> Ranked | None:
     values = {p: share(s, group) for p, s in all_stats.items() if s.grouped_shots >= MIN_GROUPED_SHOTS}
     return _rank(values, player) if player in values else None
