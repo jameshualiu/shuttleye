@@ -1,0 +1,9 @@
+player_id,name,last_name,gender,handedness,birth,height,nationality
+1,KIM Alpha,KIM,Male,Right,1995-01-01,180,Korea
+2,Beta Lee,Lee,Male,Left,1996-01-01,178,Korea
+3,PARK Gamma,PARK,Male,Right,1997-01-01,176,Korea
+4,Delta Choi,Choi,Male,Right,1998-01-01,175,Korea
+5,Epsilon Kim,Kim,Female,Right,1999-01-01,168,Korea
+6,LEE Zeta,LEE,Female,Right,2000-01-01,166,Korea
+7,Eta Tan,Pearly Tan,Female,Right,2000-02-02,165,Malaysia
+8,Theta BØJE,BØJE,Female,Right,2001-03-03,170,Denmark

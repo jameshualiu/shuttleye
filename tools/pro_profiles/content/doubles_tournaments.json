@@ -1,0 +1,128 @@
+{
+  "ids": {
+    "2": "korea-masters-2022",
+    "3": "indonesia-masters-2022",
+    "4": "asia-championships-2023",
+    "5": "all-england-open-2023",
+    "6": "german-open-2023",
+    "7": "malaysia-masters-2023",
+    "8": "thailand-open-2023",
+    "9": "china-open-2023",
+    "10": "indonesia-open-2023",
+    "11": "japan-open-2023",
+    "12": "indonesia-open-2023",
+    "13": "malaysia-open-2024",
+    "14": "french-open-2024",
+    "15": "india-open-2024",
+    "16": "swiss-open-2024",
+    "17": "all-england-open-2024",
+    "18": "denmark-open-2023",
+    "19": "olympic-games-2024",
+    "20": "japan-open-2024",
+    "21": "world-tour-finals-2024",
+    "22": "all-england-open-2025",
+    "23": "malaysia-open-2025",
+    "24": "singapore-open-2025",
+    "25": "indonesia-open-2025",
+    "26": "china-open-2025"
+  },
+  "editions": {
+    "all-england-open-2023": {
+      "name": "All England Open",
+      "season": 2023
+    },
+    "all-england-open-2024": {
+      "name": "All England Open",
+      "season": 2024
+    },
+    "all-england-open-2025": {
+      "name": "All England Open",
+      "season": 2025
+    },
+    "asia-championships-2023": {
+      "name": "Asia Championships",
+      "season": 2023
+    },
+    "china-open-2023": {
+      "name": "China Open",
+      "season": 2023
+    },
+    "china-open-2025": {
+      "name": "China Open",
+      "season": 2025
+    },
+    "denmark-open-2023": {
+      "name": "Denmark Open",
+      "season": 2023
+    },
+    "french-open-2024": {
+      "name": "French Open",
+      "season": 2024
+    },
+    "german-open-2023": {
+      "name": "German Open",
+      "season": 2023
+    },
+    "india-open-2024": {
+      "name": "India Open",
+      "season": 2024
+    },
+    "indonesia-open-2023": {
+      "name": "Indonesia Open",
+      "season": 2023
+    },
+    "indonesia-open-2025": {
+      "name": "Indonesia Open",
+      "season": 2025
+    },
+    "japan-open-2023": {
+      "name": "Japan Open",
+      "season": 2023
+    },
+    "japan-open-2024": {
+      "name": "Japan Open",
+      "season": 2024
+    },
+    "malaysia-masters-2023": {
+      "name": "Malaysia Masters",
+      "season": 2023
+    },
+    "malaysia-open-2024": {
+      "name": "Malaysia Open",
+      "season": 2024
+    },
+    "malaysia-open-2025": {
+      "name": "Malaysia Open",
+      "season": 2025
+    },
+    "olympic-games-2024": {
+      "name": "Olympic Games",
+      "season": 2024
+    },
+    "singapore-open-2025": {
+      "name": "Singapore Open",
+      "season": 2025
+    },
+    "swiss-open-2024": {
+      "name": "Swiss Open",
+      "season": 2024
+    },
+    "thailand-open-2023": {
+      "name": "Thailand Open",
+      "season": 2023
+    },
+    "world-tour-finals-2024": {
+      "name": "World Tour Finals",
+      "season": 2024
+    }
+  },
+  "match_overrides": {
+    "54": "22",
+    "55": "22",
+    "57": "24",
+    "59": "24",
+    "61": "26",
+    "62": "26",
+    "63": "25"
+  }
+}
