@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ProAttribution } from "./ProAttribution";
 
-// Content frame only: these pages render inside PrivateLayout, which owns the Navbar.
+// Content frame only: these pages render inside PrivateLayout, which owns the Sidebar.
 export function ProShell({
   children,
   source,
