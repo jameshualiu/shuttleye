@@ -1,5 +1,9 @@
 import { err, ok, type Result } from "@/lib/result";
 import type {
+  DoublesTournament,
+  DoublesTournamentIndex,
+  PairIndex,
+  PairProfile,
   PlayerIndex,
   PlayerProfile,
   Tournament,
@@ -30,3 +34,11 @@ export const fetchPlayerIndex = () => fetchJson<PlayerIndex>("players/index.json
 export const fetchPlayer = (id: string) => fetchJson<PlayerProfile>(`players/${seg(id)}.json`);
 export const fetchTournamentIndex = () => fetchJson<TournamentIndex>("tournaments/index.json");
 export const fetchTournament = (id: string) => fetchJson<Tournament>(`tournaments/${seg(id)}.json`);
+
+// Doubles (CC BY-NC-SA) lives under doubles/ so no file mixes licences.
+export const fetchPairIndex = () => fetchJson<PairIndex>("doubles/pairs/index.json");
+export const fetchPair = (id: string) => fetchJson<PairProfile>(`doubles/pairs/${seg(id)}.json`);
+export const fetchDoublesTournamentIndex = () =>
+  fetchJson<DoublesTournamentIndex>("doubles/tournaments/index.json");
+export const fetchDoublesTournament = (id: string) =>
+  fetchJson<DoublesTournament>(`doubles/tournaments/${seg(id)}.json`);

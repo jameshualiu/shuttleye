@@ -1,4 +1,4 @@
-import type { Clip, Finding } from "../types";
+import type { Clip, Finding, FindingKind } from "../types";
 import { cn } from "@/lib/utils";
 import { Panel } from "./Panel";
 
@@ -9,6 +9,25 @@ const rowButton = cn(
   "grid min-h-11 w-full cursor-pointer grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 rounded-xl p-4 text-left transition-colors hover:bg-muted/60 aria-pressed:bg-muted",
   focus,
 );
+
+/** "Strength" / "Weakness" in words before a claim; style findings get no badge. */
+export function KindBadge({ kind }: { kind: FindingKind }) {
+  if (kind === "strength") {
+    return (
+      <span className="mr-1.5 rounded-full bg-foreground px-2 py-0.5 align-[1px] text-xs font-semibold text-background">
+        Strength
+      </span>
+    );
+  }
+  if (kind === "weakness") {
+    return (
+      <span className="mr-1.5 rounded-full border border-muted-foreground px-2 py-0.5 align-[1px] text-xs font-semibold text-foreground">
+        Weakness
+      </span>
+    );
+  }
+  return null;
+}
 
 type FindingsPanelProps = {
   findings: Finding[];
@@ -44,16 +63,7 @@ export function FindingsPanel({ findings, ranked, selected, onSelect, className 
               className={rowButton}
             >
               <span className="font-medium">
-                {f.kind === "strength" && (
-                  <span className="mr-1.5 rounded-full bg-foreground px-2 py-0.5 align-[1px] text-xs font-semibold text-background">
-                    Strength
-                  </span>
-                )}
-                {f.kind === "weakness" && (
-                  <span className="mr-1.5 rounded-full border border-muted-foreground px-2 py-0.5 align-[1px] text-xs font-semibold text-foreground">
-                    Weakness
-                  </span>
-                )}
+                <KindBadge kind={f.kind} />
                 {f.claim}
               </span>
               <span className="font-semibold tabular-nums">{f.figure}</span>

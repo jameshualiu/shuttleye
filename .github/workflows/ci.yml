@@ -93,5 +93,5 @@ jobs:
       - name: Check committed JSON is up to date
         run: |
           python -m pro_profiles.build --source "$RUNNER_TEMP/coachai" --out "$RUNNER_TEMP/pro-data"
-          diff -r -x photos "$RUNNER_TEMP/pro-data" ../frontend/badminton-ai/public/pro-data
+          diff -r -x photos -x doubles "$RUNNER_TEMP/pro-data" ../frontend/badminton-ai/public/pro-data
         working-directory: tools

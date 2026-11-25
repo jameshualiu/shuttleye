@@ -1,0 +1,8 @@
+{
+  "_note": "Display full names by DShuttleNet player_id, for Western players whose player.csv name is stored surname-first. Japanese, Korean and Chinese names keep their stored order. The short last name (doubles_display_names / last_name) is unchanged.",
+  "28": "Shevon Jemie Lai",
+  "85": "Kim Astrup",
+  "86": "Anders Skaarup Rasmussen",
+  "87": "Vinson Chiu",
+  "88": "Joshua Yuan"
+}

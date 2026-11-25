@@ -98,7 +98,18 @@ export default function Navbar({ onUploadClick }: NavbarProps) {
                 : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
             }`}
           >
-            Players
+            Singles
+          </Link>
+          <Link
+            to="/pairs"
+            aria-current={pathname.startsWith("/pairs") ? "page" : undefined}
+            className={`inline-flex items-center min-h-11 px-3.5 rounded-lg text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              pathname.startsWith("/pairs")
+                ? "bg-primary/10 text-primary"
+                : "text-slate-500 dark:text-slate-400 hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
+            }`}
+          >
+            Doubles
           </Link>
           <Link
             to="/tournaments"

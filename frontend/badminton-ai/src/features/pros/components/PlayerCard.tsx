@@ -16,7 +16,7 @@ export function PlayerCard({ to, name, photo, detail, muted }: PlayerCardProps) 
       to={to}
       className="flex min-h-11 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-card-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      <PlayerPhoto photo={photo} name={name} size={56} radius={12} />
+      <PlayerPhoto photo={photo} name={name} size={56} radius={12} decorative />
       <span className="min-w-0">
         <span className="block font-semibold leading-tight">{name}</span>
         {detail && (

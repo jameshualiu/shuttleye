@@ -9,6 +9,8 @@ type PlayerPhotoProps = {
   /** Corner radius in px for the image or placeholder. Defaults to 16. */
   radius?: number;
   className?: string;
+  /** True inside a card or link that already shows the name: hidden from screen readers. */
+  decorative?: boolean;
 };
 
 function initials(name: string): string {
@@ -19,12 +21,11 @@ function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function PlayerPhoto({ photo, name, size, radius = 16, className }: PlayerPhotoProps) {
+export function PlayerPhoto({ photo, name, size, radius = 16, className, decorative }: PlayerPhotoProps) {
   if (!photo) {
     return (
       <div
-        role="img"
-        aria-label={name}
+        {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": name })}
         style={{ width: size, height: size, borderRadius: radius, fontSize: Math.round(size * 0.36) }}
         className={cn(
           "flex shrink-0 items-center justify-center bg-muted font-semibold text-foreground",
@@ -40,7 +41,7 @@ export function PlayerPhoto({ photo, name, size, radius = 16, className }: Playe
     <figure className={cn("shrink-0", className)} style={{ width: size }}>
       <img
         src={photo.src}
-        alt={`Photo of ${name}`}
+        alt={decorative ? "" : `Photo of ${name}`}
         style={{
           width: size,
           height: size,

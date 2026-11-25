@@ -1,0 +1,10 @@
+Licence: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+Doubles data from DShuttleNet (Kaggle, CC BY-NC-SA 4.0), labelled by professional players from BWF World Tour matches. Shared under the same licence; non-commercial use only.
+
+Dataset: https://www.kaggle.com/datasets/anonymousay58dki/dshuttlenet
+DOI: 10.34740/kaggle/dsv/16097938
+
+The files in this folder are derived from that dataset (per-pair statistics,
+findings and tournament results). They are shared under the same licence.
+Singles data elsewhere in pro-data/ has its own licence and is not part of this folder.
