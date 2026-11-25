@@ -1,0 +1,100 @@
+{
+  "comparison.typical": "{of}. A typical pro: {typical}.",
+  "comparison.better": "{of}. {better}.",
+  "better.some": "Better than {below} of {others} pros",
+  "better.all": "Better than every other pro",
+  "match.claim": "{did} {value} {of}, vs {usual} in {his} other matches.",
+  "_note": "Families may override match.claim with their own \"match\" key.",
+  "match.comparison": "In {his} other matches: {usual}.",
+
+  "phase": {
+    "claim.top": "{He} {verb_s} more than most pros {when}",
+    "claim.bottom": "{He} {verb_s} less than most pros {when}",
+    "phrase.top": "{verb_s} more than most {when}",
+    "phrase.bottom": "{verb_s} less than most {when}",
+    "of": "of {his} shots {when}",
+    "did": "{verb_ed} on"
+  },
+  "when": {
+    "start": "in the first four shots of a rally",
+    "late": "after the 12th shot of a rally"
+  },
+  "verbs": {
+    "Smash": ["smashes", "Smashed"],
+    "Net": ["plays net shots", "Played net shots"],
+    "Lift": ["lifts", "Lifted"],
+    "Drop": ["drops", "Dropped"],
+    "Clear": ["clears", "Cleared"]
+  },
+
+  "reply": {
+    "claim.top": "{He} answers a smash with {reply} more than most pros",
+    "claim.bottom": "{He} answers a smash with {reply} less than most pros",
+    "phrase.top": "answers a smash with {reply} more than most",
+    "phrase.bottom": "rarely answers a smash with {reply}",
+    "of": "of {his} replies to a smash",
+    "did": "Answered with {reply} on"
+  },
+  "replyWords": {"Net": "a net shot", "Lift": "a lift"},
+
+  "zone": {
+    "claim.top": "{He} hits from the {where} more than most pros",
+    "claim.bottom": "{He} hits from the {where} less than most pros",
+    "phrase.top": "hits from the {where} more than most",
+    "phrase.bottom": "hits from the {where} less than most",
+    "of": "of {his} shots",
+    "did": "Hit from the {where} on"
+  },
+  "where": {
+    "rear-left": "rear left corner",
+    "rear-right": "rear right corner",
+    "front-left": "front left of the court",
+    "front-right": "front right of the court"
+  },
+
+  "tempo": {
+    "claim.top": "{He} plays at a slower pace than most pros",
+    "claim.bottom": "{He} plays at a faster pace than most pros",
+    "phrase.top": "slows the game down more than most",
+    "phrase.bottom": "plays faster than most",
+    "of": "between shots in {his} rallies",
+    "did": "Averaged"
+  },
+
+  "serveShort": {
+    "claim.top": "{He} serves short more than most pros",
+    "claim.bottom": "{He} serves long more than most pros",
+    "phrase.top": "serves short more than most",
+    "phrase.bottom": "serves long more than most",
+    "of": "of {his} serves short",
+    "did": "Served"
+  },
+
+  "band": {
+    "claim.strength": "{Band} rallies go {his} way",
+    "claim.weakness": "{Band} rallies are where {he} loses",
+    "phrase.strength": "wins {band} rallies more often than most pros",
+    "phrase.weakness": "Keep the rally {keep} and {he}'s beatable.",
+    "of": "won in {length}",
+    "match": "Won {value} of rallies of {length}, vs {usual} in {his} other matches."
+  },
+  "bands": {
+    "short": {"Band": "Short", "band": "quick", "keep": "short", "length": "4 shots or fewer"},
+    "mid": {"Band": "Medium-length", "band": "medium-length", "keep": "within 5 to 8 shots", "length": "5 to 8 shots"},
+    "long": {"Band": "Long", "band": "long", "keep": "past 8 shots", "length": "9 shots or more"}
+  },
+
+  "smashWins": {
+    "claim.strength": "{His} smashes win the point more often than most pros'",
+    "phrase.strength": "wins the point off {his} smash more often than most",
+    "of": "of {his} smashes won the point straight away",
+    "match": "Won the point straight after {value} of {his} smashes, vs {usual} in {his} other matches."
+  },
+
+  "serveWon": {
+    "claim.strength": "{He} wins more points on {his} short serve than most pros",
+    "phrase.strength": "wins more points off {his} short serve than most",
+    "of": "of points on {his} short serve",
+    "did": "Won"
+  }
+}
