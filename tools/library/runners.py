@@ -21,7 +21,7 @@ ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict | BaseException]]
 
 YTDLP_FORMAT = "bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720]"
 MODAL_APP, MODAL_CLASS = "badminton-ai-worker", "BadmintonWorker"
-LOCAL_MODELS_DIR = Path(os.environ.get("SHUTTLEYE_MODELS_DIR", "~/.cache/shuttleye-eval/models")).expanduser()
+LOCAL_MODELS_DIR = Path(os.environ.get("SHUTTLEYE_MODELS_DIR", "~/.cache/shuttleye-models")).expanduser()
 SHUTTLESET_TOLERANCE = 3   # frames; the eval's default
 
 
@@ -58,10 +58,24 @@ def modal_runner(max_containers: int = 50) -> ChunkRunner:
     return run
 
 
-def local_runner(models_dir: Path = LOCAL_MODELS_DIR) -> ChunkRunner:
+def pick_device(device: str | None = None) -> str:
+    """mps when asked for (or by default) and available, else cpu."""
+    import torch
+    device = device or "mps"
+    if device == "mps" and not torch.backends.mps.is_available():
+        print("[local] mps not available; running on cpu")
+        return "cpu"
+    return device
+
+
+def local_runner(device: str = "mps", models_dir: Path = LOCAL_MODELS_DIR) -> ChunkRunner:
     """Chunks analysed one after another on this machine, with the worker's
     models from `models_dir` ($SHUTTLEYE_MODELS_DIR). Same files the Modal
-    worker loads (app.MODEL_TARGETS / OPTIONAL_MODEL_TARGETS)."""
+    worker loads (app.MODEL_TARGETS / OPTIONAL_MODEL_TARGETS). Torch models run
+    on `device` ("mps"); any that fails to load there falls back to CPU and is
+    logged (ONNX models are CPU-only anyway). Ops MPS lacks fall back to CPU
+    through PYTORCH_ENABLE_MPS_FALLBACK."""
+    os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")   # before torch is imported
     from app import MODEL_TARGETS, OPTIONAL_MODEL_TARGETS
     from fullmatch.run import analyze_chunk_clip
     from inference import BadmintonInference
@@ -75,10 +89,18 @@ def local_runner(models_dir: Path = LOCAL_MODELS_DIR) -> ChunkRunner:
         f = models_dir / {**MODEL_TARGETS, **OPTIONAL_MODEL_TARGETS}[key]
         return str(f) if f.exists() else None
 
+    from .time_local import local_agreement_warning
+    device = pick_device(device)
+    warning = local_agreement_warning(device)
+    if warning:
+        print(f"[local] {warning}")
     inference = BadmintonInference(
         path("tracknet"), path("court_kprcnn"), path("net_kprcnn"), path("yolo_pose"),
         lstm_path=path("lstm"), tracknet_v3_path=path("tracknet_v3"), inpaintnet_path=path("inpaintnet"),
-        hit_detector_path=path("hit_detector"), bst_path=path("bst"), bst0_path=path("bst0"))
+        hit_detector_path=path("hit_detector"), bst_path=path("bst"), bst0_path=path("bst0"),
+        device=device)
+    if inference.device_fallbacks:
+        print(f"[local] on cpu instead of {device}: {', '.join(inference.device_fallbacks)}")
 
     def run(jobs):
         out = []

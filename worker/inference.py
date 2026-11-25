@@ -1,25 +1,31 @@
 import numpy as np
+from device_fallback import CpuFallback
 from detectors.court_detector import CourtDetectorAdapter, NetDetectorAdapter, YoloPoseAdapter, TrackNetAdapter, ShotClassifierAdapter
 
 
 class BadmintonInference:
     def __init__(self, tracknet_path, court_kprcnn_path, net_kprcnn_path, yolo_pose_path, lstm_path=None,
                  tracknet_v3_path=None, inpaintnet_path=None, hit_detector_path=None, bst_path=None,
-                 bst0_path=None):
+                 bst0_path=None, device=None):
+        # device=None keeps each adapter's own default (cuda if available, else
+        # cpu). The local runner passes "mps"; a torch model that fails to load
+        # there is rebuilt on CPU and recorded in self.device_fallbacks.
+        self.device = device
+        self.device_fallbacks = []
         # Prefer TrackNetV3 (median-background windows + InpaintNet rectification);
         # fall back to the legacy single-frame TrackNet if V3 weights are absent.
         self.tracknet_v3 = None
         if tracknet_v3_path:
             try:
                 from detectors.tracknet_v3 import TrackNetV3Adapter
-                self.tracknet_v3 = TrackNetV3Adapter(tracknet_v3_path, inpaintnet_path)
+                self.tracknet_v3 = self._on_device('tracknet_v3', TrackNetV3Adapter, tracknet_v3_path, inpaintnet_path)
             except Exception as e:
                 print(f"[tracknetv3] WARNING: failed to load V3 weights ({e}); using legacy TrackNet")
 
-        self.tracknet   = TrackNetAdapter(tracknet_path) if self.tracknet_v3 is None else None
-        self.court_det  = CourtDetectorAdapter(court_kprcnn_path)
-        self.net_det    = NetDetectorAdapter(net_kprcnn_path)
-        self.pose_det   = YoloPoseAdapter(yolo_pose_path)
+        self.tracknet   = self._on_device('tracknet', TrackNetAdapter, tracknet_path) if self.tracknet_v3 is None else None
+        self.court_det  = self._on_device('court', CourtDetectorAdapter, court_kprcnn_path)
+        self.net_det    = self._on_device('net', NetDetectorAdapter, net_kprcnn_path)
+        self.pose_det   = self._on_device('yolo_pose', YoloPoseAdapter, yolo_pose_path)
         self.shot_clf = None
         if lstm_path:
             try:
@@ -43,13 +49,13 @@ class BadmintonInference:
         if bst0_path:
             try:
                 from detectors.stroke_classifier import BST0Adapter
-                self.bst_clf = BST0Adapter(bst0_path)
+                self.bst_clf = self._on_device('bst0', BST0Adapter, bst0_path)
             except Exception as e:
                 print(f"[bst0] WARNING: failed to load ({e}); trying BST-CG-AP")
         if self.bst_clf is None and bst_path:
             try:
                 from detectors.stroke_classifier import BSTStrokeClassifierAdapter
-                self.bst_clf = BSTStrokeClassifierAdapter(bst_path)
+                self.bst_clf = self._on_device('bst', BSTStrokeClassifierAdapter, bst_path)
             except Exception as e:
                 print(f"[bst] WARNING: failed to load ({e}); using LSTM shot classifier")
 
@@ -59,6 +65,21 @@ class BadmintonInference:
         self.strokes_model = clf_model     # reported per chunk in the full-match result's "models"
         print(f"[start] All Models Loaded Successfully ({shuttle_model} + RCNN + YOLO Pose + "
               f"{hit_model} hits + {clf_model} strokes)")
+
+    def _on_device(self, name, cls, *args):
+        """Build a torch adapter on self.device. If it fails to load, or a call
+        later fails with a device-support error (see device_fallback.is_device_error),
+        it is rebuilt on CPU, logged in self.device_fallbacks, and the call retried."""
+        if self.device is None:
+            return cls(*args)
+        try:
+            return CpuFallback(self, name, cls, args, cls(*args, device=self.device))
+        except Exception as e:
+            if self.device == "cpu":
+                raise
+            print(f"[device] {name} failed to load on {self.device} ({e}); falling back to cpu")
+            self.device_fallbacks.append(name)
+            return cls(*args, device="cpu")
 
     def detect_hits(self, shuttle_traj: list):
         """Learned hit detection, or None if unavailable (caller falls back)."""

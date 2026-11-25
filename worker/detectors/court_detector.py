@@ -250,8 +250,9 @@ class YoloPoseAdapter:
     # this threshold only needs to keep recall high.
     SCORE_THRESHOLD = 0.05
 
-    def __init__(self, weights_path: str):
+    def __init__(self, weights_path: str, device: Optional[str] = None):
         from ultralytics import YOLO
+        self.device = self._device = device   # None: ultralytics picks (cuda, else mps/cpu)
         self._model = YOLO(weights_path)
         print(f"[yolo] YoloPoseAdapter loaded: {weights_path}")
 
@@ -263,7 +264,8 @@ class YoloPoseAdapter:
             list (one entry per frame) of player lists:
             [[{"id": int, "skeleton": [[x,y]*17], "box": [x1,y1,x2,y2], "conf": float}, ...], ...]
         """
-        results = self._model(frames, verbose=False, conf=self.SCORE_THRESHOLD)
+        kwargs = {"device": self._device} if self._device else {}
+        results = self._model(frames, verbose=False, conf=self.SCORE_THRESHOLD, **kwargs)
 
         output = []
         for result in results:
