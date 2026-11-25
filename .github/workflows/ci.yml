@@ -90,6 +90,9 @@ jobs:
         working-directory: tools
         env:
           SHUTTLESET_DIR: ${{ runner.temp }}/coachai
+      - name: Run match library tests
+        run: python -m pytest library/tests
+        working-directory: tools
       - name: Check committed JSON is up to date
         run: |
           python -m pro_profiles.build --source "$RUNNER_TEMP/coachai" --out "$RUNNER_TEMP/pro-data"

@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // TODO(James): diff against the rules currently deployed in the Firebase console before deploying
+    // Reconstructed, not copied: the frontend only reads these with onSnapshot and the backend
+    // uses the Admin SDK (which bypasses rules), so owner read and no client writes.
+    match /users/{uid}/videos/{videoId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Match library. Written only by tools/library (Admin SDK), never by clients.
+    match /matches/{id} {
+      allow read: if request.auth != null
+        && (resource.data.status == "published" || request.auth.token.admin == true);
+      allow write: if false;
+    }
+
+    match /players/{path=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /tournaments/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /library/{id} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

@@ -39,5 +39,5 @@ def to_match(doc: dict) -> Match:
         loser=ids["B"],
         youtube_url=f"https://www.youtube.com/watch?v={doc['youtubeId']}",
         rallies=tuple(rallies),
-        set_scores=tuple((g[0], g[1]) for g in doc.get("games") or ()),
+        set_scores=tuple((g["a"], g["b"]) for g in doc.get("games") or ()),
     )

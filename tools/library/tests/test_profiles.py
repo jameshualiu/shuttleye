@@ -50,7 +50,7 @@ def test_index_only_published_input():
     index = out["library/index"]
     assert index["matches"] == [{
         "id": "m1", "editionId": EDITION, "round": "Final", "date": "2022-08-01",
-        "players": docs[0]["players"], "games": [[21, 15], [21, 18]], "youtubeId": "yt-m1",
+        "players": docs[0]["players"], "games": [{"a": 21, "b": 15}, {"a": 21, "b": 18}], "youtubeId": "yt-m1",
     }]
     assert {p["id"] for p in index["players"]} == {"xx", "yy"}
     assert index["editions"] == [{"id": EDITION, "name": "Test Open", "season": 2022, "matches": 1}]

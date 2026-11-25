@@ -93,7 +93,7 @@ def match_doc(result: dict, meta: MatchMeta) -> dict:
         warnings.append(NEAR_FIRST_WARNING)
 
     finals = [_pair(s.get("finalScore")) for s in result.get("sets") or []]
-    games = finals if finals and all(finals) else None
+    games = [{"a": f[0], "b": f[1]} for f in finals] if finals and all(finals) else None
     total = sum(len(r["shots"]) for r in rallies)
     summary = result.get("summary") or {}
     return {

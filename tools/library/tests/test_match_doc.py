@@ -42,7 +42,7 @@ def test_score_before_unread(product_result, meta):
 
 def test_doc_fields(product_result, meta):
     doc = match_doc(product_result, meta)
-    assert doc["games"] == [[21, 15]]
+    assert doc["games"] == [{"a": 21, "b": 15}]
     assert doc["status"] == "unpublished"
     assert doc["players"]["A"] == {"id": "viktor-axelsen", "name": "Viktor AXELSEN"}
     assert doc["winner"] == "A" and doc["accuracy"] is None and doc["insights"] is None

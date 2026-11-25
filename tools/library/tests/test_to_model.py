@@ -18,7 +18,7 @@ def test_to_match_players_and_rallies(product_result, meta):
         sb = d["scoreBefore"] or [0, 0]
         assert (r.score_a, r.score_b) == tuple(sb)
     games = doc["games"]
-    assert m.set_scores == (tuple(tuple(g) for g in games) if games else ())
+    assert m.set_scores == (tuple((g["a"], g["b"]) for g in games) if games else ())
 
 
 def test_shot_fields(product_result, meta):

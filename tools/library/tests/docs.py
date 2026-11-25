@@ -19,7 +19,7 @@ def make_doc(mid: str, a: str, b: str, rallies: list, date: str = "2022-08-01") 
     return {
         "id": mid, "youtubeId": f"yt-{mid}", "editionId": EDITION, "round": "Final", "date": date,
         "players": {"A": {"id": a, "name": a.upper()}, "B": {"id": b, "name": b.upper()}},
-        "winner": "A", "games": [[21, 15], [21, 18]], "status": "published",
+        "winner": "A", "games": [{"a": 21, "b": 15}, {"a": 21, "b": 18}], "status": "published",
         "rallies": rallies,
     }
 

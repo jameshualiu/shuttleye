@@ -334,6 +334,79 @@ The frontend types this in `types.ts`: `AnalysisShot` (optional event fields), `
 
 ---
 
+## 8. Match library (Firestore)
+
+Pre-analysed BWF singles matches, built by `tools/library` (Admin SDK, run by hand) and read by signed-in users. Pro-profile JSON (section 5) is a separate, static copy. Numbered 8 because section 7 is the full-match result; the plan called this "7".
+
+### `matches/{id}` (source of truth, built from a full-match result by `match_doc.py`)
+
+```json
+{
+  "id": "string", "youtubeId": "string", "editionId": "string", "round": "string",
+  "date": "YYYY-MM-DD",
+  "players": { "A": {"id": "string", "name": "string"}, "B": {"id": "string", "name": "string"} },
+  "winner": "A",
+  "games": [{"a": 21, "b": 15}, {"a": 21, "b": 18}],
+  "attributed": true,
+  "status": "unpublished | published",
+  "analyzer": { "models": {}, "warnings": [], "skippedSteps": [], "timings": {} },
+  "accuracy": null,
+  "summary": { "rallies": 0, "avgShots": 0.0, "durationSec": 0 },
+  "rallies": [{
+    "n": 1, "set": 1, "startSec": 0.0, "endSec": 0.0, "scoreBefore": [0, 0], "winner": "A | B | null",
+    "shots": [{ "t": 0.0, "p": "A | B | null", "g": "group | null", "d": "detailType | null", "z": "zone | null", "s": false }]
+  }],
+  "insights": null
+}
+```
+
+`A` is always the match winner (resolved at ingest). `games` is `null` unless every set's final score was read; it is a list of maps (`a` = winner A, `b` = B) because Firestore forbids arrays nested in arrays. `library/index` matches and `tournaments/{id}` match rows use the same form. `attributed` is true only when every rally knows its near-side player; `publish` refuses otherwise. `status` starts `unpublished`; `insights` is `null` until publish and is set back to `null` on unpublish.
+
+`insights` once published is `{ "A": {"insights": Insights, "findings": Finding[]}, "B": {...} }`: that player's `Insights` over this match alone, plus up to four findings comparing it with their other published matches (none if they have no other match). `Finding` is `{key, kind, claim, figure, comparison, tip, clips[]}` as in section 5, with `tip` always `null`.
+
+### `Insights` (six per-player insights, `insights.py`)
+
+```json
+{
+  "phaseMix": { "start|mid|late": { "Smash|Net|Lift|Drop|Clear|Drive|Push...": 0.0, "shots": 0 } },
+  "replies":  { "<opponent shot group>": { "<own reply group>": 0.0, "shots": 0 } },
+  "zones":    { "front-left|front-right|mid-left|mid-right|rear-left|rear-right": 0.0, "shots": 0 },
+  "tempo":    { "secPerShot": 0.0, "rallyShots": 0.0 },
+  "bands":    [{ "band": "short|mid|long", "label": "string", "rallies": 0, "winRate": 0.0 }],
+  "serve":    { "serves": 0, "shortShare": 0.0, "pointsWonShort": 0.0, "pointsWonLong": 0.0 },
+  "smashWins":{ "smashes": 0, "winShare": 0.0 }
+}
+```
+
+Shares are percentages to one decimal. A value is `null` below its minimum sample (50 shots for shares, 50 gaps for `secPerShot`, 30 rallies for `rallyShots`, 30 serves for serve rates, `MIN_BAND_RALLIES` per band).
+
+### Derived documents (`profiles.py`, rebuilt from the published matches only)
+
+- `players/{id}`: `{id, name, event, context: {matches, firstYear, lastYear, comparedWith}, summary, photo, filters[]}`. Each filter is `{id, label, kind: "all|tournament|match", matches}`; ids are `all`, `t:<editionId>`, `m:<matchId>`.
+- `players/{id}/views/{filterId}`: `{kind, shots, rallies, insights: Insights, findings: Finding[], rallyBrowser: Clip[]}`. Only `all` carries findings (and only when at least 10 players have enough shots to be ranked against each other). `rallyBrowser` is every read rally for tournament and match views, and a sample of clips for `all` when it has no findings. Clip is `{youtubeId, startSec, endSec, matchLabel, scoreLabel}`.
+- `tournaments/{editionId}`: `{id, name, season, matches[], players[{id, name, event}]}`.
+- `library/index`: `{players: [{id, name, event, matches, ranked, photo}], editions: [{id, name, season, matches}], matches: [{id, editionId, round, date, players, games, youtubeId}]}`. Exists (possibly with empty lists) after any recompute.
+
+### Security rules (`firestore.rules`, deployed by hand: `firebase deploy --only firestore:rules`)
+
+- `users/{uid}/videos/{videoId}`: owner read, no client writes.
+- `matches/{id}`: read if signed in and (`status == "published"` or the `admin` custom claim is true).
+- `players/**`, `tournaments/{id}`, `library/{id}`: read if signed in.
+- Every library write is `false`; only the Admin SDK writes, bypassing rules.
+
+### Commands (from `tools/`, with `GOOGLE_APPLICATION_CREDENTIALS` set to a service-account key outside the repo)
+
+```bash
+python -m library.publish publish <matchId>     # refuses unattributed matches
+python -m library.publish unpublish <matchId>
+python -m library.publish recompute             # rebuild everything; prints changed paths
+python -m library.set_admin <uid>               # custom claim {admin: true}
+```
+
+`recompute` writes only documents whose content changed, deletes `players/*`, `players/*/views/*`, `tournaments/*` and `library/index` documents the new build no longer produces, and sets each published match's `insights` (`null` for unpublished). A second run returns nothing. Ingest (`python -m library.ingest`): added in Task 6.
+
+---
+
 ## Summary: How data moves
 
 ```

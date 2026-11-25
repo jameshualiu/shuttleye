@@ -70,6 +70,13 @@ def people(docs: list[dict], players: dict) -> dict:
     return out
 
 
+def _library_match_json(m: Match, players: dict) -> dict:
+    """pro_profiles' tournament match row, with games as [{a, b}] (Firestore has no nested arrays)."""
+    row = _tournament_match_json(m, players)
+    row["games"] = [{"a": a, "b": b} for a, b in row["games"]]
+    return row
+
+
 def _rankable(ins: Insights) -> Insights:
     return {**ins, "bandWin": {b["band"]: b["winRate"] for b in ins["bands"]}}
 
@@ -283,7 +290,7 @@ def build_library(docs: list[dict], players: dict, tournaments: dict, photos: di
             "id": eid,
             "name": e["name"],
             "season": e["season"],
-            "matches": [_tournament_match_json(m, players) for m in ems],
+            "matches": [_library_match_json(m, players) for m in ems],
             "players": [{"id": p, "name": players[p]["name"], "event": players[p]["event"]}
                         for p in sorted(pids, key=lambda p: (players[p]["event"] != "MS",
                                                              players[p]["name"], p))],
