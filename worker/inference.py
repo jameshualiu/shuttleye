@@ -4,7 +4,8 @@ from detectors.court_detector import CourtDetectorAdapter, NetDetectorAdapter, Y
 
 class BadmintonInference:
     def __init__(self, tracknet_path, court_kprcnn_path, net_kprcnn_path, yolo_pose_path, lstm_path=None,
-                 tracknet_v3_path=None, inpaintnet_path=None, hit_detector_path=None, bst_path=None):
+                 tracknet_v3_path=None, inpaintnet_path=None, hit_detector_path=None, bst_path=None,
+                 bst0_path=None):
         # Prefer TrackNetV3 (median-background windows + InpaintNet rectification);
         # fall back to the legacy single-frame TrackNet if V3 weights are absent.
         self.tracknet_v3 = None
@@ -35,9 +36,17 @@ class BadmintonInference:
             except Exception as e:
                 print(f"[hitnet] WARNING: failed to load ({e}); using heuristic hit detection")
 
-        # BST stroke-type classifier (25 classes); LSTM fallback
+        # Stroke-type classifier: BST-0 (COURTSIDE input recipe), then
+        # BST-CG-AP, then LSTM, then rules. Both BST adapters share the
+        # classify_hits contract, so the pipeline only sees bst_clf.
         self.bst_clf = None
-        if bst_path:
+        if bst0_path:
+            try:
+                from detectors.stroke_classifier import BST0Adapter
+                self.bst_clf = BST0Adapter(bst0_path)
+            except Exception as e:
+                print(f"[bst0] WARNING: failed to load ({e}); trying BST-CG-AP")
+        if self.bst_clf is None and bst_path:
             try:
                 from detectors.stroke_classifier import BSTStrokeClassifierAdapter
                 self.bst_clf = BSTStrokeClassifierAdapter(bst_path)
@@ -46,7 +55,7 @@ class BadmintonInference:
 
         shuttle_model = "TrackNetV3" if self.tracknet_v3 else "TrackNet"
         hit_model = "HitNet" if self.hit_det else "heuristic"
-        clf_model = "BST" if self.bst_clf else ("LSTM" if self.shot_clf else "rule-based")
+        clf_model = type(self.bst_clf).__name__ if self.bst_clf else ("LSTM" if self.shot_clf else "rule-based")
         print(f"[start] All Models Loaded Successfully ({shuttle_model} + RCNN + YOLO Pose + "
               f"{hit_model} hits + {clf_model} strokes)")
 

@@ -14,15 +14,22 @@ Steps:
      frame == original frame - clip start (no edit-list offset)
   4. Run BadmintonPipeline.process_video() on Modal, one rally per call, using
      the worker image and model volume (no webhook, Firestore or R2)
-  5. Score with train/eval_scoring.py and print a per-rally + overall report;
+  5. Fit one frame offset between detected hits and the labels
+     (eval_scoring.fit_frame_offset) and shift the label frames by it
+  6. Score with train/eval_scoring.py and print a per-rally + overall report;
      raw results are saved under --cache-dir, outside git
+
+--gt-hits also runs BST-0 at the (offset-shifted) labelled hit frames, using
+the same pipeline run's tracks and shuttle, and reports 10-class, 6-class and
+side accuracy there -- stroke classification on its own, without hit-detection
+misses or frame error.
 
 Not part of the runtime pipeline. Needs ffmpeg on PATH and the eval deps:
     pip install -r worker/requirements.txt -r worker/requirements-eval.txt
 
 Usage (from the repo root -- worker_image resolves "worker/" relative to it):
     python -m modal run worker/train/eval_shuttleset.py \
-        [--set-num 1] [--rallies 1,5,10] [--max-rallies 5] [--tolerance 3]
+        [--set-num 1] [--rallies 1,5,10] [--max-rallies 5] [--tolerance 3] [--gt-hits]
 """
 import csv
 import datetime
@@ -43,13 +50,16 @@ for _p in (str(_WORKER_DIR), "/root"):
         sys.path.insert(0, _p)
 
 import app as worker_app  # noqa: E402  (worker_image, models_volume, model targets)
-from train.eval_scoring import PRODUCT_TYPES, parse_rallies, score_rally, summarize  # noqa: E402
+from train.eval_scoring import (  # noqa: E402
+    PRODUCT_TYPES, fit_frame_offset, parse_rallies, score_labelled_hits, score_rally, summarize,
+)
 
 SHUTTLESET_RAW = "https://raw.githubusercontent.com/wywyWang/CoachAI-Projects/main/ShuttleSet/set"
 DEFAULT_MATCH = "Viktor_Axelsen_Jonatan_Christie_YONEX_Thailand_Open_2021_QuarterFinals"
 FPS = 30            # ShuttleSet frame_num is at 30fps; clips are cut at the same rate
 PRE_ROLL = 30       # frames kept before a rally's first shot
 POST_ROLL = 45      # frames kept after its last shot
+OFFSETS = range(-8, 9)  # label->video frame offsets searched by fit_frame_offset
 
 app = modal.App("shuttleset-eval")
 
@@ -79,10 +89,14 @@ class EvalWorker:
             inpaintnet_path=paths["inpaintnet"],
             hit_detector_path=paths["hit_detector"],
             bst_path=paths["bst"],
+            bst0_path=paths["bst0"],
         )
 
     @modal.method()
-    def analyze(self, rally_id: int, clip: bytes) -> dict:
+    def analyze(self, rally_id: int, clip: bytes, gt_frames: list | None = None) -> dict:
+        """Run the pipeline on one clip. With gt_frames, also return BST-0
+        probabilities at every gt frame + offset in OFFSETS (the offset is
+        fitted locally afterwards), keyed by clip frame."""
         from pipeline import BadmintonPipeline
 
         path = f"/tmp/rally_{rally_id}.mp4"
@@ -92,12 +106,21 @@ class EvalWorker:
             results = BadmintonPipeline(self.inference).process_video(path)
         finally:
             os.remove(path)
-        return {
+        out = {
             "rally": rally_id,
             "court_found": results["geometry"] is not None,
             "summary": results["summary"],
             "events": results["events"],
         }
+        if gt_frames is not None:
+            clf = self.inference.bst_clf
+            if not hasattr(clf, "probs_at"):
+                raise RuntimeError("--gt-hits needs BST-0 (bst_0_JnB_bone_merged.pt) loaded")
+            n = len(results["shuttle_debug"])
+            frames = sorted({g + o for g in gt_frames for o in OFFSETS if 0 <= g + o < n})
+            probs = clf.probs_at(frames, results["shuttle_debug"], results["tracking"])
+            out["gt_probs"] = {f: p.tolist() for f, p in zip(frames, probs)}
+        return out
 
 
 # ---------------------------------------------------------------------------
@@ -182,6 +205,8 @@ def _print_report(per_rally: list[tuple[int, int, dict]], overall: dict) -> None
     print(f"  side:  accuracy {_pct(side['accuracy'])} on {side['scored']} matched hits "
           f"({side['missing']} with no predicted side)")
     print(f"  type:  accuracy {_pct(typ['accuracy'])} on {typ['scored']} matched hits")
+    ten = overall["ten"]
+    print(f"  ten:   accuracy {_pct(ten['accuracy'])} on {ten['scored']} matched hits (detailType)")
 
     cols = PRODUCT_TYPES + ["Unknown"]
     print("\n  confusion (rows = ShuttleSet, cols = pipeline)")
@@ -190,9 +215,48 @@ def _print_report(per_rally: list[tuple[int, int, dict]], overall: dict) -> None
         print(f"  {g:7}" + "".join(f"{overall['confusion'].get(f'{g}->{p}', 0):8d}" for p in cols))
 
 
+def _score_gt_hits(res: dict, gt: list, total):
+    """Add one rally's labelled-hit BST-0 scores (gt frames already shifted)."""
+    from collections import Counter
+
+    from fullmatch.bst_inputs import class_label
+
+    probs = {int(f): p for f, p in res["gt_probs"].items()}
+    shots, preds = [], []
+    for g in gt:
+        p = probs.get(g["frame"])
+        if p is None:
+            continue    # shifted outside the clip
+        side, zh, _ = class_label(max(range(len(p)), key=p.__getitem__))
+        shots.append(g)
+        preds.append((side, zh))
+    return (total or Counter()) + score_labelled_hits(shots, preds)
+
+
+def _print_gt_hits(c) -> dict:
+    def ratio(a, b):
+        return c[a] / c[b] if c[b] else None
+
+    out = {
+        "ten": ratio("ten_correct", "ten_total"), "ten_n": c["ten_total"],
+        "ten_known": ratio("ten_known_correct", "ten_known"), "ten_known_n": c["ten_known"],
+        "type6": ratio("type_correct", "type_total"), "type6_n": c["type_total"],
+        "side": ratio("side_correct", "side_total"), "side_n": c["side_total"],
+        "side_known": ratio("side_known_correct", "side_known"),
+    }
+    print("\nBST-0 AT LABELLED HITS (offset-shifted)")
+    print(f"  10-class: {_pct(out['ten'])} of {out['ten_n']} shots (serves incl.; unknown = wrong), "
+          f"{_pct(out['ten_known'])} of {out['ten_known_n']} with a known prediction")
+    print(f"  6-class:  {_pct(out['type6'])} of {out['type6_n']} non-serve shots")
+    print(f"  side:     {_pct(out['side'])} of {out['side_n']} shots, "
+          f"{_pct(out['side_known'])} with a known prediction")
+    return out
+
+
 @app.local_entrypoint()
 def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
-         max_rallies: int = 0, tolerance: int = 3, cache_dir: str = ""):
+         max_rallies: int = 0, tolerance: int = 3, cache_dir: str = "",
+         gt_hits: bool = False):
     cache = pathlib.Path(cache_dir or pathlib.Path.home() / ".cache" / "shuttleye-eval") / match
     clips_dir = cache / f"set{set_num}_clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
@@ -220,15 +284,25 @@ def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
         clip = clips_dir / f"rally_{rally_id:03d}_{start}.mp4"
         _cut_rally(video, start, n_frames, clip)
         starts[rally_id] = start
-        jobs.append((rally_id, clip.read_bytes()))
+        gt_frames = [s["frame"] - start for s in shots] if gt_hits else None
+        jobs.append((rally_id, clip.read_bytes(), gt_frames))
     print(f"[eval] cut {len(jobs)} clips into {clips_dir}; running pipeline on Modal...")
 
-    results = list(EvalWorker().analyze.starmap(jobs))
+    results = sorted(EvalWorker().analyze.starmap(jobs), key=lambda r: r["rally"])
 
-    per_rally, scores = [], []
-    for res in sorted(results, key=lambda r: r["rally"]):
+    # One label->video offset for the match, fitted on absolute frames (rallies
+    # are far apart, so they can't cross-match), serves excluded as in scoring.
+    pred_abs = [e["frame"] + starts[r["rally"]] for r in results for e in r["events"]]
+    gt_abs = [s["frame"] for r in results for s in labeled[r["rally"]] if not s["serve"]]
+    offset = fit_frame_offset(pred_abs, gt_abs, search=OFFSETS, tolerance=tolerance)
+    print(f"[eval] fitted label frame offset: {offset:+d}")
+
+    per_rally, scores, labelled = [], [], None
+    for res in results:
         rally_id = res["rally"]
-        gt = [{**s, "frame": s["frame"] - starts[rally_id]} for s in labeled[rally_id]]
+        gt = [{**s, "frame": s["frame"] + offset - starts[rally_id]} for s in labeled[rally_id]]
+        if gt_hits:
+            labelled = _score_gt_hits(res, gt, labelled)
         s = score_rally(res["events"], gt, tolerance)
         scores.append(s)
         per_rally.append((rally_id, sum(not g["serve"] for g in gt), s))
@@ -236,7 +310,10 @@ def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
             print(f"[eval] WARNING: no court found in rally {rally_id}")
 
     overall = summarize(scores)
+    overall["frame_offset"] = offset
     _print_report(per_rally, overall)
+    if labelled is not None:
+        overall["gt_hits"] = _print_gt_hits(labelled)
 
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     out = cache / f"results_set{set_num}_{stamp}.json"

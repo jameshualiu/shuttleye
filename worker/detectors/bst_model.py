@@ -1,4 +1,4 @@
-"""BST-CG-AP stroke classification model (inference-only vendored copy).
+"""BST-CG-AP and BST-0 stroke classification models (inference-only vendored copy).
 
 Vendored from the official implementation (MIT License), original author
 Jing-Yuan Chang:
@@ -366,6 +366,142 @@ class BST_CG_AP(nn.Module):
         info_need_clean = torch.minimum(p1_shuttle_cls, p2_shuttle_cls)
         dirt = self.mlp_clean(info_need_clean)
         shuttle_cls = shuttle_cls - dirt
+
+        x = torch.cat((p1_conclusion, p2_conclusion, shuttle_cls), dim=1)
+        x = self.mlp_head(x)
+        return x
+
+
+# ---------------------------------------------------------------------------
+# BST-0 (BST backbone, no position input). Vendored from
+# stroke_classification/model/bst.py at commit
+# c93acfa736ed784ba7bea4ec9d360001dea9b728 (MIT License, Jing-Yuan Chang).
+# ---------------------------------------------------------------------------
+
+class BST_0(nn.Module):
+    '''BST-backbone'''
+    def __init__(
+        self, in_dim, seq_len, n_class=35, n_people=2,
+        d_model=100, d_head=128, n_head=6, depth_tem=2, depth_inter=1,
+        drop_p=0.3, mlp_d_scale=4, tcn_kernel_size=5
+    ):
+        super().__init__()
+        if n_people > 2:
+            raise NotImplementedError
+
+        self.tcn_pose = TCN(in_dim, [d_model, d_model], tcn_kernel_size, drop_p)
+        self.tcn_shuttle = TCN(2, [d_model // 2, d_model], tcn_kernel_size, drop_p)
+
+        # Temporal TransformerLayers
+        self.learned_token_tem = nn.Parameter(torch.randn(1, d_model))
+        self.embedding_tem = nn.Parameter(torch.empty(1, 1+seq_len, d_model))
+        self.pre_dropout = nn.Dropout(drop_p, inplace=True)
+        self.encoder_tem = TransformerEncoder(d_model, d_head, n_head, depth_tem, d_model * mlp_d_scale, drop_p)
+
+        # CrossTransformerLayer
+        self.embedding_cross = nn.Parameter(torch.empty(1, seq_len, d_model))
+        self.cross_trans = CrossTransformerLayer(d_model, d_head, n_head, d_model * mlp_d_scale, drop_p)
+
+        # Interactional TransformerLayers
+        self.learned_token_inter = nn.Parameter(torch.randn(1, d_model))
+        self.embedding_inter = nn.Parameter(torch.empty(1, 1+seq_len, d_model))
+        self.encoder_inter = TransformerEncoder(d_model, d_head, n_head, depth_inter, d_model * mlp_d_scale, drop_p)
+        
+        # MLP Head
+        self.mlp_head = MLP_Head(d_model * 3, n_class, d_model * mlp_d_scale, drop_p)
+
+        self.d_model = d_model
+
+        self.init_weights()
+
+    @torch.no_grad()
+    def init_weights(self):
+        # Positional encodings are different from TemPose.
+        p_enc_1d_model = PositionalEncoding1D(self.d_model)
+        
+        pos_encoding: Tensor = p_enc_1d_model(self.embedding_tem)
+        self.embedding_tem.copy_(pos_encoding)
+
+        pos_encoding: Tensor = p_enc_1d_model(self.embedding_cross)
+        self.embedding_cross.copy_(pos_encoding)
+
+        pos_encoding: Tensor = p_enc_1d_model(self.embedding_inter)
+        self.embedding_inter.copy_(pos_encoding)
+
+        # Same as TemPose here.
+        nn.init.normal_(self.learned_token_tem, std=0.02)
+        nn.init.normal_(self.learned_token_inter, std=0.02)
+
+        self.apply(self.init_weights_recursive)
+
+    def init_weights_recursive(self, m):
+        # Same as TemPose
+        if isinstance(m, nn.Linear):
+            # following official JAX ViT xavier.uniform is used:
+            nn.init.xavier_uniform_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Conv1d):
+            nn.init.xavier_normal_(m.weight)
+
+    def forward(
+        self,
+        JnB: Tensor,  # JnB: (b, t, n, input_dim)
+        shuttle: Tensor,  # shuttle: (b, t, 2)
+        video_len: Tensor  # video_len: (b)
+    ):
+        b, t, n, in_dim = JnB.shape
+        JnB = JnB.permute(0, 2, 3, 1).reshape(b*n, in_dim, t)
+        JnB = self.tcn_pose(JnB)
+        JnB = JnB.view(b, n, -1, t).transpose(-2, -1)
+
+        shuttle = shuttle.transpose(1, 2).contiguous()
+        shuttle = self.tcn_shuttle(shuttle)
+        shuttle = shuttle.unsqueeze(1).transpose(-2, -1)
+        
+        x = torch.cat((JnB, shuttle), dim=1)
+        _, n, _, d = x.shape
+
+        class_token_tem = self.learned_token_tem.view(1, 1, -1).expand(b*n, -1, -1)
+        x = x.view(b*n, t, d)
+        x = torch.cat((class_token_tem, x), dim=1) + self.embedding_tem
+
+        range_t = torch.arange(0, 1+t, device=x.device).unsqueeze(0).expand(b, -1)
+        video_len = video_len.unsqueeze(-1)
+        mask = range_t < (1 + video_len)
+        # mask: (b, 1+t)
+        mask_n = mask.repeat_interleave(n, dim=0)
+        # mask_n: (b*n, 1+t)
+
+        x: Tensor = self.pre_dropout(x)
+        x = self.encoder_tem(x, mask_n)
+        x = x.view(b, n, 1+t, d)
+
+        p1, p2, shuttle = map(lambda ts: ts.squeeze(1), x.chunk(3, dim=1))
+        
+        p1_cls, p2_cls, shuttle_cls = \
+            p1[:, 0].contiguous(), p2[:, 0].contiguous(), shuttle[:, 0].contiguous()
+
+        p1 = p1[:, 1:].contiguous() + self.embedding_cross
+        p2 = p2[:, 1:].contiguous() + self.embedding_cross
+        shuttle = shuttle[:, 1:].contiguous() + self.embedding_cross
+
+        cross_mask = mask[:, 1:].contiguous()
+        p1_shuttle = self.cross_trans(p1, shuttle, cross_mask)
+        p2_shuttle = self.cross_trans(p2, shuttle, cross_mask)
+
+        class_token_inter = self.learned_token_inter.view(1, 1, -1).expand(b, -1, -1)
+        p1_shuttle = torch.cat((class_token_inter, p1_shuttle), dim=1) + self.embedding_inter
+        p2_shuttle = torch.cat((class_token_inter, p2_shuttle), dim=1) + self.embedding_inter
+
+        p1_shuttle: Tensor = self.encoder_inter(p1_shuttle, mask)
+        p2_shuttle: Tensor = self.encoder_inter(p2_shuttle, mask)
+
+        p1_shuttle_cls = p1_shuttle[:, 0, :].contiguous()
+        p2_shuttle_cls = p2_shuttle[:, 0, :].contiguous()
+
+        p1_conclusion = p1_cls + p1_shuttle_cls
+        p2_conclusion = p2_cls + p2_shuttle_cls
 
         x = torch.cat((p1_conclusion, p2_conclusion, shuttle_cls), dim=1)
         x = self.mlp_head(x)

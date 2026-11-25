@@ -275,6 +275,37 @@ def fit_frame_offset(pred_frames, gt_frames, search=range(-8, 9), tolerance=3):
     return max(search, key=key)
 
 
+def score_labelled_hits(gt_shots, pred_labels):
+    """Score a classifier run AT the labelled hit frames (no hit matching).
+
+    pred_labels[i] = (side "Top"|"Bottom"|None, BST merged zh type|None) for
+    gt_shots[i]; (None, None) is BST's unknown class. Counts:
+      ten_*:  10-class over shots with a "ten" label, serves included; *_known
+              skips unknown predictions (COURTSIDE's bst_eval reporting)
+      type_*: product 6-class over non-serve shots with a "type"
+      side_*: Top/Bottom over shots with a side; *_known skips unknowns
+    """
+    c = Counter()
+    for g, (side, zh) in zip(gt_shots, pred_labels):
+        known = zh is not None
+        if g.get("ten") is not None:
+            ok = known and ZH_TO_TEN.get(zh) == g["ten"]
+            c["ten_total"] += 1
+            c["ten_correct"] += ok
+            c["ten_known"] += known
+            c["ten_known_correct"] += ok
+        if not g["serve"] and g.get("type") is not None:
+            c["type_total"] += 1
+            c["type_correct"] += known and ZH_TO_PRODUCT.get(zh) == g["type"]
+        if g.get("side") is not None:
+            ok = side is not None and side == g["side"]
+            c["side_total"] += 1
+            c["side_correct"] += ok
+            c["side_known"] += side is not None
+            c["side_known_correct"] += ok
+    return c
+
+
 def summarize(rally_scores, segment_scores=None):
     """Aggregate score_rally() results into overall metrics."""
     total = Counter()

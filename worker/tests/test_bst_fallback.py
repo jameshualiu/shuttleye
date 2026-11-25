@@ -133,3 +133,49 @@ def test_use_lstm_false_when_no_lstm_and_no_bst():
     engine = FakeEngine(shot_clf=None, bst_clf=None)
 
     assert use_lstm_decision(engine, force_lstm=False) is False
+
+
+def load_bst_clf(bst0_path, bst_path, bst0_cls, bst_cls):
+    """Mirrors BadmintonInference's stroke-classifier load chain (inference.py):
+    BST-0, then BST-CG-AP, then None (LSTM / rules)."""
+    clf = None
+    if bst0_path:
+        try:
+            clf = bst0_cls(bst0_path)
+        except Exception as e:
+            print(f"[bst0] WARNING: failed to load ({e}); trying BST-CG-AP")
+    if clf is None and bst_path:
+        try:
+            clf = bst_cls(bst_path)
+        except Exception as e:
+            print(f"[bst] WARNING: failed to load ({e}); using LSTM shot classifier")
+    return clf
+
+
+class _Loads:
+    def __init__(self, path):
+        self.path = path
+
+
+class _Fails:
+    def __init__(self, path):
+        raise RuntimeError("bad weights")
+
+
+def test_bst0_preferred_when_it_loads():
+    clf = load_bst_clf("b0.pt", "bst.pt", _Loads, _Fails)
+    assert isinstance(clf, _Loads) and clf.path == "b0.pt"
+
+
+def test_bst0_load_failure_falls_back_to_bst():
+    clf = load_bst_clf("b0.pt", "bst.pt", _Fails, _Loads)
+    assert isinstance(clf, _Loads) and clf.path == "bst.pt"
+
+
+def test_no_bst0_uses_bst():
+    clf = load_bst_clf(None, "bst.pt", _Fails, _Loads)
+    assert clf.path == "bst.pt"
+
+
+def test_both_fail_leaves_none_for_lstm():
+    assert load_bst_clf("b0.pt", "bst.pt", _Fails, _Fails) is None

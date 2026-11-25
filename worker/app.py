@@ -88,6 +88,7 @@ OPTIONAL_MODEL_TARGETS = {
     "inpaintnet": "InpaintNet_best.pt",
     "hit_detector": "hit_detector_v3.onnx",
     "bst": "bst_stroke_classifier.pt",
+    "bst0": "bst_0_JnB_bone_merged.pt",
 }
 
 
@@ -187,6 +188,7 @@ class BadmintonWorker:
             inpaintnet_path=resolved_paths.get("inpaintnet"),
             hit_detector_path=resolved_paths.get("hit_detector"),
             bst_path=resolved_paths.get("bst"),
+            bst0_path=resolved_paths.get("bst0"),
         )
 
     @modal.fastapi_endpoint(method="POST")

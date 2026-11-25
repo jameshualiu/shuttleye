@@ -156,3 +156,20 @@ def test_score_rally_counts_serve_when_included():
     s = score_rally(pred, gt, include_serves=True)
     assert s["tp"] == 2 and s["ten_correct"] == 2
     assert score_rally(pred, gt)["tp"] == 1  # default unchanged: serves excluded
+
+
+def test_score_labelled_hits_counts_ten_type_and_side():
+    from train.eval_scoring import score_labelled_hits
+    gt = [
+        {"frame": 10, "serve": True, "type": None, "ten": "short service", "side": "Bottom"},
+        {"frame": 40, "serve": False, "type": "Net", "ten": "net shot", "side": "Top"},
+        {"frame": 70, "serve": False, "type": "Drive", "ten": "push/rush", "side": "Bottom"},
+        {"frame": 99, "serve": False, "type": "Smash", "ten": "smash", "side": "Top"},
+    ]
+    preds = [("Bottom", "發短球"), ("Top", "勾球"), ("Top", "平球"), (None, None)]
+    s = score_labelled_hits(gt, preds)
+    assert (s["ten_total"], s["ten_correct"]) == (4, 2)          # serve + cross-court net
+    assert (s["ten_known"], s["ten_known_correct"]) == (3, 2)    # unknown pred excluded
+    assert (s["type_total"], s["type_correct"]) == (3, 2)        # serves excluded; push -> Drive
+    assert (s["side_total"], s["side_correct"]) == (4, 2)
+    assert (s["side_known"], s["side_known_correct"]) == (3, 2)
