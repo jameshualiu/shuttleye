@@ -211,6 +211,18 @@ def score_rally(pred_events, gt_shots, tolerance=3, include_serves=False):
     }
 
 
+def label_matched_events(pred_events, gt_shots, tolerance=3):
+    """{index into pred_events: matched ShuttleSet shot} using score_rally's
+    serves-excluded matching (predicted hits on a serve and unmatched hits
+    get no label). Training labels for the stacked shot classifier."""
+    serve_frames = [s["frame"] for s in gt_shots if s["serve"]]
+    gt = [s for s in gt_shots if not s["serve"]]
+    on_serve = {pi for pi, _ in match_hits([e["frame"] for e in pred_events], serve_frames, tolerance)}
+    keep = [i for i in range(len(pred_events)) if i not in on_serve]
+    pairs = match_hits([pred_events[i]["frame"] for i in keep], [s["frame"] for s in gt], tolerance)
+    return {keep[pi]: gt[gi] for pi, gi in pairs}
+
+
 def _overlap(a, b):
     """Frames shared by two inclusive (start, end) intervals."""
     return max(0, min(a[1], b[1]) - max(a[0], b[0]) + 1)

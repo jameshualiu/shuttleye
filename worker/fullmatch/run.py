@@ -2,8 +2,8 @@
 
 probe fps -> plan chunks -> cut frame-exactly -> analyse chunks in parallel ->
 merge back to full-video frames -> segment into rallies (with serves) ->
-decode alternating sides per rally.
-(Classification and scoring are added by later tasks on top of that.)
+decode alternating sides per rally -> (optional) stacked shot classifier.
+(Scoring is added by later tasks on top of that.)
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
 modal; the eval passes e.g. `lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs))`.
@@ -23,20 +23,28 @@ from fullmatch.chunks import (
 )
 from fullmatch.court import court_outliers
 from fullmatch.segment import segment_rallies
+from fullmatch.shot_features import apply_shot_stack
 from fullmatch.sides import apply_side_decode
+
+# Stacked shot classifier (fullmatch.shot_features, trained by
+# train/train_shot_stack.py). Lives on the Modal volume, never in git; when the
+# file is absent BST-0 + side decode's types are kept.
+SHOT_STACK_PATH = os.environ.get("SHOT_STACK_PATH", "/models/shot_stack.joblib")
+SHOT_STACK_DEFAULT = True    # kept (#74): beat BST-0 + side decode on all 5 held-out matches
 
 ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 
 
 def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: ChunkRunner | None = None,
                        *, chunk: int = CHUNK, overlap: int = OVERLAP, work_dir: Path | None = None,
-                       verify_chunks: int = 0, log=print) -> dict:
+                       verify_chunks: int = 0, log=print, shot_stack=None) -> dict:
     """Analyse a whole broadcast chunk by chunk and merge the results.
 
     Any fps is accepted; seconds always use the probed (or given) fps.
     Chunks go to `work_dir` and are kept (re-runs skip the cut); without it a
     temp dir next to the video is used and removed afterwards.
     `verify_chunks` > 0 checks that many chunks (first/middle/last) with verify_cut.
+    `shot_stack` is passed to apply_segmentation.
     """
     if analyze_chunks is None:
         raise ValueError("analyze_chunks is required (e.g. a Modal starmap over analyze_chunk)")
@@ -134,12 +142,12 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         "verify": verify,
         "timings": timings,
     }
-    apply_segmentation(res, log=log)
+    apply_segmentation(res, log=log, shot_stack=shot_stack)
     timings["total_s"] = time.perf_counter() - t_start
     return res
 
 
-def apply_segmentation(res: dict, log=print) -> dict:
+def apply_segmentation(res: dict, log=print, shot_stack=None) -> dict:
     """Segment a merged result into rallies, in place.
 
     `rawEvents` keeps every merged hit (it is reused when present, so this can
@@ -148,6 +156,9 @@ def apply_segmentation(res: dict, log=print) -> dict:
     [{"startFrame", "endFrame", "lastHitFrame", "startSec", "endSec",
     "eventIndices"}] with indices into `events` (endFrame = landing of the
     last hit when the track shows it).
+
+    shot_stack: path to a shot_stack.joblib, False to skip the stack, None for
+    SHOT_STACK_PATH when SHOT_STACK_DEFAULT is on.
     """
     t = time.perf_counter()
     fps = res["fps"]
@@ -169,6 +180,10 @@ def apply_segmentation(res: dict, log=print) -> dict:
                       for r in rallies]
     res.setdefault("timings", {})["segment_s"] = time.perf_counter() - t
     apply_side_decode(res, log=log)
+    if shot_stack is None:
+        shot_stack = SHOT_STACK_PATH if SHOT_STACK_DEFAULT else False
+    if shot_stack:
+        apply_shot_stack(res, shot_stack, log=log)
     serves = sum(bool(e.get("isServe")) for e in events)
     log(f"[fullmatch] segmentation: {len(rallies)} rallies, {len(events)} events "
         f"({serves} serves) kept of {len(raw)} merged hits in {res['timings']['segment_s']:.1f}s")

@@ -76,6 +76,14 @@ EN_TO_PRODUCT = {
 }
 MERGED_TO_PRODUCT = {zh: EN_TO_PRODUCT[en] for zh, en in MERGED_TO_EN.items()}
 
+# 10-class name -> the product types its merged classes map to (sorted; empty
+# for serves). Derived from the tables above, not a separate copy. Only
+# push/rush is ambiguous: 推球 (push) -> Drive, 撲球 (net kill) -> Net.
+TEN_TO_PRODUCTS = {
+    ten: sorted({MERGED_TO_PRODUCT[zh] for zh, t in MERGED_TO_TEN.items() if t == ten} - {None})
+    for ten in TEN_CLASSES
+}
+
 
 def class_label(idx: int):
     """Class index -> (side 'Top'|'Bottom'|None, merged zh type, 10-class name)."""

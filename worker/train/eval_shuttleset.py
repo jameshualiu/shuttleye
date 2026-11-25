@@ -30,6 +30,9 @@ every rally), the inserted serves, and hits in dead time. Prints per-stage
 timings; raw results (and the merged per-frame tracks, gzipped) go under
 --cache-dir. --from-merged <fullmatch_<stamp>.json> re-segments and re-scores
 such a saved result locally, without Modal (also runnable as a plain script).
+--shot-stack <shot_stack.joblib> re-classifies the segmented hits with the
+stacked shot classifier (fullmatch.shot_features, train/train_shot_stack.py);
+without it the eval scores BST-0 + side decode's types.
 
 --gt-hits also runs BST-0 at the (offset-shifted) labelled hit frames, using
 the same pipeline run's tracks and shuttle, and reports 10-class, 6-class and
@@ -44,7 +47,7 @@ Usage (from the repo root -- worker_image resolves "worker/" relative to it):
         [--set-num 1] [--rallies 1,5,10] [--max-rallies 5] [--tolerance 3] [--gt-hits]
     python -m modal run worker/train/eval_shuttleset.py --full-match [--max-containers 20]
     python worker/train/eval_shuttleset.py --from-merged ~/.cache/shuttleye-eval/<match>/fullmatch_<stamp>.json \
-        [--match <match>]
+        [--match <match>] [--shot-stack shot_stack.joblib]
 """
 import csv
 import datetime
@@ -265,10 +268,10 @@ def _cache_dir(cache_dir: str, match: str) -> pathlib.Path:
 def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
          max_rallies: int = 0, tolerance: int = 3, cache_dir: str = "",
          gt_hits: bool = False, full_match: bool = False, max_containers: int = 20,
-         from_merged: str = ""):
+         from_merged: str = "", shot_stack: str = ""):
     cache = _cache_dir(cache_dir, match)
     if full_match or from_merged:
-        return _run_full_match(match, cache, tolerance, max_containers, from_merged)
+        return _run_full_match(match, cache, tolerance, max_containers, from_merged, shot_stack)
     clips_dir = cache / f"set{set_num}_clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
 
@@ -372,7 +375,7 @@ def _print_timings(t: dict, n_chunks: int) -> None:
 
 
 def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_containers: int,
-                    from_merged: str = ""):
+                    from_merged: str = "", shot_stack: str = ""):
     from fullmatch.run import analyze_full_match, apply_segmentation
 
     if from_merged:
@@ -387,7 +390,7 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
     print(f"[eval] {match}: full match, labelled sets {sorted(sets)}")
     if from_merged:
         print(f"[eval] re-segmenting saved merged result {merged_json} (no Modal)")
-        apply_segmentation(res)
+        apply_segmentation(res, shot_stack=shot_stack or False)
     else:
         video = cache / "match.mp4"
         _download_match(url, video)
@@ -397,7 +400,7 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         worker = EvalWorker.with_options(max_containers=max_containers)()
         res = analyze_full_match(
             video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
-            verify_chunks=3)
+            verify_chunks=3, shot_stack=shot_stack or False)
         merged_json = None
     report = _score_full_match(res, sets, tolerance)
 
@@ -422,6 +425,7 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         **report, "timings": res["timings"], "verify": res.get("verify"),
         "chunks": res["chunks"], "court": res.get("court"), "court_outliers": res.get("court_outliers"),
         "rawEvents": res["rawEvents"], "events": res["events"], "rallies": res["rallies"],
+        "shotStack": res.get("shotStack"),
     }, indent=1, default=str))
     print(f"\n[eval] raw results: {out}")
     if not from_merged:
@@ -583,5 +587,6 @@ if __name__ == "__main__":
     ap.add_argument("--from-merged", required=True)
     ap.add_argument("--match", default=None, help="default: the saved result's match")
     ap.add_argument("--tolerance", type=int, default=3)
+    ap.add_argument("--shot-stack", default="", help="shot_stack.joblib to re-classify hits with")
     a = ap.parse_args()
-    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged)
+    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged, a.shot_stack)
