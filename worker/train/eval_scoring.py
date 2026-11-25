@@ -106,6 +106,9 @@ def parse_rallies(rows, h, far_corner, near_corner):
     Returns {rally_id: [shot, ...]} with shots sorted by frame, each:
       {"frame": int, "serve": bool, "type": product type | None,
        "ten": 10-class name | None, "side": "Top"|"Bottom"|None}
+
+    "serve" is the rally's first stroke (ball_round 1) or a stroke typed as a
+    service: ShuttleSet types many serves 未知球種, so the type alone misses them.
     """
     rallies = {}
     for row in rows:
@@ -115,7 +118,7 @@ def parse_rallies(rows, h, far_corner, near_corner):
         zh = (row.get("type") or "").strip()
         shot = {
             "frame": int(frame),
-            "serve": zh in SERVICE_TYPES_ZH,
+            "serve": zh in SERVICE_TYPES_ZH or _float_or_none(row.get("ball_round")) == 1,
             "type": ZH_TO_PRODUCT.get(zh),
             "ten": ZH_TO_TEN.get(zh),
             "side": side_from_location(

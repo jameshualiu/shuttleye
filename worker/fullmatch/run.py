@@ -4,12 +4,25 @@ probe fps -> plan chunks -> cut frame-exactly -> analyse chunks in parallel ->
 merge back to full-video frames -> segment into rallies (with serves) ->
 decode alternating sides per rally -> (optional) stacked shot classifier ->
 read the score graphic locally over the full video (fullmatch.scoreboard:
-score after each rally, winner, set, which player is near).
+score after each rally, winner, set, which player is near) -> assemble_result.
+
+Two shapes come out of here. The internal result (analyze_full_match(...,
+internal=True)) keeps everything later steps and the eval need: rawEvents,
+per-frame tracking/shuttle, BST probabilities, chunk diagnostics. The eval
+caches it and --from-merged re-segments and re-scores it offline. The product
+result (the default) is assemble_result's documented contract (data-flow.md,
+"Full-match result"): no per-frame data, no model internals.
+
+The steps after the GPU work that the product can do without (side decode,
+shot stack, scoreboard, the court check) are guarded: an unexpected exception
+is logged, recorded in res["skippedSteps"], the step's partial changes are
+rolled back, and the rest of the result is kept.
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
 modal; the eval passes e.g. `lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs))`.
 `analyze_chunk_clip` is the in-container body of that Modal method.
 """
+import copy
 import os
 import shutil
 import statistics
@@ -48,7 +61,8 @@ ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 
 def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: ChunkRunner | None = None,
                        *, chunk: int = CHUNK, overlap: int = OVERLAP, work_dir: Path | None = None,
-                       verify_chunks: int = 0, log=print, shot_stack=None, scoreboard=None) -> dict:
+                       verify_chunks: int = 0, log=print, shot_stack=None, scoreboard=None,
+                       internal: bool = False) -> dict:
     """Analyse a whole broadcast chunk by chunk and merge the results.
 
     Any fps is accepted; seconds always use the probed (or given) fps.
@@ -56,6 +70,8 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
     temp dir next to the video is used and removed afterwards.
     `verify_chunks` > 0 checks that many chunks (first/middle/last) with verify_cut.
     `shot_stack` is passed to apply_segmentation, `scoreboard` to apply_scoreboard.
+    Returns the product result (assemble_result) unless `internal`, which
+    returns the full internal result (what the eval caches).
     """
     if analyze_chunks is None:
         raise ValueError("analyze_chunks is required (e.g. a Modal starmap over analyze_chunk)")
@@ -120,7 +136,14 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         e["timeSec"] = frame_to_sec(e["frame"], fps)
     for c, r in zip(merged["chunks"], results):
         c["court_support"] = r.get("court_support")
-    mode_court, outliers = court_outliers(merged["chunks"])
+    skipped = []
+    try:     # report only: never worth losing the GPU result over
+        mode_court, outliers = court_outliers(merged["chunks"])
+    except Exception as exc:
+        mode_court, outliers = None, []
+        err = f"{type(exc).__name__}: {exc}"
+        skipped.append({"step": "court check", "error": err})
+        log(f"[fullmatch] WARNING: court check failed ({err}); step skipped, rest of the result kept")
     timings["merge_s"] = time.perf_counter() - t
     if outliers:   # report only; no automatic re-run
         log(f"[fullmatch] WARNING: {len(outliers)} chunk(s) with a court off the match's mode court: {outliers}")
@@ -150,13 +173,141 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         "chunks": merged["chunks"],
         "court": mode_court,
         "court_outliers": outliers,
+        "resolution": next((r["summary"]["resolution"] for r in results
+                            if (r.get("summary") or {}).get("resolution")), None),
         "verify": verify,
         "timings": timings,
     }
+    if skipped:
+        res["skippedSteps"] = skipped
     apply_segmentation(res, log=log, shot_stack=shot_stack)
-    apply_scoreboard(res, video, templates=scoreboard, log=log)
+    _optional_step("scoreboard", res, ("rallies", "scoreTimeline", "scoreEvents", "sides"), log,
+                   lambda: apply_scoreboard(res, video, templates=scoreboard, log=log))
     timings["total_s"] = time.perf_counter() - t_start
-    return res
+    return res if internal else product_result(res)
+
+
+def _optional_step(name: str, res: dict, keys: tuple, log, fn) -> bool:
+    """Run fn(); on an exception restore res[keys] to their state before the
+    step, record {"step", "error"} in res["skippedSteps"], log, and carry on."""
+    saved = {k: copy.deepcopy(res[k]) for k in keys if k in res}
+    try:
+        fn()
+        return True
+    except Exception as exc:     # any bug in an optional step: keep the GPU result
+        for k in keys:
+            res.pop(k, None)
+        res.update(saved)
+        err = f"{type(exc).__name__}: {exc}"
+        res.setdefault("skippedSteps", []).append({"step": name, "error": err})
+        log(f"[fullmatch] WARNING: {name} failed ({err}); step skipped, rest of the result kept")
+        return False
+
+
+# ------------------------------------------------------------ product result
+
+# Event fields in the product result (data-flow.md, "Full-match result").
+# Everything else on an internal event is dropped: BST-0 "probs", the stack's
+# geometry ("hitterM", "receiverM", "contactHeightM"), "detailId" (index of
+# detailType), "serveScore" (serve-onset detector score).
+EVENT_FIELDS = ("frame", "timeSec", "type", "detailType", "typeConfidence", "isServe", "side",
+                "sideOverridden", "location_px", "location_m", "confidence", "confirmed", "source")
+
+
+def _sec(frame: int, fps: float) -> float:
+    return round(frame_to_sec(frame, fps), 3)
+
+
+def _pair(v):
+    return None if v is None else list(v)
+
+
+def match_sets(rallies: list[dict]) -> list[dict]:
+    """[{"set", "nearPlayer", "finalScore"}] from scored rallies (apply_scoreboard):
+    nearPlayer = who is near ('A'|'B') in the set's first rally that knows,
+    finalScore = the last scoreAfter (A, B) in the set. [] when no rally has a set."""
+    out: dict[int, dict] = {}
+    for r in rallies:
+        s = r.get("set")
+        if s is None:
+            continue
+        d = out.setdefault(s, {"set": s, "nearPlayer": None, "finalScore": None})
+        if d["nearPlayer"] is None:
+            d["nearPlayer"] = r.get("near")
+        if r.get("scoreAfter") is not None:
+            d["finalScore"] = _pair(r["scoreAfter"])
+    return [out[k] for k in sorted(out)]
+
+
+def assemble_result(fps: float, events: list[dict], rallies: list[dict], sets: list[dict], timings: dict,
+                    *, total_frames: int | None = None, court=None, resolution=None,
+                    skipped_steps: list[dict] | None = None) -> dict:
+    """The full-match product result (data-flow.md, "Full-match result").
+
+    Frames are full-video frames; every frame has a seconds twin (frame / fps,
+    rounded to ms). Events keep EVENT_FIELDS only; type ("Unknown" for None),
+    isServe, sideOverridden, detailType, side, location_px and location_m are
+    always present (None when unknown). Every rally
+    carries the same keys; the scoreboard ones are None (scoreRead False) when
+    that step did not run or read nothing. summary.resolution only when known.
+    skippedSteps lists optional steps that failed ([] when none did).
+    No per-frame tracking or shuttle data. Inputs are not mutated.
+    """
+    out_events = []
+    for e in events:
+        o = {k: e[k] for k in EVENT_FIELDS if k in e}
+        o["timeSec"] = _sec(e["frame"], fps)
+        o["type"] = e.get("type") or "Unknown"    # None: no product class (e.g. a service pick on a hit)
+        o["isServe"] = bool(e.get("isServe"))
+        o["sideOverridden"] = bool(e.get("sideOverridden"))
+        o["detailType"] = e.get("detailType")
+        for k in ("side", "location_px", "location_m"):   # inserted serves have no location
+            o.setdefault(k, None)
+        out_events.append(o)
+    out_rallies = [{
+        "id": i + 1,
+        "set": r.get("set"),
+        "startFrame": r["startFrame"],
+        "endFrame": r["endFrame"],
+        "startSec": _sec(r["startFrame"], fps),
+        "endSec": _sec(r["endFrame"], fps),
+        "eventIndices": list(r["eventIndices"]),
+        "scoreAfter": _pair(r.get("scoreAfter")),
+        "winner": r.get("winner"),
+        "nearPlayer": r.get("near"),
+        "scoreRead": bool(r.get("scoreRead")),
+    } for i, r in enumerate(rallies)]
+    counts: dict[str, int] = {}
+    for e in out_events:
+        counts[e["type"]] = counts.get(e["type"], 0) + 1
+    summary = {
+        "durationSec": None if total_frames is None else _sec(total_frames, fps),
+        "totalShots": len(out_events),
+        "shotCounts": counts,
+        "serveCount": sum(e["isServe"] for e in out_events),
+        "rallyCount": len(out_rallies),
+    }
+    if resolution is not None:
+        summary["resolution"] = list(resolution)
+    return {
+        "fps": fps,
+        "totalFrames": total_frames,
+        "court": court,
+        "summary": summary,
+        "rallies": out_rallies,
+        "sets": [{**s, "finalScore": _pair(s.get("finalScore"))} for s in sets],
+        "events": out_events,
+        "timings": copy.deepcopy(timings),
+        "skippedSteps": [dict(x) for x in skipped_steps or []],
+    }
+
+
+def product_result(res: dict) -> dict:
+    """assemble_result over an internal (segmented, optionally scored) result."""
+    rallies = res.get("rallies", [])
+    return assemble_result(res["fps"], res["events"], rallies, match_sets(rallies), res.get("timings", {}),
+                           total_frames=res.get("totalFrames"), court=res.get("court"),
+                           resolution=res.get("resolution"), skipped_steps=res.get("skippedSteps"))
 
 
 def apply_scoreboard(res: dict, video: Path, templates=None, log=print, tl: list | None = None) -> dict:
@@ -232,11 +383,13 @@ def apply_segmentation(res: dict, log=print, shot_stack=None) -> dict:
                        "eventIndices": [new_index[i] for i in r["eventIndices"]]}
                       for r in rallies]
     res.setdefault("timings", {})["segment_s"] = time.perf_counter() - t
-    apply_side_decode(res, log=log)
+    # Optional refinements: a failure keeps the events as they were before it.
+    _optional_step("side decode", res, ("events",), log, lambda: apply_side_decode(res, log=log))
     if shot_stack is None:
         shot_stack = SHOT_STACK_PATH if SHOT_STACK_DEFAULT else False
-    if shot_stack:
-        apply_shot_stack(res, shot_stack, log=log)
+    if shot_stack:   # apply_shot_stack guards predict itself; this also covers load / features
+        _optional_step("shot stack", res, ("events", "shotStack"), log,
+                       lambda: apply_shot_stack(res, shot_stack, log=log))
     serves = sum(bool(e.get("isServe")) for e in events)
     log(f"[fullmatch] segmentation: {len(rallies)} rallies, {len(events)} events "
         f"({serves} serves) kept of {len(raw)} merged hits in {res['timings']['segment_s']:.1f}s")

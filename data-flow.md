@@ -154,7 +154,7 @@ If the LSTM is available, a 31-frame window (15 before + hit + 15 after) is buil
 
 ### Frontend TypeScript types (`types.ts`)
 
-The `AnalysisData` interface mirrors the JSON payload exactly. `DashboardVideoCard` is the lean type derived from the Firestore doc for the dashboard list (id, title, date, status, totalShots, duration). `AnalysisShot` maps to each event in `events[]`.
+The `AnalysisData` interface mirrors the JSON payload. It also covers the full-match result (section 7), so fields the upload path always sets (`geometry`, `tracking`, `summary.resolution`) are optional there. `DashboardVideoCard` is the lean type derived from the Firestore doc for the dashboard list (id, title, date, status, totalShots, duration). `AnalysisShot` maps to each event in `events[]`.
 
 ---
 
@@ -249,6 +249,75 @@ Rules:
 - `measureKey` is one of `serve.short_share`, `serve.win_rate`, `serve.third_down`, `receive.attack_share`, `receive.win_rate`, `first4.share`, `first4.win_rate`, `rally.attack_share`, `rally.formation_attack`.
 - `ranks` and `findings` are non-empty only in the `all` view of a ranked pair (2 or more matches); they are empty in tournament and match views and for unranked pairs. `ranked` is false and `summary` null for unranked pairs, and `comparedWith` is the event group size minus the pair (0 when unranked).
 - `typical` is the median over the event's ranked pairs, always from all matches, and is present in every view (including filtered ones and unranked pairs' pages) so the UI can show "Typical pair x%". A measure no ranked pair has a value for is missing. In the `all` view of a ranked pair, `ranks[k].typical` equals `typical[k]`.
+
+---
+
+## 7. Full-match result (`worker/fullmatch`)
+
+`fullmatch.run.analyze_full_match(video, ...)` analyses a whole broadcast: it cuts the video into overlapping chunks locally, runs the per-clip pipeline on each chunk on Modal (`analyze_chunk`), merges the chunks back into full-video frames, segments rallies (with serves), decodes alternating sides, re-classifies shots with the stacked classifier, and reads the score graphic locally. Its default return value is the product result below, built by `fullmatch.run.assemble_result`.
+
+How it differs from the upload path (sections 1–4, unchanged):
+
+- It is a local module, called today by the eval (`eval_shuttleset.py --full-match`) and later by the #76 ingest command. The upload webhook still runs `BadmintonPipeline.process_video()` on one clip and writes the `analysis.json` above. The full-match path writes no Firestore state.
+- Frames are full-video frames, not clip frames, and every frame has a seconds twin (`frame / fps`, rounded to milliseconds). The source video is deleted after ingest and match pages seek a YouTube embed by seconds.
+- It has no `geometry`, `tracking` or `shuttle_debug`: an hour of per-frame data is far too large. Overlays can get a per-rally file later. Because of this, the current analysis page cannot render it yet.
+
+Example (values from Axelsen v Christie; lists shortened):
+
+```json
+{
+  "fps": 30.0,
+  "totalFrames": 91050,
+  "court": [[180, 123], [330, 123], [165, 175], [346, 175], [137, 264], [371, 264]],
+  "summary": {
+    "durationSec": 3035.0, "totalShots": 686, "serveCount": 34, "rallyCount": 62,
+    "shotCounts": { "Net": 213, "Lob": 146, "Smash": 112, "Serve": 34, "Unknown": 8 },
+    "resolution": [512, 288]
+  },
+  "rallies": [
+    { "id": 1, "set": 1, "startFrame": 8126, "endFrame": 8234, "startSec": 270.867, "endSec": 274.467,
+      "eventIndices": [0, 1, 2, 3], "scoreAfter": [0, 0], "winner": null, "nearPlayer": "B", "scoreRead": false }
+  ],
+  "sets": [ { "set": 1, "nearPlayer": "B", "finalScore": [21, 14] } ],
+  "events": [
+    { "frame": 8142, "timeSec": 271.4, "type": "Clear", "detailType": "clear", "typeConfidence": 0.945,
+      "isServe": false, "side": "Bottom", "sideOverridden": false,
+      "location_px": [332, 97], "location_m": [5.13, 12.09], "confidence": 0.997, "confirmed": true, "source": "hitnet" }
+  ],
+  "timings": { "cut_s": 52.6, "analyze_s": 969.1, "chunk_median_s": 136.3, "upload_mb": 1055.2,
+               "segment_s": 0.4, "scoreboard_s": 14.2, "total_s": 1039.6 },
+  "skippedSteps": []
+}
+```
+
+Fields (every key below is always present unless marked "optional"):
+
+- `fps`: the probed video fps; all seconds use it. `totalFrames` and `summary.durationSec` cover the whole video. Both are always set by `analyze_full_match`; they are `null` only when `assemble_result` is called without `total_frames`.
+- `court`: the match-wide mode of the per-chunk 6-point court (`[TL, TR, ML, MR, BL, BR]`), in pipeline pixels (`summary.resolution`), or `null` if no chunk found a court.
+- `rallies[]`: rally order. `startFrame`/`endFrame` (and `startSec`/`endSec`) run from the rally's first hit (the serve when one was found) to the landing of the last hit, or to the last hit when the track does not show a landing. `eventIndices` index `events`. Every rally always carries every key. The scoreboard keys are `null` (and `scoreRead` false) when the scoreboard step did not run (no digit templates, or it failed):
+  - `set`: 1-based set number.
+  - `scoreAfter`: `[A, B]` after the rally, where A is the player who wins the match (ShuttleSet's convention). A rally whose score change was not read keeps the previous score, with `scoreRead: false` and `winner: null`.
+  - `winner`: `"A"`, `"B"` or `null`.
+  - `nearPlayer`: which player (`"A"` or `"B"`) is at the near (Bottom) end during this rally. This follows the end change at 11 in a deciding set.
+- `sets[]`: `set`, `nearPlayer` at the start of the set, and `finalScore` `[A, B]`. Empty without the scoreboard.
+- `events[]`: hits inside rallies, including serves, frame-sorted. Always present: `frame`, `timeSec`, `type`, `detailType`, `isServe`, `side`, `sideOverridden`, `location_px`, `location_m` (the last three may be `null`). Optional: `typeConfidence`, `confidence`, `confirmed`, `source`; inserted serves have no `typeConfidence` or `confirmed`, and their `confidence` is `null`.
+  - `side`: `"Top"` is the far end and `"Bottom"` the near end, or `null` when unknown.
+  - `sideOverridden`: true when the per-rally alternation decode overrode strong evidence for the other side.
+  - `isServe`: a serve found by the serve-onset detector and inserted at the start of a rally. It has `type: "Serve"` and `detailType: null` (serve length is not classified yet). A serve the hit detector found as an ordinary hit is classified like any other hit.
+  - `type`: never null. The 6 product classes (`Clear`, `Smash`, `Drop`, `Drive`, `Net`, `Lob`), `"Serve"`, or `"Unknown"` when no product class applies (no classifier decided, or the 10-class pick on a hit is a service).
+  - `detailType`: ShuttleSet's 10 classes (`short service`, `long service`, `clear`, `drive`, `drop`, `lob`, `net shot`, `smash`, `push/rush`, `defensive shot`) or `null`. `type` is derived from the same pick, so the two never contradict. `push/rush` maps to Drive or Net.
+  - `typeConfidence` (optional): the winning class's probability.
+  - `location_px`: pipeline pixels. `location_m`: court metres, as in the upload path. Both `null` on inserted serves.
+  - `confidence` (optional, may be `null`), `confirmed` (optional), `source` (optional; `"hitnet"`, `"serve_onset"`, ...): hit-detector provenance, as in the upload path.
+- `summary`: `totalShots` counts all events, serves included. `shotCounts` is keyed by `type`, and `serveCount` and `rallyCount` count serves and rallies. `resolution` (optional) is the pipeline frame size `[w, h]`, present when a chunk reported it.
+- `skippedSteps`: `[{ "step", "error" }]` for optional steps that raised (see below); `[]` when none did.
+- `timings`: per-stage seconds (keys appear only for stages that ran). These are `probe_s`, `cut_s`, `verify_s`, `analyze_s`, `merge_s`, `segment_s` and `scoreboard_s`; `chunk_s` (per chunk) with its `chunk_min_s`, `chunk_median_s`, `chunk_max_s` and `chunk_sum_s`; `first_chunk_start_s` and `last_chunk_end_s` (relative to dispatch); `upload_mb`; and `total_s`.
+
+Stripped from the internal result: per-frame `tracking` and `shuttle`, and `rawEvents` (every merged hit before segmentation). The chunk list, `verify`, `court_outliers` and the score timeline and score events also go. On events, `probs` (BST-0's 25 probabilities), `hitterM`, `receiverM` and `contactHeightM` (the stacked classifier's court-metre features), `detailId` and `serveScore` are dropped. These are inputs to later steps or diagnostics, not results, and they make up most of the size. The eval keeps the internal result (`analyze_full_match(..., internal=True)`) in its cache, so `--from-merged` can re-segment and re-score offline.
+
+The side decode, the shot stack, the scoreboard and the court check are optional post-GPU steps. If one raises, its partial changes are rolled back, the step is logged, recorded in `skippedSteps` (step name and error) and skipped, and the result is kept. A failed scoreboard leaves the scoreboard keys `null`, a failed side decode or stack leaves the earlier sides and types, and a failed court check leaves `court` `null`. `skippedSteps` tells a failure apart from a step that did not run by design (for example no digit templates, which leaves the scoreboard keys `null` with nothing in `skippedSteps`).
+
+The frontend types this in `types.ts`: `AnalysisShot` (optional event fields), `AnalysisRally`, `AnalysisSet`, and the optional `AnalysisData` keys `fps`, `totalFrames`, `court`, `rallies`, `sets`, `timings`, `skippedSteps` and `summary.rallyCount` / `serveCount`. They are optional in TypeScript only because the upload path does not send them; in a full-match result they follow the presence rules above.
 
 ---
 

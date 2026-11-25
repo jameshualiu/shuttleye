@@ -406,10 +406,13 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         if abs(fps - FPS) > 0.01:
             raise SystemExit(f"[eval] downloaded video is {fps:.3f}fps; ShuttleSet labels assume {FPS}fps")
         worker = EvalWorker.with_options(max_containers=max_containers)()
+        # internal=True: the eval scores and caches the internal result (rawEvents,
+        # per-frame tracks, BST probs) so --from-merged can re-run everything
+        # offline; the product contract (fullmatch.run.assemble_result) strips those.
         res = analyze_full_match(
             video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
             verify_chunks=3, shot_stack=shot_stack or False,
-            scoreboard=None if scoreboard in ("", "auto") else scoreboard)
+            scoreboard=None if scoreboard in ("", "auto") else scoreboard, internal=True)
         merged_json = None
     report = _score_full_match(res, sets, tolerance)
     if res.get("scoreEvents"):
@@ -573,8 +576,8 @@ def _score_full_match(res: dict, sets: dict, tolerance: int) -> dict:
     after = score_hits(events, "AFTER SEGMENTATION")
 
     # Serves on their own: predicted serve events vs the first shot of every
-    # labelled rally (ShuttleSet types many serves 未知球種, so its serve flag
-    # only marks some of them; the first shot of a rally is always the serve).
+    # labelled rally (the first shot of a rally is always the serve; parse_rallies
+    # flags it from ball_round 1, as ShuttleSet types many serves 未知球種).
     gt_serves = [a for a, _ in gt_rallies]
     pred_serves = [e["frame"] for e in events if e.get("isServe") and in_any(e["frame"])]
     sp = match_hits(pred_serves, gt_serves, tolerance)

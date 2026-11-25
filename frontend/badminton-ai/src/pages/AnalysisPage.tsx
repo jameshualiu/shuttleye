@@ -104,9 +104,10 @@ export default function AnalysisPage() {
       if (!analysisData?.summary) return;
 
       const res = analysisData.summary.resolution;
+      if (!res) return;   // full-match results may omit it (no overlay data either)
       const sx = w / res[0], sy = h / res[1];
       const sc = (pt: [number, number]): [number, number] => [pt[0] * sx, pt[1] * sy];
-      const dur = analysisData.summary.durationSec;
+      const dur = analysisData.summary.durationSec ?? 0;
       const maxFrame = Math.max(
         ...(analysisData.shuttle_debug?.map((s) => s.frame) ?? [0]),
         ...(analysisData.tracking?.map((t) => t.frame) ?? [0]),
@@ -225,7 +226,7 @@ export default function AnalysisPage() {
 
   const fps = useMemo(() => {
     if (!analysisData?.summary) return 30;
-    const dur = analysisData.summary.durationSec;
+    const dur = analysisData.summary.durationSec ?? 0;
     const maxFrame = Math.max(
       ...(analysisData.shuttle_debug?.map((s) => s.frame) ?? [0]),
       ...(analysisData.tracking?.map((t) => t.frame) ?? [0]),

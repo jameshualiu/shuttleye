@@ -146,7 +146,7 @@ def test_analyze_full_match_with_injected_runner(tmp_path):
         return out
 
     res = analyze_full_match(src, analyze_chunks=fake_runner, chunk=60, overlap=10,
-                             work_dir=tmp_path / "chunks")
+                             work_dir=tmp_path / "chunks", internal=True)
     assert res["fps"] == 25.0
     assert res["totalFrames"] == 150
     plan = chunks_mod.plan_chunks(150, chunk=60, overlap=10)

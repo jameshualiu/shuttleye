@@ -61,6 +61,23 @@ def test_parse_rallies_groups_sorts_and_labels_shots():
     assert rallies[2] == [{"frame": 400, "serve": False, "type": None, "ten": None, "side": None}]
 
 
+def test_parse_rallies_ball_round_one_is_the_serve():
+    # ShuttleSet types many serves 未知球種; ball_round 1 is the serve whatever the type
+    rows = [
+        {"rally": "3", "ball_round": "1", "frame_num": "500", "type": "未知球種",
+         "player_location_x": "5", "player_location_y": "150"},
+        {"rally": "3", "ball_round": "2", "frame_num": "530", "type": "未知球種",
+         "player_location_x": "5", "player_location_y": "450"},
+        {"rally": "3", "ball_round": "3.0", "frame_num": "560", "type": "長球",
+         "player_location_x": "5", "player_location_y": "150"},
+        {"rally": "4", "ball_round": "", "frame_num": "800", "type": "發長球"},   # type check kept
+    ]
+    rallies = parse_rallies(rows, IDENTITY, FAR, NEAR)
+    assert [s["serve"] for s in rallies[3]] == [True, False, False]
+    assert rallies[3][0]["type"] is None and rallies[3][0]["ten"] is None
+    assert rallies[4][0]["serve"] is True
+
+
 def test_match_hits_is_one_to_one_and_closest_first():
     # pred 11 is closer to gt 12 than pred 9 is, so 9 pairs with nothing
     assert match_hits([9, 11], [12], tolerance=3) == [(1, 0)]
