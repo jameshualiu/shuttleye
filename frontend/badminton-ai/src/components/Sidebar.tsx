@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HOME_PATH } from "@/lib/routes";
 import {
   ChevronUp,
+  Film,
   LogOut,
   Menu,
   Moon,
@@ -34,6 +35,12 @@ const groups: { label: string; items: NavItem[] }[] = [
       { to: "/players", label: "Singles", icon: User, match: (p) => p.startsWith("/players") },
       { to: "/pairs", label: "Doubles", icon: Users, match: (p) => p.startsWith("/pairs") },
       { to: "/tournaments", label: "Tournaments", icon: Trophy, match: (p) => p.startsWith("/tournaments") },
+      {
+        to: "/matches",
+        label: "Matches",
+        icon: Film,
+        match: (p) => p.startsWith("/matches") || p.startsWith("/library"),
+      },
     ],
   },
 ];

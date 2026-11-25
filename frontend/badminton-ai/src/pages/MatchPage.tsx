@@ -7,6 +7,7 @@ import { RallyLanes } from "@/features/library/components/RallyLanes";
 import { RallyList } from "@/features/library/components/RallyList";
 import { YouTubePlayer, type YouTubePlayerHandle } from "@/features/library/components/YouTubePlayer";
 import { useLibraryDoc } from "@/features/library/hooks/useLibraryDoc";
+import { useLibraryIndex } from "@/features/library/hooks/useLibraryIndex";
 import { fetchMatch } from "@/features/library/libraryData";
 import type { MatchDoc, RallyDoc } from "@/features/library/types";
 
@@ -22,7 +23,7 @@ function loadMatch(id: string, fixture: boolean) {
   return fetchMatch(id);
 }
 
-function Match({ match }: { match: MatchDoc }) {
+function Match({ match, editionLabel }: { match: MatchDoc; editionLabel?: string }) {
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const [selected, setSelected] = useState<number | null>(match.rallies[0]?.n ?? null);
   const rally = match.rallies.find((r) => r.n === selected) ?? null;
@@ -41,7 +42,7 @@ function Match({ match }: { match: MatchDoc }) {
           Unpublished — only you can see this
         </p>
       )}
-      <MatchHeader match={match} />
+      <MatchHeader match={match} editionLabel={editionLabel} />
       <div className="grid gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
           <YouTubePlayer
@@ -69,6 +70,12 @@ export default function MatchPage() {
   const [searchParams] = useSearchParams();
   const fixture = searchParams.has("fixture");
   const state = useLibraryDoc(() => loadMatch(matchId, fixture), [matchId, fixture]);
+  // The edition name comes from the index; until it loads the header builds one from the id.
+  const index = useLibraryIndex(fixture);
+  const editionLabel =
+    state.status === "ready" && index.status === "ready"
+      ? index.data.editions.find((e) => e.id === state.data.editionId)?.name
+      : undefined;
 
   return (
     <div className="mx-auto w-full max-w-[1600px] px-4 py-8 min-[760px]:px-12">
@@ -81,7 +88,7 @@ export default function MatchPage() {
               : "Match not found."}
           </p>
         )}
-        {state.status === "ready" && <Match key={state.data.id} match={state.data} />}
+        {state.status === "ready" && <Match key={state.data.id} match={state.data} editionLabel={editionLabel} />}
       </main>
     </div>
   );

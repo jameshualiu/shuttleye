@@ -22,7 +22,7 @@ function Tile({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function MatchHeader({ match }: { match: MatchDoc }) {
+export function MatchHeader({ match, editionLabel }: { match: MatchDoc; editionLabel?: string }) {
   // A is always the match winner (data-flow.md section 8).
   const winner = match.players.A;
   const loser = match.players.B;
@@ -30,7 +30,7 @@ export function MatchHeader({ match }: { match: MatchDoc }) {
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
         <p className="text-sm text-muted-foreground">
-          Library / {editionName(match.editionId)} / {match.round}
+          Library / {editionLabel ?? editionName(match.editionId)} / {match.round}
         </p>
         <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight max-[600px]:text-[22px]">
           <PlayerLink player={winner} />{" "}
