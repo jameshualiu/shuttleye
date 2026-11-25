@@ -151,9 +151,11 @@ def test_analyze_full_match_with_injected_runner(tmp_path):
     assert res["totalFrames"] == 150
     plan = chunks_mod.plan_chunks(150, chunk=60, overlap=10)
     assert sorted(seen) == list(range(len(plan)))
-    assert [e["frame"] for e in res["events"]] == [s + 20 for s, _ in plan if s + 20 <= 149]
-    assert res["events"][0]["timeSec"] == pytest.approx(20 / 25)
-    for stage in ("probe_s", "cut_s", "analyze_s", "merge_s", "total_s"):
+    assert [e["frame"] for e in res["rawEvents"]] == [s + 20 for s, _ in plan if s + 20 <= 149]
+    assert res["rawEvents"][0]["timeSec"] == pytest.approx(20 / 25)
+    # no player tracks -> no camera runs -> no rallies; merged hits stay in rawEvents
+    assert res["events"] == [] and res["rallies"] == []
+    for stage in ("probe_s", "cut_s", "analyze_s", "merge_s", "segment_s", "total_s"):
         assert stage in res["timings"]
     assert res["timings"]["chunk_s"] == [1.0] * len(plan)
     assert res["court"] is None and res["court_outliers"] == []   # fake geometry has no kp6

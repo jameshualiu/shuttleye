@@ -1,8 +1,8 @@
 """Full-match analysis: full broadcast in, merged full-video result out.
 
 probe fps -> plan chunks -> cut frame-exactly -> analyse chunks in parallel ->
-merge back to full-video frames. (Rally segmentation, classification and
-scoring are added by later tasks on top of the merged result.)
+merge back to full-video frames -> segment into rallies (with serves).
+(Classification and scoring are added by later tasks on top of that.)
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
 modal; the eval passes e.g. `lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs))`.
@@ -21,6 +21,7 @@ from fullmatch.chunks import (
     plan_chunks, probe_fps,
 )
 from fullmatch.court import court_outliers
+from fullmatch.segment import segment_rallies
 
 ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 
@@ -117,9 +118,8 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         timings["first_chunk_start_s"] = min(starts) - dispatch_at   # cold start + first upload
         timings["last_chunk_end_s"] = max(ends) - dispatch_at
     timings["upload_mb"] = upload_bytes / 1e6
-    timings["total_s"] = time.perf_counter() - t_start
 
-    return {
+    res = {
         "fps": fps,
         "totalFrames": total,
         "durationSec": frame_to_sec(total, fps),
@@ -132,6 +132,44 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         "verify": verify,
         "timings": timings,
     }
+    apply_segmentation(res, log=log)
+    timings["total_s"] = time.perf_counter() - t_start
+    return res
+
+
+def apply_segmentation(res: dict, log=print) -> dict:
+    """Segment a merged result into rallies, in place.
+
+    `rawEvents` keeps every merged hit (it is reused when present, so this can
+    be re-run on a saved result); `events` becomes the hits inside rallies plus
+    the inserted serves, frame-sorted; `rallies` is
+    [{"startFrame", "endFrame", "lastHitFrame", "startSec", "endSec",
+    "eventIndices"}] with indices into `events` (endFrame = landing of the
+    last hit when the track shows it).
+    """
+    t = time.perf_counter()
+    fps = res["fps"]
+    raw = res.get("rawEvents", res["events"])
+    events = [dict(e) for e in raw]
+    rallies = segment_rallies(events, res["tracking"], res["shuttle"], res["totalFrames"], fps)
+    keep = sorted({i for r in rallies for i in r["eventIndices"]})
+    new_index = {old: new for new, old in enumerate(keep)}
+    events = [events[i] for i in keep]
+    for e in events:
+        e["timeSec"] = frame_to_sec(e["frame"], fps)
+    res["rawEvents"] = raw
+    res["events"] = events
+    res["rallies"] = [{"startFrame": r["startFrame"], "endFrame": r["endFrame"],
+                       "lastHitFrame": r["lastHitFrame"],
+                       "startSec": frame_to_sec(r["startFrame"], fps),
+                       "endSec": frame_to_sec(r["endFrame"], fps),
+                       "eventIndices": [new_index[i] for i in r["eventIndices"]]}
+                      for r in rallies]
+    res.setdefault("timings", {})["segment_s"] = time.perf_counter() - t
+    serves = sum(bool(e.get("isServe")) for e in events)
+    log(f"[fullmatch] segmentation: {len(rallies)} rallies, {len(events)} events "
+        f"({serves} serves) kept of {len(raw)} merged hits in {res['timings']['segment_s']:.1f}s")
+    return res
 
 
 def analyze_chunk_clip(inference, chunk_id: int, clip: bytes) -> dict:
