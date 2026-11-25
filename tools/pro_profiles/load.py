@@ -43,6 +43,8 @@ class Shot:
     player: str
     group: str | None
     is_serve: bool
+    detail: str | None = None  # analyzer fine-grained type (e.g. "net shot")
+    zone: str | None = None  # analyzer landing zone (e.g. "rear-left")
 
 
 @dataclass(frozen=True)
@@ -62,7 +64,7 @@ class Rally:
 @dataclass(frozen=True)
 class Match:
     id: str
-    source: Literal["ShuttleSet", "ShuttleSet22"]
+    source: Literal["ShuttleSet", "ShuttleSet22", "Analyzer"]
     edition_id: str
     round: str
     date: str
