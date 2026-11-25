@@ -203,3 +203,30 @@ def test_hit_seen_by_one_chunk_only_is_kept_either_side():
 def test_hit_just_outside_overlap_is_not_duplicated():
     # chunk 0 sees it at 1735 (before the overlap), chunk 1 at its local frame 1
     assert _two_chunk_events([1735], [1741]) == [1735]
+
+
+def test_on_merged_runs_before_segmentation(tmp_path, monkeypatch):
+    """Ruling 23: the merged (pre-segmentation) result is handed to on_merged
+    before any post-processing, so a crash there can't lose the GPU run."""
+    from fullmatch import run as run_mod
+
+    src = tmp_path / "match.mp4"
+    _synthetic(src, 25, 4)
+
+    def fake_runner(jobs):
+        return [{"chunk_id": cid, "court_found": True, "geometry": {}, "events": [{"frame": 20}],
+                 "tracking": [], "shuttle_debug": [], "summary": {}, "timings": {"total_s": 1.0}}
+                for cid, _ in jobs]
+
+    def boom(*a, **k):
+        raise RuntimeError("segmentation bug")
+
+    monkeypatch.setattr(run_mod, "segment_rallies", boom)
+    seen = []
+    with pytest.raises(RuntimeError, match="segmentation bug"):
+        run_mod.analyze_full_match(src, analyze_chunks=fake_runner, chunk=60, overlap=10,
+                                   work_dir=tmp_path / "chunks", on_merged=seen.append)
+    assert len(seen) == 1
+    merged = seen[0]
+    assert [e["frame"] for e in merged["events"]] == [20, 70]
+    assert "rallies" not in merged and "tracking" in merged and merged["totalFrames"] == 100

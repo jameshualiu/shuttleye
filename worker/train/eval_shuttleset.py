@@ -39,6 +39,20 @@ over <cache>/<match>/match.mp4 locally (fullmatch.run.apply_scoreboard; a
 against ShuttleSet's per-rally roundscore_A/B: set finals, per-rally score,
 winner and near/far side (train/harvest_scoreboard.py builds the templates).
 
+--bfmd <match> runs the same full-match eval on a BFMD match (12 men's
+singles broadcasts from 2025 BWF World Tour events; train/bfmd.py, annotations
+in ~/.cache/shuttleye-eval/bfmd/data, evaluation only, never committed) instead
+of ShuttleSet: hits, serves and rallies as above (rallies also against BFMD's
+own rally intervals), types through train/bfmd.py's mapping, and the
+scoreboard / side map against BFMD's score after every rally and hitter ends.
+Both --full-match and --bfmd also score the side map with the labelled scores
+standing in for the score graphic (the serve-side heuristic on its own).
+
+Every full-match run caches the merged result before segmentation and
+post-processing run (fullmatch_<stamp>.json, stage "merged"; overwritten by
+the full save at the end), so a crash after the GPU work can be re-scored
+with --from-merged.
+
 --gt-hits also runs BST-0 at the (offset-shifted) labelled hit frames, using
 the same pipeline run's tracks and shuttle, and reports 10-class, 6-class and
 side accuracy there -- stroke classification on its own, without hit-detection
@@ -51,6 +65,7 @@ Usage (from the repo root -- worker_image resolves "worker/" relative to it):
     python -m modal run worker/train/eval_shuttleset.py \
         [--set-num 1] [--rallies 1,5,10] [--max-rallies 5] [--tolerance 3] [--gt-hits]
     python -m modal run worker/train/eval_shuttleset.py --full-match [--max-containers 20]
+    python -m modal run worker/train/eval_shuttleset.py --bfmd <BFMD match name>
     python worker/train/eval_shuttleset.py --from-merged ~/.cache/shuttleye-eval/<match>/fullmatch_<stamp>.json \
         [--match <match>] [--shot-stack shot_stack.joblib]
 """
@@ -77,9 +92,10 @@ for _p in (str(_WORKER_DIR), "/root"):
 
 import app as worker_app  # noqa: E402  (worker_image, models_volume, model targets)
 from fullmatch.chunks import cut_exact, probe_fps  # noqa: E402
+from train import bfmd as bfmd_data  # noqa: E402
 from train.eval_scoring import (  # noqa: E402
     PRODUCT_TYPES, fit_frame_offset, match_hits, parse_rallies, score_labelled_hits, score_rally,
-    score_scoreboard, score_segments, summarize,
+    score_scoreboard, score_segments, score_set_sides, summarize,
 )
 
 SHUTTLESET_RAW = "https://raw.githubusercontent.com/wywyWang/CoachAI-Projects/main/ShuttleSet/set"
@@ -181,6 +197,7 @@ def _load_labels(match: str, set_num: int):
 def _download_match(url: str, out: pathlib.Path) -> None:
     if out.exists():
         return
+    out.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         [sys.executable, "-m", "yt_dlp", "-q", "--no-warnings",
          "-f", "bv*[height=720][fps=30][ext=mp4]/bv*[height=720][ext=mp4]",
@@ -221,7 +238,7 @@ def _print_report(per_rally: list[tuple[int, int, dict]], overall: dict, label: 
     print(f"  ten:   accuracy {_pct(ten['accuracy'])} on {ten['scored']} matched hits (detailType)")
 
     cols = PRODUCT_TYPES + ["Unknown"]
-    print("\n  confusion (rows = ShuttleSet, cols = pipeline)")
+    print("\n  confusion (rows = labels, cols = pipeline)")
     print("  " + " " * 7 + "".join(f"{c[:7]:>8}" for c in cols))
     for g in PRODUCT_TYPES:
         print(f"  {g:7}" + "".join(f"{overall['confusion'].get(f'{g}->{p}', 0):8d}" for p in cols))
@@ -273,11 +290,13 @@ def _cache_dir(cache_dir: str, match: str) -> pathlib.Path:
 def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
          max_rallies: int = 0, tolerance: int = 3, cache_dir: str = "",
          gt_hits: bool = False, full_match: bool = False, max_containers: int = 20,
-         from_merged: str = "", shot_stack: str = "", scoreboard: str = ""):
+         from_merged: str = "", shot_stack: str = "", scoreboard: str = "", bfmd: str = ""):
+    if bfmd:
+        match = bfmd
     cache = _cache_dir(cache_dir, match)
-    if full_match or from_merged:
+    if full_match or from_merged or bfmd:
         return _run_full_match(match, cache, tolerance, max_containers, from_merged, shot_stack,
-                               scoreboard)
+                               scoreboard, bfmd=bool(bfmd))
     clips_dir = cache / f"set{set_num}_clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
 
@@ -360,6 +379,36 @@ def _labelled_sets(match: str):
             raise
 
 
+def _labels(match: str, bfmd: bool):
+    """(video url, {set: {rally: [shot]}}, BFMD match dict or None)."""
+    if bfmd:
+        m = bfmd_data.load_match(bfmd_data.metadata_path(match))
+        return bfmd_data.video_url(match), m["sets"], m
+    url, sets = _labelled_sets(match)
+    return url, sets, None
+
+
+def _save_merged(res: dict, cache: pathlib.Path, stamp: str, match: str, labels: str) -> pathlib.Path:
+    """Cache a merged, not yet segmented result (analyze_full_match's
+    on_merged) as fullmatch_<stamp>.json + _tracks.json.gz, loadable by
+    _load_merged, before any post-processing can crash (Ruling 23). The
+    full save at the end of the run overwrites the json."""
+    cache.mkdir(parents=True, exist_ok=True)
+    out = cache / f"fullmatch_{stamp}.json"
+    tracks = cache / f"fullmatch_{stamp}_tracks.json.gz"
+    with gzip.open(tracks, "wt") as f:
+        json.dump({"tracking": res["tracking"], "shuttle": res["shuttle"]}, f)
+    out.write_text(json.dumps({
+        "match": match, "labels": labels, "stage": "merged", "commit": _git_commit(),
+        "fps": res["fps"], "totalFrames": res["totalFrames"], "merged_from": None,
+        "timings": res.get("timings"), "verify": res.get("verify"), "chunks": res.get("chunks"),
+        "court": res.get("court"), "court_outliers": res.get("court_outliers"),
+        "rawEvents": res["events"],
+    }, indent=1, default=str))
+    print(f"[eval] merged result cached before segmentation: {out}")
+    return out
+
+
 def _print_timings(t: dict, n_chunks: int) -> None:
     def row(name, v):
         print(f"  {name:<34}{'n/a' if v is None else f'{v:9.1f}'}")
@@ -381,7 +430,8 @@ def _print_timings(t: dict, n_chunks: int) -> None:
 
 
 def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_containers: int,
-                    from_merged: str = "", shot_stack: str = "", scoreboard: str = ""):
+                    from_merged: str = "", shot_stack: str = "", scoreboard: str = "",
+                    bfmd: bool = False):
     from fullmatch.run import analyze_full_match, apply_scoreboard, apply_segmentation
 
     if from_merged:
@@ -392,8 +442,12 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
             raise SystemExit(f"[eval] --match {match} but {merged_json} is {saved_match}; "
                              f"omit --match (plain script) or pass the saved match")
         cache = merged_json.parent       # save next to the merged result
-    url, sets = _labelled_sets(match)
-    print(f"[eval] {match}: full match, labelled sets {sorted(sets)}")
+        bfmd = bfmd or res.pop("labels", None) == "bfmd"
+    labels = "bfmd" if bfmd else "shuttleset"
+    url, sets, bfmd_match = _labels(match, bfmd)
+    print(f"[eval] {match}: full match, {labels} labelled sets {sorted(sets)}")
+    if bfmd_match is not None:
+        print(f"[eval] BFMD labels with no type or dropped: {dict(bfmd_match['excluded'])}")
     if from_merged:
         print(f"[eval] re-segmenting saved merged result {merged_json} (no Modal)")
         apply_segmentation(res, shot_stack=shot_stack or False)
@@ -404,19 +458,29 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         _download_match(url, video)
         fps = probe_fps(video)
         if abs(fps - FPS) > 0.01:
-            raise SystemExit(f"[eval] downloaded video is {fps:.3f}fps; ShuttleSet labels assume {FPS}fps")
+            raise SystemExit(f"[eval] downloaded video is {fps:.3f}fps; {labels} labels assume {FPS}fps")
         worker = EvalWorker.with_options(max_containers=max_containers)()
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         # internal=True: the eval scores and caches the internal result (rawEvents,
         # per-frame tracks, BST probs) so --from-merged can re-run everything
         # offline; the product contract (fullmatch.run.assemble_result) strips those.
         res = analyze_full_match(
             video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
             verify_chunks=3, shot_stack=shot_stack or False,
-            scoreboard=None if scoreboard in ("", "auto") else scoreboard, internal=True)
+            scoreboard=None if scoreboard in ("", "auto") else scoreboard, internal=True,
+            on_merged=lambda merged: _save_merged(merged, cache, stamp, match, labels))
         merged_json = None
     report = _score_full_match(res, sets, tolerance)
+    if bfmd_match is not None:
+        report["bfmd"] = _score_bfmd_rallies(res, bfmd_match, report["frame_offset"])
+    gt_scores = bfmd_match["scores"] if bfmd_match is not None else None
+    report["scoreboard_graphic"] = {"readable_samples": len(res.get("scoreTimeline") or []),
+                                    "score_events": len(res.get("scoreEvents") or [])}
+    print(f"\n[eval] score graphic: {report['scoreboard_graphic']['readable_samples']} readable samples, "
+          f"{report['scoreboard_graphic']['score_events']} score events")
     if res.get("scoreEvents"):
-        report["scoreboard"] = _score_scoreboard(res, match, report["frame_offset"])
+        report["scoreboard"] = _score_scoreboard(res, match, report["frame_offset"], gt_scores)
+    report["side_map_oracle"] = _score_oracle_side_map(res, match, report["frame_offset"], gt_scores)
 
     if not from_merged:
         no_court = [i for i, c in enumerate(res["chunks"]) if not c["court_found"]]
@@ -430,11 +494,12 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
                   f"{v.get('status', 'ok' if v['ok'] else 'FAIL')}  [{diffs}]")
     _print_timings(res["timings"], len(res["chunks"]))
 
-    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    if from_merged:
+        stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     out = cache / f"fullmatch_{stamp}{'_resegmented' if from_merged else ''}.json"
     cache.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
-        "match": match, "commit": _git_commit(), "tolerance": tolerance, "fps": res["fps"],
+        "match": match, "labels": labels, "stage": "scored", "commit": _git_commit(), "tolerance": tolerance, "fps": res["fps"],
         "totalFrames": res["totalFrames"], "merged_from": str(merged_json) if merged_json else None,
         **report, "timings": res["timings"], "verify": res.get("verify"),
         "chunks": res["chunks"], "court": res.get("court"), "court_outliers": res.get("court_outliers"),
@@ -443,11 +508,9 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         "scoreTimeline": res.get("scoreTimeline"), "sides": res.get("sides"),
     }, indent=1, default=str))
     print(f"\n[eval] raw results: {out}")
-    if not from_merged:
-        tracks = cache / f"fullmatch_{stamp}_tracks.json.gz"
-        with gzip.open(tracks, "wt") as f:
-            json.dump({"tracking": res["tracking"], "shuttle": res["shuttle"]}, f)
-        print(f"[eval] merged tracks: {tracks}\n[eval] re-score offline with --from-merged {out}")
+    if not from_merged:    # the tracks were saved with the merged result
+        print(f"[eval] merged tracks: {cache / f'fullmatch_{stamp}_tracks.json.gz'}\n"
+              f"[eval] re-score offline with --from-merged {out}")
 
 
 def _load_merged(path: pathlib.Path) -> tuple[dict, pathlib.Path, str | None]:
@@ -462,23 +525,30 @@ def _load_merged(path: pathlib.Path) -> tuple[dict, pathlib.Path, str | None]:
     tracks_path = path.with_name(stem + "_tracks.json.gz")
     if saved.get("merged_from"):        # a re-segmented save points at the original
         res, orig, match = _load_merged(pathlib.Path(saved["merged_from"]))
+        if saved.get("labels"):
+            res.setdefault("labels", saved["labels"])
         return res, orig, match or saved.get("match")
     with gzip.open(tracks_path, "rt") as f:
         tracks = json.load(f)
     res = {k: saved.get(k) for k in ("fps", "totalFrames", "chunks", "court", "court_outliers", "verify")}
     res["timings"] = {}
-    res["rawEvents"] = saved.get("rawEvents", saved["events"])
+    res["rawEvents"] = saved["rawEvents"] if "rawEvents" in saved else saved["events"]
     res["events"] = res["rawEvents"]
     res["tracking"], res["shuttle"] = tracks["tracking"], tracks["shuttle"]
+    if saved.get("labels"):
+        res["labels"] = saved["labels"]
     return res, path, saved.get("match")
 
 
-def _score_scoreboard(res: dict, match: str, offset: int) -> dict:
-    """Score the scoreboard pass against ShuttleSet's per-rally scores."""
-    from train.harvest_scoreboard import load_rally_scores
+def _score_scoreboard(res: dict, match: str, offset: int, gt_scores: dict | None = None) -> dict:
+    """Score the scoreboard pass against per-rally scores: ShuttleSet's, or
+    gt_scores ({set: [parse_rally_scores-style rally]}, e.g. BFMD's)."""
+    if gt_scores is None:
+        from train.harvest_scoreboard import load_rally_scores
 
+        gt_scores = load_rally_scores(match)
     gt = {sn: [{**r, "first": r["first"] + offset, "last": r["last"] + offset} for r in rs]
-          for sn, rs in load_rally_scores(match).items()}
+          for sn, rs in gt_scores.items()}
     a_sets = sum(rs[-1]["scoreAfter"][0] > rs[-1]["scoreAfter"][1] for rs in gt.values())
     if a_sets * 2 < len(gt):     # ShuttleSet's A lost: flip to A = match winner
         flip = {"A": "B", "B": "A", "near": "far", "far": "near", None: None}
@@ -498,7 +568,61 @@ def _score_scoreboard(res: dict, match: str, offset: int) -> dict:
     print(f"  near/far side: {s['side_correct']}/{s['side_total']} "
           f"({_pct(s['side_correct'] / s['side_total'] if s['side_total'] else None)})")
     print(f"  sides: {[(x['set'], tuple(x['fromScore']), x['near']) for x in res.get('sides', [])]}")
+    sets = score_set_sides(res.get("sides") or [], gt)
+    s["set_sides"] = sets
+    print(f"  side map per set (near player at set start, A = match winner): {sets['correct']}/{sets['total']} "
+          f"{ {sn: (v['pred'], v['gt']) for sn, v in sets['per_set'].items()} } (pred, labelled)")
     return s
+
+
+def _oracle_score_timeline(gt_scores: dict, offset: int) -> list[dict]:
+    """A scoreboard timeline (scoreboard.timeline rows) built from labelled
+    scores instead of the graphic: two agreeing samples per rally, 90 and 120
+    frames after its end (the labelled interval end when known, else the
+    last shot + POST_ROLL), top row = label A."""
+    rows = []
+    for sn in sorted(gt_scores):
+        for r in gt_scores[sn]:
+            if r["scoreAfter"] is None:
+                continue
+            end = r.get("end", r["last"] + POST_ROLL) + offset
+            a, b = r["scoreAfter"]
+            rows += [{"frame": end + d, "cells": sn, "top": a, "bot": b} for d in (90, 120)]
+    return sorted(rows, key=lambda x: x["frame"])
+
+
+def _score_oracle_side_map(res: dict, match: str, offset: int, gt_scores: dict | None) -> dict:
+    """Side map with the labelled scores standing in for the score graphic:
+    the production path (align_scores -> rally_serve_sides -> side_map) runs
+    on a copy of the predicted rallies, so only the reading is replaced. This
+    isolates the serve-side heuristic (the in-sample part on ShuttleSet)."""
+    import copy
+
+    from fullmatch.run import apply_scoreboard
+
+    if gt_scores is None:
+        from train.harvest_scoreboard import load_rally_scores
+
+        gt_scores = load_rally_scores(match)
+    oracle = {"fps": res["fps"], "events": res["events"], "rallies": copy.deepcopy(res["rallies"])}
+    apply_scoreboard(oracle, None, tl=_oracle_score_timeline(gt_scores, offset), log=lambda *a: None)
+    print("\nSIDE MAP WITH LABELLED SCORES (score graphic replaced by the labels)")
+    return _score_scoreboard(oracle, match, offset, gt_scores)
+
+
+def _score_bfmd_rallies(res: dict, m: dict, offset: int) -> dict:
+    """Rallies against BFMD's own rally intervals (annotated start..end,
+    which open before the serve and close ~1.5 s after the last stroke),
+    besides the first..last stroke scoring in _score_full_match."""
+    pred = [(r["startFrame"], r["endFrame"]) for r in res["rallies"]]
+    gt = [(a + offset, b + offset) for a, b in m["rallies"]]
+    strict, cs = score_segments(pred, gt), _courtside_approx(pred, gt)
+    for name, s in (("BFMD intervals", strict), ("BFMD intervals, approx. COURTSIDE validate()", cs)):
+        print(f"RALLIES ({name}): {len(pred)} predicted, {len(gt)} labelled -> "
+              f"P {_pct(s['precision'])} R {_pct(s['recall'])} F1 {_pct(s['f1'])} "
+              f"(tp={s['tp']} fp={s['fp']} fn={s['fn']} split={s['split']} merged={s['merged']})")
+    return {"intervals": strict, "intervals_courtside": cs, "labelled": len(gt),
+            "excluded_labels": dict(m["excluded"])}
 
 
 def _span_hits(events, gt_rallies, pad):
@@ -589,7 +713,7 @@ def _score_full_match(res: dict, sets: dict, tolerance: int) -> dict:
               "recall": len(sp) / len(gt_serves) if gt_serves else None,
               "frame_err": sorted(pred_serves[pi] - gt_serves[gi] for pi, gi in sp_wide)}
     print(f"\nSERVES vs first shot of each rally: {len(pred_serves)} predicted, {len(gt_serves)} rallies "
-          f"({serves['labelled_as_serve']} typed as serves in ShuttleSet), {len(sp)} matched within "
+          f"({serves['labelled_as_serve']} labelled as serves), {len(sp)} matched within "
           f"+-{tolerance} ({len(sp_wide)} within +-15) -> P {_pct(serves['precision'])} R {_pct(serves['recall'])}")
 
     # Dead time: predicted hits away from every labelled rally.
@@ -633,5 +757,7 @@ if __name__ == "__main__":
     ap.add_argument("--shot-stack", default="", help="shot_stack.joblib to re-classify hits with")
     ap.add_argument("--scoreboard", nargs="?", const="auto", default="",
                     help="read the score graphic over the cached match.mp4 (optional templates path)")
+    ap.add_argument("--bfmd", action="store_true",
+                    help="score against BFMD labels (default: whatever the saved result was run with)")
     a = ap.parse_args()
-    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged, a.shot_stack, a.scoreboard)
+    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged, a.shot_stack, a.scoreboard, bfmd=a.bfmd)

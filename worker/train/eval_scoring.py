@@ -446,3 +446,26 @@ def score_scoreboard(pred_rallies, gt_sets, pad=15):
                                  "side_total", "side_correct")},
             "winner_total": sum(g["winner"] is not None for ls in gt_sets.values() for g in ls),
             "finals": finals, "finals_exact": all(f["exact"] for f in finals.values())}
+
+
+def score_set_sides(pred_sides, gt_sets):
+    """Per-set side map: who is near at the start of each labelled set.
+
+    pred_sides: scoreboard.side_map output ([{"set", "near", ...}] in rally
+    order; a set's first entry is its start). gt_sets: {set_no: [label rally
+    with "aSide" ('near'|'far'|None)]}; the set's first rally with a known
+    aSide gives the labelled near player (A if A is near). Only the start of
+    a deciding set is compared, not the end change at 11.
+    Returns {"correct", "total" (sets with a labelled side), "per_set"
+    {set: {"pred": 'A'|'B'|None, "gt": 'A'|'B'}}}.
+    """
+    per_set, correct = {}, 0
+    for sn in sorted(gt_sets):
+        a_side = next((r["aSide"] for r in gt_sets[sn] if r.get("aSide") is not None), None)
+        if a_side is None:
+            continue
+        gt = "A" if a_side == "near" else "B"
+        pred = next((s["near"] for s in pred_sides if s.get("set") == sn), None)
+        per_set[sn] = {"pred": pred, "gt": gt}
+        correct += pred == gt
+    return {"correct": correct, "total": len(per_set), "per_set": per_set}

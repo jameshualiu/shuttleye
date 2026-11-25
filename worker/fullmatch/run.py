@@ -62,7 +62,7 @@ ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: ChunkRunner | None = None,
                        *, chunk: int = CHUNK, overlap: int = OVERLAP, work_dir: Path | None = None,
                        verify_chunks: int = 0, log=print, shot_stack=None, scoreboard=None,
-                       internal: bool = False) -> dict:
+                       internal: bool = False, on_merged: Callable[[dict], None] | None = None) -> dict:
     """Analyse a whole broadcast chunk by chunk and merge the results.
 
     Any fps is accepted; seconds always use the probed (or given) fps.
@@ -72,6 +72,10 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
     `shot_stack` is passed to apply_segmentation, `scoreboard` to apply_scoreboard.
     Returns the product result (assemble_result) unless `internal`, which
     returns the full internal result (what the eval caches).
+    `on_merged(res)` is called with the merged, not yet segmented result
+    (events = every merged hit, per-frame tracking/shuttle) before any
+    post-processing, so a caller can save the GPU work first; it must not
+    mutate res. An exception in it is logged and the run goes on.
     """
     if analyze_chunks is None:
         raise ValueError("analyze_chunks is required (e.g. a Modal starmap over analyze_chunk)")
@@ -180,6 +184,11 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
     }
     if skipped:
         res["skippedSteps"] = skipped
+    if on_merged is not None:
+        try:
+            on_merged(res)
+        except Exception as exc:     # saving is a convenience; never lose the run over it
+            log(f"[fullmatch] WARNING: on_merged failed ({type(exc).__name__}: {exc})")
     apply_segmentation(res, log=log, shot_stack=shot_stack)
     _optional_step("scoreboard", res, ("rallies", "scoreTimeline", "scoreEvents", "sides"), log,
                    lambda: apply_scoreboard(res, video, templates=scoreboard, log=log))
