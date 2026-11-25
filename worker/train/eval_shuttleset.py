@@ -19,6 +19,14 @@ Steps:
   6. Score with train/eval_scoring.py and print a per-rally + overall report;
      raw results are saved under --cache-dir, outside git
 
+--full-match runs fullmatch.run.analyze_full_match on the whole downloaded
+broadcast (frame-exact 1800-frame chunks, analysed in parallel by
+EvalWorker.analyze_chunk, merged back to full-video frames), fits one label
+frame offset for the match, and scores every labelled set over its span
+(first shot - PRE_ROLL .. last shot + POST_ROLL), with and without serves.
+Prints per-stage timings; raw results (and the merged per-frame tracks,
+gzipped, for later tuning without re-running Modal) go under --cache-dir.
+
 --gt-hits also runs BST-0 at the (offset-shifted) labelled hit frames, using
 the same pipeline run's tracks and shuttle, and reports 10-class, 6-class and
 side accuracy there -- stroke classification on its own, without hit-detection
@@ -30,15 +38,19 @@ Not part of the runtime pipeline. Needs ffmpeg on PATH and the eval deps:
 Usage (from the repo root -- worker_image resolves "worker/" relative to it):
     python -m modal run worker/train/eval_shuttleset.py \
         [--set-num 1] [--rallies 1,5,10] [--max-rallies 5] [--tolerance 3] [--gt-hits]
+    python -m modal run worker/train/eval_shuttleset.py --full-match [--max-containers 20]
 """
 import csv
 import datetime
+import gzip
 import io
+import itertools
 import json
 import os
 import pathlib
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 
 import modal
@@ -50,6 +62,7 @@ for _p in (str(_WORKER_DIR), "/root"):
         sys.path.insert(0, _p)
 
 import app as worker_app  # noqa: E402  (worker_image, models_volume, model targets)
+from fullmatch.chunks import cut_exact, probe_fps  # noqa: E402
 from train.eval_scoring import (  # noqa: E402
     PRODUCT_TYPES, fit_frame_offset, parse_rallies, score_labelled_hits, score_rally, summarize,
 )
@@ -122,6 +135,14 @@ class EvalWorker:
             out["gt_probs"] = {f: p.tolist() for f, p in zip(frames, probs)}
         return out
 
+    @modal.method()
+    def analyze_chunk(self, chunk_id: int, clip: bytes) -> dict:
+        """One chunk of a full broadcast (--full-match); same body as
+        BadmintonWorker.analyze_chunk."""
+        from fullmatch.run import analyze_chunk_clip
+
+        return analyze_chunk_clip(self.inference, chunk_id, clip)
+
 
 # ---------------------------------------------------------------------------
 # Local helpers
@@ -153,30 +174,6 @@ def _download_match(url: str, out: pathlib.Path) -> None:
     )
 
 
-def _probe_fps(path: pathlib.Path) -> float:
-    out = subprocess.run(
-        ["ffprobe", "-v", "error", "-select_streams", "v:0",
-         "-show_entries", "stream=avg_frame_rate", "-of", "csv=p=0", str(path)],
-        check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    num, den = out.split("/")
-    return float(num) / float(den)
-
-
-def _cut_rally(src: pathlib.Path, start: int, n_frames: int, out: pathlib.Path) -> None:
-    """Frame-exact re-encode: constant FPS, no audio, no B-frames (so the
-    MP4 edit list skips nothing and decoded index == clip frame)."""
-    if out.exists():
-        return
-    subprocess.run(
-        ["ffmpeg", "-v", "error", "-y", "-ss", f"{start / FPS:.6f}", "-i", str(src),
-         "-frames:v", str(n_frames), "-an", "-c:v", "libx264", "-preset", "veryfast",
-         "-crf", "18", "-bf", "0", "-r", str(FPS), "-fps_mode", "cfr",
-         "-movflags", "+faststart", str(out)],
-        check=True,
-    )
-
-
 def _git_commit() -> str:
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
@@ -189,8 +186,8 @@ def _pct(x):
     return "  n/a" if x is None else f"{x * 100:5.1f}%"
 
 
-def _print_report(per_rally: list[tuple[int, int, dict]], overall: dict) -> None:
-    print("\nrally  gt_hits   tp   fp   fn   side    type")
+def _print_report(per_rally: list[tuple[int, int, dict]], overall: dict, label: str = "rally") -> None:
+    print(f"\n{label:>5}  gt_hits   tp   fp   fn   side    type")
     for rally_id, n_gt, s in per_rally:
         side = s["side_correct"] / s["side_total"] if s["side_total"] else None
         typ = s["type_correct"] / s["type_total"] if s["type_total"] else None
@@ -256,8 +253,10 @@ def _print_gt_hits(c) -> dict:
 @app.local_entrypoint()
 def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
          max_rallies: int = 0, tolerance: int = 3, cache_dir: str = "",
-         gt_hits: bool = False):
+         gt_hits: bool = False, full_match: bool = False, max_containers: int = 20):
     cache = pathlib.Path(cache_dir or pathlib.Path.home() / ".cache" / "shuttleye-eval") / match
+    if full_match:
+        return _run_full_match(match, cache, tolerance, max_containers)
     clips_dir = cache / f"set{set_num}_clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
 
@@ -272,7 +271,7 @@ def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
 
     video = cache / "match.mp4"
     _download_match(url, video)
-    fps = _probe_fps(video)
+    fps = probe_fps(video)
     if abs(fps - FPS) > 0.01:
         raise SystemExit(f"[eval] downloaded video is {fps:.3f}fps; labels assume {FPS}fps")
 
@@ -282,7 +281,7 @@ def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
         start = max(0, shots[0]["frame"] - PRE_ROLL)
         n_frames = shots[-1]["frame"] + POST_ROLL - start
         clip = clips_dir / f"rally_{rally_id:03d}_{start}.mp4"
-        _cut_rally(video, start, n_frames, clip)
+        cut_exact(video, start, n_frames, clip, FPS)
         starts[rally_id] = start
         gt_frames = [s["frame"] - start for s in shots] if gt_hits else None
         jobs.append((rally_id, clip.read_bytes(), gt_frames))
@@ -322,3 +321,127 @@ def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
         "overall": overall, "rallies": results, "clip_starts": starts,
     }, indent=1, default=str))
     print(f"\n[eval] raw results: {out}")
+
+
+# ---------------------------------------------------------------------------
+# --full-match
+# ---------------------------------------------------------------------------
+
+def _labelled_sets(match: str):
+    """{set_num: {rally_id: [shot, ...]}} for every set ShuttleSet labels."""
+    url, sets = None, {}
+    for set_num in itertools.count(1):
+        try:
+            url, sets[set_num] = _load_labels(match, set_num)
+        except urllib.error.HTTPError as e:
+            if e.code == 404 and sets:
+                return url, sets
+            raise
+
+
+def _print_timings(t: dict, n_chunks: int) -> None:
+    def row(name, v):
+        print(f"  {name:<34}{'n/a' if v is None else f'{v:9.1f}'}")
+
+    print(f"\nTIMINGS ({n_chunks} chunks, seconds)")
+    row("probe", t.get("probe_s"))
+    row("cut (local ffmpeg)", t.get("cut_s"))
+    row("verify_cut (local, 3 chunks)", t.get("verify_s"))
+    row("analyze (dispatch -> all results)", t.get("analyze_s"))
+    row("  first chunk start after dispatch", t.get("first_chunk_start_s"))
+    row("  last chunk end after dispatch", t.get("last_chunk_end_s"))
+    row("  per chunk min", t.get("chunk_min_s"))
+    row("  per chunk median", t.get("chunk_median_s"))
+    row("  per chunk max", t.get("chunk_max_s"))
+    row("  sum over chunks (GPU-busy)", t.get("chunk_sum_s"))
+    row("merge", t.get("merge_s"))
+    row("total wall clock", t.get("total_s"))
+    print(f"  upload: {t.get('upload_mb', 0):.0f} MB of chunk bytes")
+
+
+def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_containers: int):
+    from fullmatch.run import analyze_full_match
+
+    url, sets = _labelled_sets(match)
+    print(f"[eval] {match}: full match, labelled sets {sorted(sets)}")
+    video = cache / "match.mp4"
+    _download_match(url, video)
+    fps = probe_fps(video)
+    if abs(fps - FPS) > 0.01:
+        raise SystemExit(f"[eval] downloaded video is {fps:.3f}fps; ShuttleSet labels assume {FPS}fps")
+
+    worker = EvalWorker.with_options(max_containers=max_containers)()
+    res = analyze_full_match(
+        video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
+        verify_chunks=3)
+    events = res["events"]
+
+    # Each set is scored over the span the one-video baseline used:
+    # first shot - PRE_ROLL .. last shot + POST_ROLL (exclusive).
+    windows = {}
+    for set_num, rallies in sets.items():
+        frames = [s["frame"] for shots in rallies.values() for s in shots]
+        windows[set_num] = (max(0, min(frames) - PRE_ROLL), max(frames) + POST_ROLL - 1)
+
+    def in_window(f, w):
+        return w[0] <= f <= w[1]
+
+    # One label->video offset for the match, serves excluded as in scoring.
+    pred_in = [e["frame"] for e in events if any(in_window(e["frame"], w) for w in windows.values())]
+    gt_all = [s["frame"] for r in sets.values() for shots in r.values() for s in shots if not s["serve"]]
+    offset = fit_frame_offset(pred_in, gt_all, search=OFFSETS, tolerance=tolerance)
+    print(f"[eval] fitted label frame offset: {offset:+d}")
+
+    per_set, ex_scores, in_scores = [], [], []
+    for set_num, rallies in sorted(sets.items()):
+        w = windows[set_num]
+        preds = [e for e in events if in_window(e["frame"], w)]
+        gt = sorted(({**s, "frame": s["frame"] + offset} for shots in rallies.values() for s in shots),
+                    key=lambda s: s["frame"])
+        ex = score_rally(preds, gt, tolerance)
+        inc = score_rally(preds, gt, tolerance, include_serves=True)
+        ex_scores.append(ex)
+        in_scores.append(inc)
+        per_set.append((set_num, sum(not g["serve"] for g in gt), ex))
+        si = summarize([inc])["hits"]
+        print(f"[eval] set {set_num}: frames {w[0]}-{w[1]}, {len(preds)} predicted hits, "
+              f"{len(gt)} labelled shots ({len(rallies)} rallies); incl. serves "
+              f"P/R/F1 {_pct(si['precision'])}/{_pct(si['recall'])}/{_pct(si['f1'])}")
+
+    overall = summarize(ex_scores)
+    overall_incl = summarize(in_scores)
+    overall["frame_offset"] = offset
+    per_set_summary = {n: {"excl_serves": summarize([e]), "incl_serves": summarize([i])}
+                       for (n, _, e), i in zip(per_set, in_scores)}
+    outside = len(events) - len(pred_in)
+
+    print("\nSERVES EXCLUDED (comparable with the baseline)")
+    _print_report(per_set, overall, label="set")
+    h = overall_incl["hits"]
+    print("\nSERVES INCLUDED")
+    print(f"  hits:  precision {_pct(h['precision'])}  recall {_pct(h['recall'])}  F1 {_pct(h['f1'])}  "
+          f"(tp={h['tp']} fp={h['fp']} fn={h['fn']})")
+    print(f"\n[eval] {len(events)} predicted hits in the whole video, {outside} outside the labelled sets' spans")
+    no_court = [i for i, c in enumerate(res["chunks"]) if not c["court_found"]]
+    print(f"[eval] chunks without a court: {len(no_court)}/{len(res['chunks'])} {no_court}")
+    print(f"[eval] chunks with a court off the match's mode court: {len(res['court_outliers'])} {res['court_outliers']}")
+    for v in res["verify"]:
+        diffs = ", ".join(f"k={d['k']}: {d['same']:.2f} (prev {d['prev'] if d['prev'] is None else round(d['prev'], 2)}, "
+                          f"next {d['next'] if d['next'] is None else round(d['next'], 2)})" for d in v["diffs"])
+        print(f"[eval] verify_cut chunk {v['chunk']} start {v['start']}: {v.get('status', 'ok' if v['ok'] else 'FAIL')}  [{diffs}]")
+    _print_timings(res["timings"], len(res["chunks"]))
+
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    out = cache / f"fullmatch_{stamp}.json"
+    out.write_text(json.dumps({
+        "match": match, "commit": _git_commit(), "tolerance": tolerance, "fps": res["fps"],
+        "totalFrames": res["totalFrames"], "windows": windows, "frame_offset": offset,
+        "overall_excl_serves": overall, "overall_incl_serves": overall_incl, "per_set": per_set_summary,
+        "outside_sets": outside, "timings": res["timings"], "verify": res["verify"],
+        "chunks": res["chunks"], "court": res["court"], "court_outliers": res["court_outliers"],
+        "events": events,
+    }, indent=1, default=str))
+    tracks = cache / f"fullmatch_{stamp}_tracks.json.gz"
+    with gzip.open(tracks, "wt") as f:
+        json.dump({"tracking": res["tracking"], "shuttle": res["shuttle"]}, f)
+    print(f"\n[eval] raw results: {out}\n[eval] merged tracks: {tracks}")

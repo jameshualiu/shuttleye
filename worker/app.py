@@ -191,6 +191,14 @@ class BadmintonWorker:
             bst0_path=resolved_paths.get("bst0"),
         )
 
+    @modal.method()
+    def analyze_chunk(self, chunk_id: int, clip: bytes) -> dict:
+        """One chunk of a full broadcast (fullmatch.run.analyze_full_match).
+        For the offline ingest command (#76); not reachable from the webhook."""
+        from fullmatch.run import analyze_chunk_clip
+
+        return analyze_chunk_clip(self.inference, chunk_id, clip)
+
     @modal.fastapi_endpoint(method="POST")
     def process_badminton_video(self, data: dict, authorization: str = Header(default=None)):
         """
