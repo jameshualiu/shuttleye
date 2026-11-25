@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { HOME_PATH } from "@/lib/routes";
 import {
   ChevronUp,
   LogOut,
@@ -11,7 +12,6 @@ import {
   Trophy,
   User,
   Users,
-  Video,
   X,
 } from "lucide-react";
 import { useAuthUser } from "../auth/hooks/useAuthUser";
@@ -28,17 +28,6 @@ type NavItem = {
 };
 
 const groups: { label: string; items: NavItem[] }[] = [
-  {
-    label: "Your matches",
-    items: [
-      {
-        to: "/dashboard",
-        label: "Sessions",
-        icon: Video,
-        match: (p) => p === "/dashboard" || p.startsWith("/analysis/"),
-      },
-    ],
-  },
   {
     label: "Pros",
     items: [
@@ -146,7 +135,7 @@ function SidebarContent({ collapsed, onToggleCollapsed }: ContentProps) {
     <div className="flex h-full flex-col px-3 py-4">
       <div className={cn("flex h-10 items-center", collapsed ? "justify-center" : "justify-between pl-3")}>
         {!collapsed && (
-          <Link to="/dashboard" className={cn("rounded-lg text-[17px] font-semibold tracking-tight", focus)}>
+          <Link to={HOME_PATH} className={cn("rounded-lg text-[17px] font-semibold tracking-tight", focus)}>
             Shuttleye
           </Link>
         )}
@@ -395,7 +384,7 @@ function MobileNav() {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link to="/dashboard" className={cn("rounded-lg text-[17px] font-semibold tracking-tight", focus)}>
+        <Link to={HOME_PATH} className={cn("rounded-lg text-[17px] font-semibold tracking-tight", focus)}>
           Shuttleye
         </Link>
       </header>
