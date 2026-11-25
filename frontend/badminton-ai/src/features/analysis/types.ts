@@ -31,7 +31,7 @@ export interface AnalysisShot {
     isServe?: boolean;
     side?: "Top" | "Bottom" | null; // Top = far end, Bottom = near end
     sideOverridden?: boolean;      // side decode overrode strong evidence
-    detailType?: string | null;    // ShuttleSet 10-class name, e.g. "net shot"
+    detailType?: string | null;    // ShuttleSet 10-class name, e.g. "net shot" (BST-0 on both paths)
     typeConfidence?: number;
     confidence?: number | null;    // hit detector confidence (null on inserted serves)
     confirmed?: boolean;
@@ -101,5 +101,14 @@ export interface AnalysisData {
     rallies?: AnalysisRally[];
     sets?: AnalysisSet[];
     timings?: Record<string, number | (number | null)[] | null>;
-    skippedSteps?: { step: string; error: string }[];   // optional steps that failed
+    skippedSteps?: { step: string; error: string }[];   // optional steps / chunks ("chunk <id>") that failed
+    models?: AnalysisModels;
+    warnings?: string[];   // e.g. a source that is not 30 fps; [] when none
+}
+
+// Full-match result only: what actually ran (null = did not run / not known).
+export interface AnalysisModels {
+    strokes: string | null;              // stroke classifier the chunks loaded, e.g. "BST0Adapter"
+    shotStack: string | null;            // stacked classifier model path
+    scoreboardTemplates: string | null;  // score-graphic digit templates path
 }

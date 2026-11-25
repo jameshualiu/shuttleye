@@ -125,3 +125,27 @@ def test_stroke_classifier_derives_vocabularies_from_bst_inputs():
     assert src == {"TYPE_EN": "bst_inputs.MERGED_TO_EN", "PRODUCT_TYPE": "bst_inputs.EN_TO_PRODUCT"}
     assert set(MERGED_TO_EN) == set(MERGED_TYPES_ZH)
     assert MERGED_TO_PRODUCT == {zh: EN_TO_PRODUCT[en] for zh, en in MERGED_TO_EN.items()}
+
+
+# --- final review #5: location_m belongs to the hitter of the old side ---------
+
+def test_flipped_side_drops_stale_location_m():
+    mid = _ev(20, "Top", 3, location_px=[200, 100], location_m=[3.0, 1.0])
+    mid["probs"][15] = 0.08
+    mid["probs"][3] = 0.52
+    keep = _ev(10, "Top", 3, location_px=[210, 90], location_m=[3.1, 0.9])
+    res = {"events": [keep, mid, _ev(30, "Top", 3)], "rallies": [{"eventIndices": [0, 1, 2]}]}
+    apply_side_decode(res, log=lambda *a: None)
+    ev = res["events"]
+    assert ev[1]["side"] == "Bottom"
+    assert ev[1]["location_m"] is None              # was the Top player's feet
+    assert ev[1]["location_px"] == [200, 100]       # the shuttle, not the hitter: kept
+    assert ev[0]["side"] == "Top" and ev[0]["location_m"] == [3.1, 0.9]
+
+
+def test_side_from_unknown_keeps_location_m():
+    e = {"frame": 20, "side": None, "type": "Unknown", "detailType": None,
+         "probs": [1.0] + [0.0] * 24, "location_m": [2.0, 10.0]}
+    res = {"events": [_ev(10, "Top", 3), e, _ev(30, "Top", 3)], "rallies": [{"eventIndices": [0, 1, 2]}]}
+    apply_side_decode(res, log=lambda *a: None)
+    assert res["events"][1]["side"] == "Bottom" and res["events"][1]["location_m"] == [2.0, 10.0]

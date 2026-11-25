@@ -1,3 +1,7 @@
+# Ported from COURTSIDE src/badminton/pipeline.py (classify) and
+# src/badminton/shotclass.py, jayclim/BadmintonAI at commit
+# 5c356f05cde0ed90c75316c133e0aba495e5232b.
+# MIT License, Copyright (c) 2026 Jayden Lim
 """Stacked shot classifier: features and inference (no torch/modal; sklearn and
 joblib are imported only where a model is loaded).
 
@@ -251,8 +255,12 @@ def stack_inputs(res: dict) -> np.ndarray:
 
 
 def stack_targets(res: dict) -> list[int]:
-    """Indices of the events the stack classifies: hits, not inserted serves."""
-    return [i for i, e in enumerate(res["events"]) if not e.get("isServe")]
+    """Indices of the events the stack classifies: hits (not serves) that
+    carry BST-0's 25 probabilities. A hit typed by a fallback classifier
+    (BST-CG-AP, LSTM, rules) has no probs and keeps its type: the stack's
+    main inputs would all be NaN."""
+    return [i for i, e in enumerate(res["events"])
+            if not e.get("isServe") and len(e.get("probs") or ()) == N_PROBS]
 
 
 # --------------------------------------------------------------------------
@@ -285,8 +293,8 @@ def load_stack(path, log=print):
 
 
 def apply_shot_stack(res: dict, path, log=print) -> dict:
-    """Overwrite detailType / detailId / type / typeConfidence on non-serve
-    events with the stack's predictions, in place. Without a usable model
+    """Overwrite detailType / detailId / type / typeConfidence on the
+    stack_targets events (non-serve hits with BST-0 probs) with the stack's predictions, in place. Without a usable model
     (path None or missing), or if building features or predicting fails,
     Task 6's classification is kept unchanged."""
     bundle = load_stack(path, log=log) if path else None

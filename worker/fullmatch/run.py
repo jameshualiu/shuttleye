@@ -19,8 +19,16 @@ is logged, recorded in res["skippedSteps"], the step's partial changes are
 rolled back, and the rest of the result is kept.
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
-modal; the eval passes e.g. `lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs))`.
+modal; the eval passes e.g.
+`lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs, return_exceptions=True))`.
+The runner may return an exception in place of a chunk's result (in job
+order): that chunk counts as court_found False and is listed in skippedSteps.
 `analyze_chunk_clip` is the in-container body of that Modal method.
+
+res["models"] records what actually ran (stroke classifier the chunks
+loaded, shot stack and digit templates used, None when not) and
+res["warnings"] conditions that make the result less trustworthy (a source
+that is not 30 fps).
 """
 import copy
 import os
@@ -43,20 +51,51 @@ from fullmatch.segment import segment_rallies
 from fullmatch.shot_features import apply_shot_stack
 from fullmatch.sides import apply_side_decode
 
+
+def _candidates(env_var: str, *paths: str) -> list[Path]:
+    """$env_var (when set), then `paths`; the first that exists is used."""
+    return [Path(p).expanduser() for p in (os.environ.get(env_var, ""), *paths) if p]
+
+
 # Stacked shot classifier (fullmatch.shot_features, trained by
-# train/train_shot_stack.py). Lives on the Modal volume, never in git; when the
-# file is absent BST-0 + side decode's types are kept.
-SHOT_STACK_PATH = os.environ.get("SHOT_STACK_PATH", "/models/shot_stack.joblib")
+# train/train_shot_stack.py). On the Modal volume and in the local eval cache,
+# never in git; analyze_full_match runs it locally, so the local cache counts.
+# When none is found BST-0 + side decode's types are kept.
+SHOT_STACK_PATHS = _candidates("SHOT_STACK_PATH", "/models/shot_stack.joblib",
+                               "~/.cache/shuttleye-eval/shot_stack.joblib")
 SHOT_STACK_DEFAULT = True    # kept (#74): beat BST-0 + side decode on all 5 held-out matches
 
 # Score-graphic digit templates (train/harvest_scoreboard.py). On the Modal
 # volume and in the local eval cache, never in git; when none is found the
 # scoreboard step is skipped and rallies carry no score.
-SCOREBOARD_TEMPLATES = [Path(p).expanduser() for p in (
-    os.environ.get("SCOREBOARD_TEMPLATES", ""), "/models/scoreboard_digits.npz",
-    "~/.cache/shuttleye-eval/scoreboard_digits.npz") if p]
+SCOREBOARD_TEMPLATES = _candidates("SCOREBOARD_TEMPLATES", "/models/scoreboard_digits.npz",
+                                   "~/.cache/shuttleye-eval/scoreboard_digits.npz")
 
-ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
+# Model windows (BST-0's 30 frames, the hit detector's) are fixed frame counts
+# trained at 30 fps. Other rates run unchanged and are flagged in "warnings";
+# resampling to 30 fps is #76.
+MODEL_FPS = 30.0
+
+
+def default_shot_stack() -> Path | None:
+    """The first of SHOT_STACK_PATHS that exists, or None."""
+    return next((p for p in SHOT_STACK_PATHS if p.exists()), None)
+
+
+def _models(res: dict) -> dict:
+    """res["models"], created with every key None."""
+    return res.setdefault("models", {"strokes": None, "shotStack": None, "scoreboardTemplates": None})
+
+
+def _strokes(results: list[dict]) -> str | None:
+    """The stroke classifier(s) the chunks report ("strokes"), comma-joined
+    when they differ; None when no chunk reports one."""
+    names = sorted({r["strokes"] for r in results if r.get("strokes")})
+    return ", ".join(names) or None
+
+# Returns one result per job, in job order; an exception may stand in for a
+# failed chunk's result (Modal starmap(..., return_exceptions=True)).
+ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict | BaseException]]
 
 
 def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: ChunkRunner | None = None,
@@ -89,11 +128,17 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
     plan = plan_chunks(total, chunk=chunk, overlap=overlap)
     timings["probe_s"] = time.perf_counter() - t
     log(f"[fullmatch] {total} frames @ {fps:.3f} fps -> {len(plan)} chunks of {chunk} (overlap {overlap})")
+    warnings = []
+    if abs(fps - MODEL_FPS) > 0.01:
+        warnings.append(f"source fps {fps:.3f}: models were trained at {MODEL_FPS:g} fps; accuracy unmeasured")
+        log(f"[fullmatch] WARNING: {warnings[-1]}")
 
     temp = work_dir is None
     if temp:
-        (video.parent / "chunks").mkdir(parents=True, exist_ok=True)
-        work_dir = Path(tempfile.mkdtemp(prefix="run_", dir=video.parent / "chunks"))
+        chunks_root = video.parent / "chunks"
+        made_root = not chunks_root.exists()
+        chunks_root.mkdir(parents=True, exist_ok=True)
+        work_dir = Path(tempfile.mkdtemp(prefix="run_", dir=chunks_root))
     work_dir = Path(work_dir)
     try:
         t = time.perf_counter()
@@ -123,13 +168,30 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
     finally:
         if temp:
             shutil.rmtree(work_dir, ignore_errors=True)
+            if made_root:
+                try:
+                    chunks_root.rmdir()      # only if still empty (a parallel run may use it)
+                except OSError:
+                    pass
 
     log(f"[fullmatch] analysing {len(jobs)} chunks ({upload_bytes / 1e6:.0f} MB)...")
     dispatch_at = time.time()
     t = time.perf_counter()
-    results = analyze_chunks(jobs)
+    job_ids = [cid for cid, _ in jobs]
+    results, skipped = [], []
+    for k, r in enumerate(analyze_chunks(jobs)):
+        if isinstance(r, BaseException):     # one lost chunk must not lose the match
+            cid = job_ids[k] if k < len(job_ids) else None
+            err = f"{type(r).__name__}: {r}"
+            skipped.append({"step": f"chunk {cid}", "error": err})
+            log(f"[fullmatch] WARNING: chunk {cid} failed ({err}); treated as no court, rest kept")
+            r = {"chunk_id": cid, "court_found": False, "geometry": None, "events": [],
+                 "tracking": [], "shuttle_debug": [], "summary": None, "timings": {}}
+        results.append(r)
     timings["analyze_s"] = time.perf_counter() - t
     del jobs
+    if results and len(skipped) == len(results):
+        raise RuntimeError(f"every chunk failed; first: {skipped[0]['error']}")
     results = sorted(results, key=lambda r: r["chunk_id"])
     if [r["chunk_id"] for r in results] != list(range(len(plan))):
         raise RuntimeError("chunk results don't match the plan")
@@ -140,7 +202,6 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         e["timeSec"] = frame_to_sec(e["frame"], fps)
     for c, r in zip(merged["chunks"], results):
         c["court_support"] = r.get("court_support")
-    skipped = []
     try:     # report only: never worth losing the GPU result over
         mode_court, outliers = court_outliers(merged["chunks"])
     except Exception as exc:
@@ -181,6 +242,8 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
                             if (r.get("summary") or {}).get("resolution")), None),
         "verify": verify,
         "timings": timings,
+        "models": {"strokes": _strokes(results), "shotStack": None, "scoreboardTemplates": None},
+        "warnings": warnings,
     }
     if skipped:
         res["skippedSteps"] = skipped
@@ -190,7 +253,7 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         except Exception as exc:     # saving is a convenience; never lose the run over it
             log(f"[fullmatch] WARNING: on_merged failed ({type(exc).__name__}: {exc})")
     apply_segmentation(res, log=log, shot_stack=shot_stack)
-    _optional_step("scoreboard", res, ("rallies", "scoreTimeline", "scoreEvents", "sides"), log,
+    _optional_step("scoreboard", res, ("rallies", "scoreTimeline", "scoreEvents", "sides", "models"), log,
                    lambda: apply_scoreboard(res, video, templates=scoreboard, log=log))
     timings["total_s"] = time.perf_counter() - t_start
     return res if internal else product_result(res)
@@ -250,7 +313,8 @@ def match_sets(rallies: list[dict]) -> list[dict]:
 
 def assemble_result(fps: float, events: list[dict], rallies: list[dict], sets: list[dict], timings: dict,
                     *, total_frames: int | None = None, court=None, resolution=None,
-                    skipped_steps: list[dict] | None = None) -> dict:
+                    skipped_steps: list[dict] | None = None, models: dict | None = None,
+                    warnings: list[str] | None = None) -> dict:
     """The full-match product result (data-flow.md, "Full-match result").
 
     Frames are full-video frames; every frame has a seconds twin (frame / fps,
@@ -259,7 +323,9 @@ def assemble_result(fps: float, events: list[dict], rallies: list[dict], sets: l
     always present (None when unknown). Every rally
     carries the same keys; the scoreboard ones are None (scoreRead False) when
     that step did not run or read nothing. summary.resolution only when known.
-    skippedSteps lists optional steps that failed ([] when none did).
+    skippedSteps lists optional steps and chunks that failed ([] when none did).
+    models: {"strokes", "shotStack", "scoreboardTemplates"} (None = not run /
+    not known); warnings: [] when none.
     No per-frame tracking or shuttle data. Inputs are not mutated.
     """
     out_events = []
@@ -308,6 +374,8 @@ def assemble_result(fps: float, events: list[dict], rallies: list[dict], sets: l
         "events": out_events,
         "timings": copy.deepcopy(timings),
         "skippedSteps": [dict(x) for x in skipped_steps or []],
+        "models": {"strokes": None, "shotStack": None, "scoreboardTemplates": None, **(models or {})},
+        "warnings": list(warnings or []),
     }
 
 
@@ -316,7 +384,8 @@ def product_result(res: dict) -> dict:
     rallies = res.get("rallies", [])
     return assemble_result(res["fps"], res["events"], rallies, match_sets(rallies), res.get("timings", {}),
                            total_frames=res.get("totalFrames"), court=res.get("court"),
-                           resolution=res.get("resolution"), skipped_steps=res.get("skippedSteps"))
+                           resolution=res.get("resolution"), skipped_steps=res.get("skippedSteps"),
+                           models=res.get("models"), warnings=res.get("warnings"))
 
 
 def apply_scoreboard(res: dict, video: Path, templates=None, log=print, tl: list | None = None) -> dict:
@@ -340,6 +409,7 @@ def apply_scoreboard(res: dict, video: Path, templates=None, log=print, tl: list
             log(f"[fullmatch] scoreboard skipped: no digit templates ({path or SCOREBOARD_TEMPLATES})")
             return res
         tl = timeline(Path(video), res["fps"], templates=load_templates(path), log=log)
+        _models(res)["scoreboardTemplates"] = str(path)
     ev = score_events(tl)
     res["scoreTimeline"], res["scoreEvents"] = tl, ev
     if not ev:
@@ -371,7 +441,9 @@ def apply_segmentation(res: dict, log=print, shot_stack=None) -> dict:
     last hit when the track shows it).
 
     shot_stack: path to a shot_stack.joblib, False to skip the stack, None for
-    SHOT_STACK_PATH when SHOT_STACK_DEFAULT is on.
+    the first of SHOT_STACK_PATHS that exists when SHOT_STACK_DEFAULT is on.
+    res["models"]["shotStack"] is the model path when the stack re-typed the
+    hits, else None.
     """
     t = time.perf_counter()
     fps = res["fps"]
@@ -395,10 +467,14 @@ def apply_segmentation(res: dict, log=print, shot_stack=None) -> dict:
     # Optional refinements: a failure keeps the events as they were before it.
     _optional_step("side decode", res, ("events",), log, lambda: apply_side_decode(res, log=log))
     if shot_stack is None:
-        shot_stack = SHOT_STACK_PATH if SHOT_STACK_DEFAULT else False
+        shot_stack = (default_shot_stack() if SHOT_STACK_DEFAULT else False)
+        if shot_stack is None:
+            log(f"[fullmatch] shot stack skipped: no model at {[str(p) for p in SHOT_STACK_PATHS]}")
+    res.pop("shotStack", None)       # a re-run must not report an earlier run's stack
     if shot_stack:   # apply_shot_stack guards predict itself; this also covers load / features
         _optional_step("shot stack", res, ("events", "shotStack"), log,
                        lambda: apply_shot_stack(res, shot_stack, log=log))
+    _models(res)["shotStack"] = (res.get("shotStack") or {}).get("model")
     serves = sum(bool(e.get("isServe")) for e in events)
     log(f"[fullmatch] segmentation: {len(rallies)} rallies, {len(events)} events "
         f"({serves} serves) kept of {len(raw)} merged hits in {res['timings']['segment_s']:.1f}s")
@@ -432,6 +508,7 @@ def analyze_chunk_clip(inference, chunk_id: int, clip: bytes) -> dict:
         "court_found": court,
         "geometry": res["geometry"],
         "court_support": list(pipe.court_support),   # [agreeing, detections]
+        "strokes": getattr(inference, "strokes_model", None),   # stroke classifier loaded
         "summary": res["summary"],
         "events": res["events"] if court else [],
         "tracking": res["tracking"],

@@ -224,3 +224,34 @@ def test_stacked_type_is_consistent_with_detail_type(tmp_path, ten_label, six_la
     assert e["type"] in TEN_TO_PRODUCTS[ten_label]
     if ten_label == "push/rush" and six_label == "Net":
         assert e["type"] == "Net"
+
+
+def test_stack_leaves_hits_without_bst0_probs_alone(tmp_path):
+    """Final review #2: a hit typed by a fallback classifier (no BST-0 probs)
+    keeps its type; the stack only re-classifies hits with 25 probabilities."""
+    pytest.importorskip("sklearn")
+    import joblib
+    from sklearn.dummy import DummyClassifier
+
+    X = np.zeros((2, len(FEATURES)))
+    ten = DummyClassifier(strategy="constant", constant="smash").fit(X, ["smash", "lob"])
+    path = tmp_path / "shot_stack.joblib"
+    joblib.dump({"features": FEATURES, "ten": ten, "six": None}, path)
+    res = _stack_res()
+    res["events"].insert(1, {"frame": 5, "detailType": None, "type": "Drop", "side": "Bottom",
+                             "typeConfidence": 0.7})
+    res["events"][2]["frame"] = 9
+    res["rallies"] = [{"eventIndices": [0, 1, 2]}]
+    apply_shot_stack(res, path, log=lambda *_: None)
+    hit, fallback, serve = res["events"]
+    assert hit["detailType"] == "smash" and hit["type"] == "Smash"
+    assert (fallback["type"], fallback["detailType"], fallback["typeConfidence"]) == ("Drop", None, 0.7)
+    assert serve["detailType"] == "short service"
+    assert res["shotStack"]["applied"] == 1
+
+
+def test_stack_targets_need_all_25_probs():
+    from fullmatch.shot_features import stack_targets
+    res = {"events": [{"frame": 1, "probs": [0.04] * 25}, {"frame": 2}, {"frame": 3, "probs": [0.5] * 3},
+                      {"frame": 4, "probs": [0.04] * 25, "isServe": True}, {"frame": 5, "probs": None}]}
+    assert stack_targets(res) == [0]

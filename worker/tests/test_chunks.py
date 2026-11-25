@@ -146,7 +146,8 @@ def test_analyze_full_match_with_injected_runner(tmp_path):
         return out
 
     res = analyze_full_match(src, analyze_chunks=fake_runner, chunk=60, overlap=10,
-                             work_dir=tmp_path / "chunks", internal=True)
+                             work_dir=tmp_path / "chunks", internal=True,
+                             shot_stack=False, scoreboard=False)
     assert res["fps"] == 25.0
     assert res["totalFrames"] == 150
     plan = chunks_mod.plan_chunks(150, chunk=60, overlap=10)
@@ -225,7 +226,8 @@ def test_on_merged_runs_before_segmentation(tmp_path, monkeypatch):
     seen = []
     with pytest.raises(RuntimeError, match="segmentation bug"):
         run_mod.analyze_full_match(src, analyze_chunks=fake_runner, chunk=60, overlap=10,
-                                   work_dir=tmp_path / "chunks", on_merged=seen.append)
+                                   work_dir=tmp_path / "chunks", on_merged=seen.append,
+                                   shot_stack=False, scoreboard=False)
     assert len(seen) == 1
     merged = seen[0]
     assert [e["frame"] for e in merged["events"]] == [20, 70]

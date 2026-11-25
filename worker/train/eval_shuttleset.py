@@ -465,7 +465,7 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         # per-frame tracks, BST probs) so --from-merged can re-run everything
         # offline; the product contract (fullmatch.run.assemble_result) strips those.
         res = analyze_full_match(
-            video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
+            video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs, return_exceptions=True)),
             verify_chunks=3, shot_stack=shot_stack or False,
             scoreboard=None if scoreboard in ("", "auto") else scoreboard, internal=True,
             on_merged=lambda merged: _save_merged(merged, cache, stamp, match, labels))

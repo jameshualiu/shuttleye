@@ -56,6 +56,7 @@ class BadmintonInference:
         shuttle_model = "TrackNetV3" if self.tracknet_v3 else "TrackNet"
         hit_model = "HitNet" if self.hit_det else "heuristic"
         clf_model = type(self.bst_clf).__name__ if self.bst_clf else ("LSTM" if self.shot_clf else "rule-based")
+        self.strokes_model = clf_model     # reported per chunk in the full-match result's "models"
         print(f"[start] All Models Loaded Successfully ({shuttle_model} + RCNN + YOLO Pose + "
               f"{hit_model} hits + {clf_model} strokes)")
 

@@ -2,6 +2,10 @@
 "Full-match result") and the guarded optional post-GPU steps of
 analyze_full_match. No ffmpeg or Modal: probing, cutting and segmentation are
 stubbed where analyze_full_match is exercised."""
+from pathlib import Path
+
+import pytest
+
 from fullmatch import run
 from fullmatch.run import assemble_result, match_sets
 
@@ -113,7 +117,7 @@ def _stub_full_match(monkeypatch, tmp_path):
                  "tracking": [], "shuttle_debug": [], "summary": {"resolution": [512, 288]},
                  "timings": {"total_s": 1.0}} for cid, _ in jobs]
     return dict(analyze_chunks=runner, chunk=60, overlap=10, work_dir=tmp_path / "chunks",
-                shot_stack=False, log=lambda *_: None)
+                shot_stack=False, scoreboard=False, log=lambda *_: None)
 
 
 def test_failing_scoreboard_is_skipped_not_fatal(monkeypatch, tmp_path):
@@ -179,3 +183,161 @@ def test_failing_court_check_is_recorded(monkeypatch, tmp_path):
     product = run.analyze_full_match(tmp_path / "match.mp4", **kw)
     assert product["court"] is None and product["summary"]["rallyCount"] == 1
     assert product["skippedSteps"] == [{"step": "court check", "error": "ZeroDivisionError: no chunks"}]
+
+
+# --- final review fixes -------------------------------------------------------
+
+def test_shot_stack_candidates_match_the_templates():
+    """#1: the shot stack is found the same way as the digit templates, so a
+    local run picks up ~/.cache/shuttleye-eval/shot_stack.joblib."""
+    assert Path("/models/shot_stack.joblib") in run.SHOT_STACK_PATHS
+    assert Path("~/.cache/shuttleye-eval/shot_stack.joblib").expanduser() in run.SHOT_STACK_PATHS
+    assert Path("~/.cache/shuttleye-eval/scoreboard_digits.npz").expanduser() in run.SCOREBOARD_TEMPLATES
+
+
+def test_default_shot_stack_is_the_first_existing_candidate(monkeypatch, tmp_path):
+    local = tmp_path / "shot_stack.joblib"
+    local.write_bytes(b"x")
+    monkeypatch.setattr(run, "SHOT_STACK_PATHS", [tmp_path / "missing.joblib", local])
+    seen = []
+
+    def fake_stack(res, path, log=print):
+        seen.append(path)
+        res["shotStack"] = {"applied": 2, "model": str(path)}
+        return res
+    monkeypatch.setattr(run, "apply_shot_stack", fake_stack)
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    kw["shot_stack"] = None
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert seen == [local]
+    assert res["models"]["shotStack"] == str(local)
+
+    monkeypatch.setattr(run, "SHOT_STACK_PATHS", [tmp_path / "missing.joblib"])
+    seen.clear()
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert seen == [] and res["models"]["shotStack"] is None
+
+
+def test_models_record_what_ran(monkeypatch, tmp_path):
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert res["models"] == {"strokes": None, "shotStack": None, "scoreboardTemplates": None}
+    product = run.analyze_full_match(tmp_path / "match.mp4", **kw)
+    assert product["models"] == {"strokes": None, "shotStack": None, "scoreboardTemplates": None}
+
+    # chunks report their stroke classifier; a stack and templates that ran are recorded
+    runner = kw["analyze_chunks"]
+    kw["analyze_chunks"] = lambda jobs: [{**r, "strokes": "BST0Adapter"} for r in runner(jobs)]
+
+    def fake_stack(res, path, log=print):
+        res["shotStack"] = {"applied": 2, "model": str(path)}
+        return res
+    monkeypatch.setattr(run, "apply_shot_stack", fake_stack)
+    templates = tmp_path / "digits.npz"
+    templates.write_bytes(b"x")
+    monkeypatch.setattr(run, "load_templates", lambda path: None)
+    monkeypatch.setattr(run, "timeline", lambda *a, **k: [])
+    kw.update(shot_stack=str(tmp_path / "s.joblib"), scoreboard=str(templates))
+    product = run.analyze_full_match(tmp_path / "match.mp4", **kw)
+    assert product["models"] == {"strokes": "BST0Adapter", "shotStack": str(tmp_path / "s.joblib"),
+                                 "scoreboardTemplates": str(templates)}
+
+
+def test_missing_shot_stack_model_is_not_recorded(monkeypatch, tmp_path):
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    kw["shot_stack"] = str(tmp_path / "missing.joblib")     # real apply_shot_stack: no model, keeps types
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert res["models"]["shotStack"] is None and "skippedSteps" not in res
+
+
+def test_failed_scoreboard_does_not_record_its_templates(monkeypatch, tmp_path):
+    templates = tmp_path / "digits.npz"
+    templates.write_bytes(b"x")
+    monkeypatch.setattr(run, "load_templates", lambda path: None)
+    monkeypatch.setattr(run, "timeline", lambda *a, **k: [{"frame": 0}])
+    monkeypatch.setattr(run, "score_events", lambda tl: [{"frame": 0}])
+
+    def boom(*a, **k):
+        raise RuntimeError("align bug")
+    monkeypatch.setattr(run, "align_scores", boom)
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    kw["scoreboard"] = str(templates)
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert [s["step"] for s in res["skippedSteps"]] == ["scoreboard"]
+    assert res["models"]["scoreboardTemplates"] is None
+
+
+def test_strokes_lists_every_classifier_the_chunks_used(monkeypatch, tmp_path):
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    runner = kw["analyze_chunks"]
+    kw["analyze_chunks"] = lambda jobs: [{**r, "strokes": ["BST0Adapter", "LSTM"][r["chunk_id"] % 2]}
+                                         for r in runner(jobs)]
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert res["models"]["strokes"] == "BST0Adapter, LSTM"
+
+
+@pytest.mark.parametrize("fps,warned", [(25.0, True), (50.0, True), (30.0, False), (29.995, False)])
+def test_non_30fps_source_is_warned(monkeypatch, tmp_path, fps, warned):
+    """#4 (Ruling 26): model windows are 30-fps frame counts; other rates are
+    flagged, not resampled (#76)."""
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    monkeypatch.setattr(run, "probe_fps", lambda video: fps)
+    logs = []
+    kw["log"] = logs.append
+    internal = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    product = run.analyze_full_match(tmp_path / "match.mp4", **kw)
+    if warned:
+        assert len(internal["warnings"]) == 1 and f"source fps {fps:.3f}" in internal["warnings"][0]
+        assert "30 fps" in internal["warnings"][0] and "unmeasured" in internal["warnings"][0]
+        assert any("WARNING" in m and "fps" in m for m in logs)
+    else:
+        assert internal["warnings"] == []
+    assert product["warnings"] == internal["warnings"]
+
+
+def test_assemble_result_defaults_models_and_warnings():
+    r = assemble_result(30.0, [], [], [], {})
+    assert r["models"] == {"strokes": None, "shotStack": None, "scoreboardTemplates": None}
+    assert r["warnings"] == []
+
+
+def test_failed_chunk_is_skipped_not_fatal(monkeypatch, tmp_path):
+    """#10: the runner may return an exception in a chunk's place (Modal
+    starmap(return_exceptions=True)); that chunk counts as no court and the
+    rest of the match still merges."""
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    runner = kw["analyze_chunks"]
+    kw["analyze_chunks"] = lambda jobs: [RuntimeError("container died") if r["chunk_id"] == 1 else r
+                                         for r in runner(jobs)]
+    res = run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert [c["court_found"] for c in res["chunks"]] == [True, False]
+    assert [e["frame"] for e in res["rawEvents"]] == [20]
+    assert res["skippedSteps"] == [{"step": "chunk 1", "error": "RuntimeError: container died"}]
+    product = run.analyze_full_match(tmp_path / "match.mp4", **kw)
+    assert product["skippedSteps"] == [{"step": "chunk 1", "error": "RuntimeError: container died"}]
+    assert product["summary"]["rallyCount"] == 1
+
+
+def test_temp_chunks_dir_is_removed_when_this_run_made_it(monkeypatch, tmp_path):
+    """#9: without work_dir the temp run dir and the `chunks` dir it made go."""
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    kw["work_dir"] = None
+    run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert not (tmp_path / "chunks").exists()
+
+    other = tmp_path / "chunks" / "keep.txt"          # someone else's chunks dir is left alone
+    other.parent.mkdir()
+    other.write_text("x")
+    run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert sorted(p.name for p in (tmp_path / "chunks").iterdir()) == ["keep.txt"]
+
+    other.unlink()                                    # pre-existing and empty: also left alone
+    run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)
+    assert (tmp_path / "chunks").is_dir()
+
+
+def test_every_chunk_failing_is_an_error(monkeypatch, tmp_path):
+    kw = _stub_full_match(monkeypatch, tmp_path)
+    kw["analyze_chunks"] = lambda jobs: [OSError("no GPU") for _ in jobs]
+    with pytest.raises(RuntimeError, match="every chunk failed; first: OSError: no GPU"):
+        run.analyze_full_match(tmp_path / "match.mp4", internal=True, **kw)

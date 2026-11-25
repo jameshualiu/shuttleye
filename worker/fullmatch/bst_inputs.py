@@ -1,3 +1,6 @@
+# Ported from COURTSIDE src/badminton/bst_eval.py, jayclim/BadmintonAI at commit
+# 5c356f05cde0ed90c75316c133e0aba495e5232b.
+# MIT License, Copyright (c) 2026 Jayden Lim
 """BST-0 input building: pure numpy, no torch.
 
 Ported from COURTSIDE's bst_eval.py (jayclim/BadmintonAI, commit

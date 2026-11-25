@@ -74,6 +74,8 @@ def apply_side_decode(res: dict, log=print) -> dict:
 
     Sets side, sideOverridden, and (for hits with probs, not serves) re-picks
     type / detailType / detailId / typeConfidence within the decoded side.
+    A hit whose known side (Top/Bottom) flips gets location_m None: it was
+    the other player's feet. A hit whose side was unknown keeps location_m.
     Serves and hits without probs join the alternation with positional
     evidence (their current side: 0.8/0.2; unknown: 0.5) and keep their type.
     """
@@ -91,6 +93,12 @@ def apply_side_decode(res: dict, log=print) -> dict:
         sides, over = decode_sides(p_top)
         for e, side, o in zip(evs, sides, over):
             changed += e.get("side") != side
+            if e.get("side") in ("Top", "Bottom") and e["side"] != side:
+                # location_m is the old side's player's feet (pipeline
+                # _refine_locations_by_side); there is no tracking here to
+                # re-derive it, so drop it rather than keep the wrong player.
+                # location_px is the shuttle, not the hitter: kept.
+                e["location_m"] = None
             overridden += o
             e["side"], e["sideOverridden"] = side, bool(o)
             if e.get("probs") is None or e.get("isServe"):
