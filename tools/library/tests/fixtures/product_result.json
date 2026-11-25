@@ -1,0 +1,174 @@
+{
+ "fps": 30,
+ "totalFrames": 900,
+ "court": null,
+ "summary": {
+  "durationSec": 30.0,
+  "totalShots": 8,
+  "rallyCount": 3
+ },
+ "rallies": [
+  {
+   "id": 1,
+   "set": 1,
+   "startSec": 0.5,
+   "endSec": 4.0,
+   "eventIndices": [
+    0,
+    1,
+    2
+   ],
+   "scoreAfter": [
+    1,
+    0
+   ],
+   "winner": "A",
+   "nearPlayer": "B",
+   "scoreRead": true
+  },
+  {
+   "id": 2,
+   "set": 1,
+   "startSec": 9.5,
+   "endSec": 13.0,
+   "eventIndices": [
+    3,
+    4,
+    5
+   ],
+   "scoreAfter": [
+    1,
+    1
+   ],
+   "winner": "B",
+   "nearPlayer": null,
+   "scoreRead": true
+  },
+  {
+   "id": 3,
+   "set": 1,
+   "startSec": 19.5,
+   "endSec": 22.0,
+   "eventIndices": [
+    6,
+    7
+   ],
+   "scoreAfter": [
+    2,
+    1
+   ],
+   "winner": "A",
+   "nearPlayer": "B",
+   "scoreRead": true
+  }
+ ],
+ "sets": [
+  {
+   "set": 1,
+   "nearPlayer": "B",
+   "finalScore": [
+    21,
+    15
+   ]
+  }
+ ],
+ "events": [
+  {
+   "frame": 30,
+   "timeSec": 1.0,
+   "type": "Serve",
+   "detailType": "short service",
+   "isServe": true,
+   "side": "Bottom",
+   "location_m": null
+  },
+  {
+   "frame": 60,
+   "timeSec": 2.0,
+   "type": "Clear",
+   "detailType": "clear",
+   "isServe": false,
+   "side": "Top",
+   "location_m": [
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "frame": 90,
+   "timeSec": 3.0,
+   "type": "Smash",
+   "detailType": "smash",
+   "isServe": false,
+   "side": "Bottom",
+   "location_m": [
+    5.0,
+    7.5
+   ]
+  },
+  {
+   "frame": 300,
+   "timeSec": 10.0,
+   "type": "Serve",
+   "detailType": "long service",
+   "isServe": true,
+   "side": "Top",
+   "location_m": [
+    3.5,
+    3.5
+   ]
+  },
+  {
+   "frame": 330,
+   "timeSec": 11.0,
+   "type": "Unknown",
+   "detailType": null,
+   "isServe": false,
+   "side": "Bottom",
+   "location_m": [
+    2.0,
+    12.0
+   ]
+  },
+  {
+   "frame": 360,
+   "timeSec": 12.0,
+   "type": "Lift",
+   "detailType": "lob",
+   "isServe": false,
+   "side": null,
+   "location_m": null
+  },
+  {
+   "frame": 600,
+   "timeSec": 20.0,
+   "type": "Serve",
+   "detailType": "short service",
+   "isServe": true,
+   "side": "Bottom",
+   "location_m": null
+  },
+  {
+   "frame": 630,
+   "timeSec": 21.0,
+   "type": "Drop",
+   "detailType": "drop",
+   "isServe": false,
+   "side": "Top",
+   "location_m": [
+    3.0,
+    5.0
+   ]
+  }
+ ],
+ "timings": {
+  "total": 12.3
+ },
+ "skippedSteps": [],
+ "models": {
+  "strokes": "bst",
+  "shotStack": null,
+  "scoreboardTemplates": "t.npz"
+ },
+ "warnings": []
+}
