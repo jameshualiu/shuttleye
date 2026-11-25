@@ -52,6 +52,30 @@ MERGED_TO_TEN = {
     "發長球": "long service",
 }
 
+# The 10 canonical classes in COURTSIDE SHOT_ORDER (= the order the values first
+# appear in train/eval_scoring.ZH_TO_TEN); `detailId` indexes this list.
+TEN_CLASSES = [
+    "short service", "long service", "clear", "drive", "drop",
+    "lob", "net shot", "smash", "push/rush", "defensive shot",
+]
+
+# Single source for the type vocabularies (detectors.stroke_classifier derives
+# TYPE_EN / PRODUCT_TYPE from these): merged zh type -> English name -> product
+# 6-class (None = serve, not part of the product taxonomy).
+MERGED_TO_EN = {
+    "放小球": "Net Drop", "擋小球": "Block", "殺球": "Smash", "挑球": "Lift",
+    "長球": "Clear", "平球": "Drive", "切球": "Drop", "推球": "Push",
+    "撲球": "Net Kill", "勾球": "Cross-court Net",
+    "發短球": "Short Serve", "發長球": "Long Serve",
+}
+EN_TO_PRODUCT = {
+    "Net Drop": "Net", "Block": "Net", "Smash": "Smash", "Lift": "Lob",
+    "Clear": "Clear", "Drive": "Drive", "Drop": "Drop", "Push": "Drive",
+    "Net Kill": "Net", "Cross-court Net": "Net",
+    "Short Serve": None, "Long Serve": None,
+}
+MERGED_TO_PRODUCT = {zh: EN_TO_PRODUCT[en] for zh, en in MERGED_TO_EN.items()}
+
 
 def class_label(idx: int):
     """Class index -> (side 'Top'|'Bottom'|None, merged zh type, 10-class name)."""

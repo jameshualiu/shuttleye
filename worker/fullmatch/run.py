@@ -1,7 +1,8 @@
 """Full-match analysis: full broadcast in, merged full-video result out.
 
 probe fps -> plan chunks -> cut frame-exactly -> analyse chunks in parallel ->
-merge back to full-video frames -> segment into rallies (with serves).
+merge back to full-video frames -> segment into rallies (with serves) ->
+decode alternating sides per rally.
 (Classification and scoring are added by later tasks on top of that.)
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
@@ -22,6 +23,7 @@ from fullmatch.chunks import (
 )
 from fullmatch.court import court_outliers
 from fullmatch.segment import segment_rallies
+from fullmatch.sides import apply_side_decode
 
 ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 
@@ -166,6 +168,7 @@ def apply_segmentation(res: dict, log=print) -> dict:
                        "eventIndices": [new_index[i] for i in r["eventIndices"]]}
                       for r in rallies]
     res.setdefault("timings", {})["segment_s"] = time.perf_counter() - t
+    apply_side_decode(res, log=log)
     serves = sum(bool(e.get("isServe")) for e in events)
     log(f"[fullmatch] segmentation: {len(rallies)} rallies, {len(events)} events "
         f"({serves} serves) kept of {len(raw)} merged hits in {res['timings']['segment_s']:.1f}s")

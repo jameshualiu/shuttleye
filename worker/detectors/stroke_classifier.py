@@ -38,20 +38,7 @@ COURT_W, COURT_H = 6.1, 13.4   # pipeline homography target (meters)
 
 # Merged ShuttleSet classes: index 0 unknown, 1-12 Top_, 13-24 Bottom_
 MERGED_TYPES_ZH = bst_inputs.MERGED_TYPES_ZH
-TYPE_EN = {
-    "放小球": "Net Drop",
-    "擋小球": "Block",
-    "殺球": "Smash",
-    "挑球": "Lift",
-    "長球": "Clear",
-    "平球": "Drive",
-    "切球": "Drop",
-    "推球": "Push",
-    "撲球": "Net Kill",
-    "勾球": "Cross-court Net",
-    "發短球": "Short Serve",
-    "發長球": "Long Serve",
-}
+TYPE_EN = bst_inputs.MERGED_TO_EN
 
 # Collapses BST's 12-class TYPE_EN vocabulary onto the product's 6-class
 # taxonomy (Clear/Smash/Drop/Drive/Net/Lob) that the frontend (shotUtils.ts
@@ -61,20 +48,7 @@ TYPE_EN = {
 # classes aren't part of this taxonomy, consistent with hit-detection
 # already excluding serves from its own ground truth/training labels
 # upstream (see train/extract_features.py's SERVICE_TYPES_ZH).
-PRODUCT_TYPE = {
-    "Net Drop": "Net",
-    "Block": "Net",
-    "Smash": "Smash",
-    "Lift": "Lob",
-    "Clear": "Clear",
-    "Drive": "Drive",
-    "Drop": "Drop",
-    "Push": "Drive",
-    "Net Kill": "Net",
-    "Cross-court Net": "Net",
-    "Short Serve": None,
-    "Long Serve": None,
-}
+PRODUCT_TYPE = bst_inputs.EN_TO_PRODUCT
 
 
 def _normalize_joints(joints: np.ndarray, bbox: np.ndarray) -> np.ndarray:
