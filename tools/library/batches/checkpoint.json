@@ -1,0 +1,82 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=RRI_k2KZgOM",
+    "meta": {
+      "players": [
+        "Viktor Axelsen",
+        "Jonatan Christie"
+      ],
+      "nearFirst": "loser",
+      "tournament": "yonex-thailand-open-2021",
+      "round": "Quarter-finals",
+      "date": "2021-01-15"
+    },
+    "shuttleset": "Viktor_Axelsen_Jonatan_Christie_YONEX_Thailand_Open_2021_QuarterFinals",
+    "runner": "merged:~/.cache/shuttleye-eval/Viktor_Axelsen_Jonatan_Christie_YONEX_Thailand_Open_2021_QuarterFinals/fullmatch_20261125-011752.json",
+    "video": "~/.cache/shuttleye-eval/Viktor_Axelsen_Jonatan_Christie_YONEX_Thailand_Open_2021_QuarterFinals/match.mp4"
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=IuXmsimDOW8",
+    "meta": {
+      "players": [
+        "Viktor Axelsen",
+        "Ng Ka Long Angus"
+      ],
+      "nearFirst": "loser",
+      "tournament": "yonex-thailand-open-2021",
+      "round": "Finals",
+      "date": "2021-01-17"
+    },
+    "shuttleset": "Viktor_Axelsen_Ng_Ka_Long_Angus_YONEX_Thailand_Open_2021_Finals",
+    "runner": "merged:~/.cache/shuttleye-eval/Viktor_Axelsen_Ng_Ka_Long_Angus_YONEX_Thailand_Open_2021_Finals/fullmatch_20261125-013709.json",
+    "video": "~/.cache/shuttleye-eval/Viktor_Axelsen_Ng_Ka_Long_Angus_YONEX_Thailand_Open_2021_Finals/match.mp4"
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=OzRtd3D0hEo",
+    "meta": {
+      "players": [
+        "Viktor Axelsen",
+        "Liew Daren"
+      ],
+      "nearFirst": "loser",
+      "tournament": "toyota-thailand-open-2021",
+      "round": "Quarter-finals",
+      "date": "2021-01-22"
+    },
+    "shuttleset": "Viktor_Axelsen_Liew_Daren_TOYOTA_THAILAND_OPEN_2021_QuarterFinals",
+    "runner": "merged:~/.cache/shuttleye-eval/Viktor_Axelsen_Liew_Daren_TOYOTA_THAILAND_OPEN_2021_QuarterFinals/fullmatch_20261125-022556.json",
+    "video": "~/.cache/shuttleye-eval/Viktor_Axelsen_Liew_Daren_TOYOTA_THAILAND_OPEN_2021_QuarterFinals/match.mp4"
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=rSK9Qx8LapE",
+    "meta": {
+      "players": [
+        "Ng Ka Long Angus",
+        "Lee Cheuk Yiu"
+      ],
+      "nearFirst": "loser",
+      "tournament": "yonex-thailand-open-2021",
+      "round": "Quarter-finals",
+      "date": "2021-01-15"
+    },
+    "shuttleset": "Ng_Ka_Long_Angus_Lee_Cheuk_Yiu_YONEX_Thailand_Open_2021_QuarterFinals",
+    "runner": "merged:~/.cache/shuttleye-eval/Ng_Ka_Long_Angus_Lee_Cheuk_Yiu_YONEX_Thailand_Open_2021_QuarterFinals/fullmatch_20261125-021015.json",
+    "video": "~/.cache/shuttleye-eval/Ng_Ka_Long_Angus_Lee_Cheuk_Yiu_YONEX_Thailand_Open_2021_QuarterFinals/match.mp4"
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=gloiZ_gTJaE",
+    "meta": {
+      "players": [
+        "An Se Young",
+        "Ratchanok Intanon"
+      ],
+      "nearFirst": "loser",
+      "tournament": "yonex-thailand-open-2021",
+      "round": "Quarter-finals",
+      "date": "2021-01-15"
+    },
+    "shuttleset": "An_Se_Young_Ratchanok_Intanon_YONEX_Thailand_Open_2021_QuarterFinals",
+    "runner": "merged:~/.cache/shuttleye-eval/An_Se_Young_Ratchanok_Intanon_YONEX_Thailand_Open_2021_QuarterFinals/fullmatch_20261125-024334.json",
+    "video": "~/.cache/shuttleye-eval/An_Se_Young_Ratchanok_Intanon_YONEX_Thailand_Open_2021_QuarterFinals/match.mp4"
+  }
+]
