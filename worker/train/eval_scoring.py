@@ -360,3 +360,86 @@ def summarize(rally_scores, segment_scores=None):
                            "precision": p, "recall": r,
                            "f1": 2 * p * r / (p + r) if p and r else None}
     return out
+
+
+def parse_rally_scores(rows, h, far_corner, near_corner):
+    """Per-rally score labels from one set's ShuttleSet CSV rows (dicts).
+
+    ShuttleSet repeats the score AFTER the rally (roundscore_A/B) on every
+    shot of it. Returns rallies in order: {"rally", "first", "last" (shot
+    frames), "scoreAfter" (A, B), "winner" ('A'|'B'|None, from the score
+    delta), "aSide" ('near'|'far'|None, majority of the hitters' positions)}.
+    """
+    by_rally = {}
+    for row in rows:
+        frame = _float_or_none(row.get("frame_num"))
+        if frame is None:
+            continue
+        by_rally.setdefault(int(float(row["rally"])), []).append((int(frame), row))
+    out, prev = [], (0, 0)
+    for rid in sorted(by_rally):
+        shots = sorted(by_rally[rid], key=lambda t: t[0])
+        a = max(int(float(r["roundscore_A"])) for _, r in shots)
+        b = max(int(float(r["roundscore_B"])) for _, r in shots)
+        delta = (a - prev[0], b - prev[1])
+        winner = "A" if delta == (1, 0) else "B" if delta == (0, 1) else None
+        votes = Counter()
+        for _, r in shots:
+            side = side_from_location(h, far_corner, near_corner,
+                                      _float_or_none(r.get("player_location_x")),
+                                      _float_or_none(r.get("player_location_y")))
+            if side is None or r.get("player") not in ("A", "B"):
+                continue
+            near = (side == "Bottom") == (r["player"] == "A")
+            votes["near" if near else "far"] += 1
+        a_side = None
+        if votes and votes["near"] != votes["far"]:
+            a_side = "near" if votes["near"] > votes["far"] else "far"
+        out.append({"rally": rid, "first": shots[0][0], "last": shots[-1][0], "scoreAfter": (a, b),
+                    "winner": winner, "aSide": a_side})
+        prev = (a, b)
+    return out
+
+
+def score_scoreboard(pred_rallies, gt_sets, pad=15):
+    """Score scoreboard-derived rally scores against parse_rally_scores labels.
+
+    gt_sets: {set_no: [label rally, ...]} with frames already in video frames.
+    Each label rally is paired with the predicted rally overlapping its
+    first..last shot (+-pad) the most; an unpaired label counts as wrong.
+    Scores are (A, B) on both sides with A = the match winner (ShuttleSet's
+    convention; the caller flips the labels if their A lost).
+    Counts: score_correct (set and scoreAfter equal), winner_correct, and
+    side_correct (the predicted near player is the labelled one; labels
+    without a side are skipped, side_total counts the rest). finals: per set,
+    the last predicted rally of that set vs the last label.
+    """
+    c = Counter()
+    for sn, labels in gt_sets.items():
+        for g in labels:
+            c["rallies"] += 1
+            lo, hi = g["first"] - pad, g["last"] + pad
+            best, best_ov = None, 0
+            for p in pred_rallies:
+                ov = min(hi, p["endFrame"]) - max(lo, p["startFrame"])
+                if ov > best_ov:
+                    best, best_ov = p, ov
+            if g["aSide"] is not None:
+                c["side_total"] += 1
+            if best is None:
+                continue
+            c["matched"] += 1
+            score = best.get("scoreAfter")
+            c["score_correct"] += best.get("set") == sn and score is not None and tuple(score) == g["scoreAfter"]
+            c["winner_correct"] += g["winner"] is not None and best.get("winner") == g["winner"]
+            if g["aSide"] is not None and best.get("near") is not None:
+                c["side_correct"] += (best["near"] == "A") == (g["aSide"] == "near")
+    finals = {}
+    for sn, labels in gt_sets.items():
+        in_set = [p for p in pred_rallies if p.get("set") == sn and p.get("scoreAfter") is not None]
+        pred = tuple(in_set[-1]["scoreAfter"]) if in_set else None
+        finals[sn] = {"pred": pred, "gt": labels[-1]["scoreAfter"], "exact": pred == labels[-1]["scoreAfter"]}
+    return {**{k: c[k] for k in ("rallies", "matched", "score_correct", "winner_correct",
+                                 "side_total", "side_correct")},
+            "winner_total": sum(g["winner"] is not None for ls in gt_sets.values() for g in ls),
+            "finals": finals, "finals_exact": all(f["exact"] for f in finals.values())}

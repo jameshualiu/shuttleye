@@ -9,7 +9,9 @@ from train.eval_scoring import (
     fit_frame_offset,
     match_hits,
     parse_rallies,
+    parse_rally_scores,
     score_rally,
+    score_scoreboard,
     score_segments,
     side_from_location,
     summarize,
@@ -173,3 +175,31 @@ def test_score_labelled_hits_counts_ten_type_and_side():
     assert (s["type_total"], s["type_correct"]) == (3, 2)        # serves excluded; push -> Drive
     assert (s["side_total"], s["side_correct"]) == (4, 2)
     assert (s["side_known"], s["side_known_correct"]) == (3, 2)
+
+
+def test_parse_rally_scores_reads_score_after_and_a_side():
+    rows = [
+        {"rally": "1", "frame_num": "100", "roundscore_A": "0", "roundscore_B": "1", "player": "B",
+         "player_location_x": "5", "player_location_y": "450"},
+        {"rally": "1", "frame_num": "130", "roundscore_A": "0", "roundscore_B": "1", "player": "A",
+         "player_location_x": "5", "player_location_y": "150"},
+        {"rally": "2", "frame_num": "300", "roundscore_A": "1", "roundscore_B": "1", "player": "A",
+         "player_location_x": "", "player_location_y": ""},
+    ]
+    r = parse_rally_scores(rows, IDENTITY, FAR, NEAR)
+    assert r[0] == {"rally": 1, "first": 100, "last": 130, "scoreAfter": (0, 1), "winner": "B", "aSide": "far"}
+    assert r[1]["winner"] == "A" and r[1]["aSide"] is None
+
+
+def test_score_scoreboard_rallies_finals_and_sides():
+    gt = {1: [{"rally": 1, "first": 100, "last": 200, "scoreAfter": (1, 0), "winner": "A", "aSide": "near"},
+              {"rally": 2, "first": 400, "last": 500, "scoreAfter": (1, 1), "winner": "B", "aSide": "near"},
+              {"rally": 3, "first": 700, "last": 800, "scoreAfter": (21, 1), "winner": "A", "aSide": "near"}]}
+    pred = [{"startFrame": 95, "endFrame": 210, "set": 1, "scoreAfter": (1, 0), "winner": "A", "near": "A"},
+            {"startFrame": 410, "endFrame": 520, "set": 1, "scoreAfter": (0, 1), "winner": "B", "near": "B"},
+            {"startFrame": 690, "endFrame": 790, "set": 1, "scoreAfter": (21, 1), "winner": "A", "near": "A"}]
+    s = score_scoreboard(pred, gt)
+    assert s["rallies"] == 3 and s["matched"] == 3
+    assert s["score_correct"] == 2 and s["winner_correct"] == 3 and s["side_correct"] == 2
+    assert s["finals"] == {1: {"pred": (21, 1), "gt": (21, 1), "exact": True}}
+    assert s["finals_exact"] is True

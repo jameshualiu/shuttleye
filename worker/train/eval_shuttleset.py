@@ -33,6 +33,11 @@ such a saved result locally, without Modal (also runnable as a plain script).
 --shot-stack <shot_stack.joblib> re-classifies the segmented hits with the
 stacked shot classifier (fullmatch.shot_features, train/train_shot_stack.py);
 without it the eval scores BST-0 + side decode's types.
+--scoreboard [templates.npz] (with --from-merged) also reads the score graphic
+over <cache>/<match>/match.mp4 locally (fullmatch.run.apply_scoreboard; a
+--full-match run does this by itself when templates exist) and scores it
+against ShuttleSet's per-rally roundscore_A/B: set finals, per-rally score,
+winner and near/far side (train/harvest_scoreboard.py builds the templates).
 
 --gt-hits also runs BST-0 at the (offset-shifted) labelled hit frames, using
 the same pipeline run's tracks and shuttle, and reports 10-class, 6-class and
@@ -74,7 +79,7 @@ import app as worker_app  # noqa: E402  (worker_image, models_volume, model targ
 from fullmatch.chunks import cut_exact, probe_fps  # noqa: E402
 from train.eval_scoring import (  # noqa: E402
     PRODUCT_TYPES, fit_frame_offset, match_hits, parse_rallies, score_labelled_hits, score_rally,
-    score_segments, summarize,
+    score_scoreboard, score_segments, summarize,
 )
 
 SHUTTLESET_RAW = "https://raw.githubusercontent.com/wywyWang/CoachAI-Projects/main/ShuttleSet/set"
@@ -268,10 +273,11 @@ def _cache_dir(cache_dir: str, match: str) -> pathlib.Path:
 def main(match: str = DEFAULT_MATCH, set_num: int = 1, rallies: str = "",
          max_rallies: int = 0, tolerance: int = 3, cache_dir: str = "",
          gt_hits: bool = False, full_match: bool = False, max_containers: int = 20,
-         from_merged: str = "", shot_stack: str = ""):
+         from_merged: str = "", shot_stack: str = "", scoreboard: str = ""):
     cache = _cache_dir(cache_dir, match)
     if full_match or from_merged:
-        return _run_full_match(match, cache, tolerance, max_containers, from_merged, shot_stack)
+        return _run_full_match(match, cache, tolerance, max_containers, from_merged, shot_stack,
+                               scoreboard)
     clips_dir = cache / f"set{set_num}_clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
 
@@ -375,8 +381,8 @@ def _print_timings(t: dict, n_chunks: int) -> None:
 
 
 def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_containers: int,
-                    from_merged: str = "", shot_stack: str = ""):
-    from fullmatch.run import analyze_full_match, apply_segmentation
+                    from_merged: str = "", shot_stack: str = "", scoreboard: str = ""):
+    from fullmatch.run import analyze_full_match, apply_scoreboard, apply_segmentation
 
     if from_merged:
         res, merged_json, saved_match = _load_merged(pathlib.Path(from_merged).expanduser())
@@ -391,6 +397,8 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
     if from_merged:
         print(f"[eval] re-segmenting saved merged result {merged_json} (no Modal)")
         apply_segmentation(res, shot_stack=shot_stack or False)
+        if scoreboard:
+            apply_scoreboard(res, cache / "match.mp4", templates=None if scoreboard == "auto" else scoreboard)
     else:
         video = cache / "match.mp4"
         _download_match(url, video)
@@ -400,9 +408,12 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         worker = EvalWorker.with_options(max_containers=max_containers)()
         res = analyze_full_match(
             video, fps, analyze_chunks=lambda jobs: list(worker.analyze_chunk.starmap(jobs)),
-            verify_chunks=3, shot_stack=shot_stack or False)
+            verify_chunks=3, shot_stack=shot_stack or False,
+            scoreboard=None if scoreboard in ("", "auto") else scoreboard)
         merged_json = None
     report = _score_full_match(res, sets, tolerance)
+    if res.get("scoreEvents"):
+        report["scoreboard"] = _score_scoreboard(res, match, report["frame_offset"])
 
     if not from_merged:
         no_court = [i for i, c in enumerate(res["chunks"]) if not c["court_found"]]
@@ -425,7 +436,8 @@ def _run_full_match(match: str, cache: pathlib.Path, tolerance: int, max_contain
         **report, "timings": res["timings"], "verify": res.get("verify"),
         "chunks": res["chunks"], "court": res.get("court"), "court_outliers": res.get("court_outliers"),
         "rawEvents": res["rawEvents"], "events": res["events"], "rallies": res["rallies"],
-        "shotStack": res.get("shotStack"),
+        "shotStack": res.get("shotStack"), "scoreEvents": res.get("scoreEvents"),
+        "scoreTimeline": res.get("scoreTimeline"), "sides": res.get("sides"),
     }, indent=1, default=str))
     print(f"\n[eval] raw results: {out}")
     if not from_merged:
@@ -456,6 +468,34 @@ def _load_merged(path: pathlib.Path) -> tuple[dict, pathlib.Path, str | None]:
     res["events"] = res["rawEvents"]
     res["tracking"], res["shuttle"] = tracks["tracking"], tracks["shuttle"]
     return res, path, saved.get("match")
+
+
+def _score_scoreboard(res: dict, match: str, offset: int) -> dict:
+    """Score the scoreboard pass against ShuttleSet's per-rally scores."""
+    from train.harvest_scoreboard import load_rally_scores
+
+    gt = {sn: [{**r, "first": r["first"] + offset, "last": r["last"] + offset} for r in rs]
+          for sn, rs in load_rally_scores(match).items()}
+    a_sets = sum(rs[-1]["scoreAfter"][0] > rs[-1]["scoreAfter"][1] for rs in gt.values())
+    if a_sets * 2 < len(gt):     # ShuttleSet's A lost: flip to A = match winner
+        flip = {"A": "B", "B": "A", "near": "far", "far": "near", None: None}
+        gt = {sn: [{**r, "scoreAfter": r["scoreAfter"][::-1], "winner": flip[r["winner"]],
+                    "aSide": flip[r["aSide"]]} for r in rs] for sn, rs in gt.items()}
+    s = score_scoreboard(res["rallies"], gt)
+    s["gt_a_flipped"] = a_sets * 2 < len(gt)
+    n = s["rallies"]
+    print(f"\nSCOREBOARD ({len(res['scoreEvents'])} score events, {sum(r.get('scoreRead', False) for r in res['rallies'])}"
+          f"/{len(res['rallies'])} rallies read)")
+    for sn, f in s["finals"].items():
+        print(f"  set {sn}: final {f['pred']} vs labelled {f['gt']} -> {'exact' if f['exact'] else 'WRONG'}")
+    print(f"  per-rally score: {s['score_correct']}/{n} ({_pct(s['score_correct'] / n if n else None)}), "
+          f"{s['matched']} labelled rallies paired with a predicted one")
+    print(f"  winner: {s['winner_correct']}/{s['winner_total']} "
+          f"({_pct(s['winner_correct'] / s['winner_total'] if s['winner_total'] else None)})")
+    print(f"  near/far side: {s['side_correct']}/{s['side_total']} "
+          f"({_pct(s['side_correct'] / s['side_total'] if s['side_total'] else None)})")
+    print(f"  sides: {[(x['set'], tuple(x['fromScore']), x['near']) for x in res.get('sides', [])]}")
+    return s
 
 
 def _span_hits(events, gt_rallies, pad):
@@ -588,5 +628,7 @@ if __name__ == "__main__":
     ap.add_argument("--match", default=None, help="default: the saved result's match")
     ap.add_argument("--tolerance", type=int, default=3)
     ap.add_argument("--shot-stack", default="", help="shot_stack.joblib to re-classify hits with")
+    ap.add_argument("--scoreboard", nargs="?", const="auto", default="",
+                    help="read the score graphic over the cached match.mp4 (optional templates path)")
     a = ap.parse_args()
-    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged, a.shot_stack)
+    _run_full_match(a.match, None, a.tolerance, 0, a.from_merged, a.shot_stack, a.scoreboard)

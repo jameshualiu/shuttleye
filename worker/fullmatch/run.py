@@ -2,8 +2,9 @@
 
 probe fps -> plan chunks -> cut frame-exactly -> analyse chunks in parallel ->
 merge back to full-video frames -> segment into rallies (with serves) ->
-decode alternating sides per rally -> (optional) stacked shot classifier.
-(Scoring is added by later tasks on top of that.)
+decode alternating sides per rally -> (optional) stacked shot classifier ->
+read the score graphic locally over the full video (fullmatch.scoreboard:
+score after each rally, winner, set, which player is near).
 
 The parallel step is injected (`analyze_chunks`), so this module never imports
 modal; the eval passes e.g. `lambda jobs: list(EvalWorker().analyze_chunk.starmap(jobs))`.
@@ -22,6 +23,9 @@ from fullmatch.chunks import (
     plan_chunks, probe_fps,
 )
 from fullmatch.court import court_outliers
+from fullmatch.scoreboard import (
+    align_scores, events as score_events, load_templates, rally_serve_sides, side_map, timeline,
+)
 from fullmatch.segment import segment_rallies
 from fullmatch.shot_features import apply_shot_stack
 from fullmatch.sides import apply_side_decode
@@ -32,19 +36,26 @@ from fullmatch.sides import apply_side_decode
 SHOT_STACK_PATH = os.environ.get("SHOT_STACK_PATH", "/models/shot_stack.joblib")
 SHOT_STACK_DEFAULT = True    # kept (#74): beat BST-0 + side decode on all 5 held-out matches
 
+# Score-graphic digit templates (train/harvest_scoreboard.py). On the Modal
+# volume and in the local eval cache, never in git; when none is found the
+# scoreboard step is skipped and rallies carry no score.
+SCOREBOARD_TEMPLATES = [Path(p).expanduser() for p in (
+    os.environ.get("SCOREBOARD_TEMPLATES", ""), "/models/scoreboard_digits.npz",
+    "~/.cache/shuttleye-eval/scoreboard_digits.npz") if p]
+
 ChunkRunner = Callable[[list[tuple[int, bytes]]], list[dict]]
 
 
 def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: ChunkRunner | None = None,
                        *, chunk: int = CHUNK, overlap: int = OVERLAP, work_dir: Path | None = None,
-                       verify_chunks: int = 0, log=print, shot_stack=None) -> dict:
+                       verify_chunks: int = 0, log=print, shot_stack=None, scoreboard=None) -> dict:
     """Analyse a whole broadcast chunk by chunk and merge the results.
 
     Any fps is accepted; seconds always use the probed (or given) fps.
     Chunks go to `work_dir` and are kept (re-runs skip the cut); without it a
     temp dir next to the video is used and removed afterwards.
     `verify_chunks` > 0 checks that many chunks (first/middle/last) with verify_cut.
-    `shot_stack` is passed to apply_segmentation.
+    `shot_stack` is passed to apply_segmentation, `scoreboard` to apply_scoreboard.
     """
     if analyze_chunks is None:
         raise ValueError("analyze_chunks is required (e.g. a Modal starmap over analyze_chunk)")
@@ -143,7 +154,49 @@ def analyze_full_match(video: Path, fps: float | None = None, analyze_chunks: Ch
         "timings": timings,
     }
     apply_segmentation(res, log=log, shot_stack=shot_stack)
+    apply_scoreboard(res, video, templates=scoreboard, log=log)
     timings["total_s"] = time.perf_counter() - t_start
+    return res
+
+
+def apply_scoreboard(res: dict, video: Path, templates=None, log=print, tl: list | None = None) -> dict:
+    """Read the score graphic over the full local video and score the
+    segmented rallies, in place: rally "set", "scoreAfter" (A, B), "winner",
+    "scoreRead", "serveSide", "near" (A = the match winner); res
+    "scoreTimeline", "scoreEvents", "sides" (scoreboard.side_map).
+
+    templates: a scoreboard_digits.npz path, False to skip, None for the first
+    of SCOREBOARD_TEMPLATES that exists. Without templates (or without a
+    readable graphic) the step is skipped and rallies keep no score.
+    `tl` reuses a saved timeline instead of scanning the video.
+    """
+    if templates is False:
+        return res
+    t = time.perf_counter()
+    if tl is None:
+        path = Path(templates).expanduser() if templates else next(
+            (p for p in SCOREBOARD_TEMPLATES if p.exists()), None)
+        if path is None or not path.exists():
+            log(f"[fullmatch] scoreboard skipped: no digit templates ({path or SCOREBOARD_TEMPLATES})")
+            return res
+        tl = timeline(Path(video), res["fps"], templates=load_templates(path), log=log)
+    ev = score_events(tl)
+    res["scoreTimeline"], res["scoreEvents"] = tl, ev
+    if not ev:
+        log("[fullmatch] scoreboard: no score events read; rallies keep no score")
+        return res
+    rallies = res["rallies"]
+    align_scores(rallies, ev)
+    rally_serve_sides(res)
+    res["sides"] = side_map(rallies)
+    finals = {}
+    for r in rallies:
+        finals[r["set"]] = r["scoreAfter"]
+    res.setdefault("timings", {})["scoreboard_s"] = time.perf_counter() - t
+    log(f"[fullmatch] scoreboard: {len(ev)} score events, {sum(r['scoreRead'] for r in rallies)}/"
+        f"{len(rallies)} rallies read, set finals (A-B) {finals}, sides "
+        f"{[(s['set'], s['fromScore'], s['near']) for s in res['sides']]} "
+        f"in {res['timings']['scoreboard_s']:.1f}s")
     return res
 
 
