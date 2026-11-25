@@ -30,6 +30,15 @@ def _verify_checksum(path: Path, expected_sha256: str) -> None:
             f"Checksum mismatch for {path.name}: expected {expected_sha256}, got {actual}"
         )
 
+def upload_output(results: dict) -> dict:
+    """The upload path's analysis.json: process_video's result without
+    BST-0's per-hit "probs" (25 floats per hit, an input to the full-match
+    steps, not a result). The full-match chunk path (analyze_chunk) keeps
+    them. The input is not mutated."""
+    return {**results, "events": [{k: v for k, v in e.items() if k != "probs"}
+                                  for e in results.get("events") or []]}
+
+
 # 1. Define the Modal App
 app = modal.App("badminton-ai-worker")
 
@@ -88,6 +97,7 @@ OPTIONAL_MODEL_TARGETS = {
     "inpaintnet": "InpaintNet_best.pt",
     "hit_detector": "hit_detector_v3.onnx",
     "bst": "bst_stroke_classifier.pt",
+    "bst0": "bst_0_JnB_bone_merged.pt",
 }
 
 
@@ -187,7 +197,16 @@ class BadmintonWorker:
             inpaintnet_path=resolved_paths.get("inpaintnet"),
             hit_detector_path=resolved_paths.get("hit_detector"),
             bst_path=resolved_paths.get("bst"),
+            bst0_path=resolved_paths.get("bst0"),
         )
+
+    @modal.method()
+    def analyze_chunk(self, chunk_id: int, clip: bytes) -> dict:
+        """One chunk of a full broadcast (fullmatch.run.analyze_full_match).
+        For the offline ingest command (#76); not reachable from the webhook."""
+        from fullmatch.run import analyze_chunk_clip
+
+        return analyze_chunk_clip(self.inference, chunk_id, clip)
 
     @modal.fastapi_endpoint(method="POST")
     def process_badminton_video(self, data: dict, authorization: str = Header(default=None)):
@@ -288,7 +307,7 @@ class BadmintonWorker:
 
             # Step 4: Save analysis.json and Upload back to E2
             with open(results_local, 'w') as f:
-                json.dump(results, f)
+                json.dump(upload_output(results), f)
 
             results_e2_key = f"outputs/{user_id}/{video_id}/analysis.json"
             s3.upload_file(results_local, bucket, results_e2_key)

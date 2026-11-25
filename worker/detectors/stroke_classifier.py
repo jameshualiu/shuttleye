@@ -1,6 +1,14 @@
 """BST stroke-type classification for detected hits.
 
-Wraps the pretrained BST-CG-AP checkpoint (25 merged ShuttleSet classes,
+Two adapters with the same classify_hits contract:
+  - BST0Adapter (preferred): BST-0 fed COURTSIDE's input recipe, built in
+    fullmatch/bst_inputs.py (+-15 frame window, no court position input)
+  - BSTStrokeClassifierAdapter (fallback): BST-CG-AP, described below
+
+The 25-class index contract (BONE_PAIRS, MERGED_TYPES_ZH, index -> side/type
+decoding via class_label) lives in fullmatch/bst_inputs.py for both.
+
+BSTStrokeClassifierAdapter wraps the pretrained BST-CG-AP checkpoint (25 merged ShuttleSet classes,
 "between 2 hits with max limits" segmentation, seq_len=100). Replaces the
 6-class LSTM shot classifier -- BST's raw 12-class (+Unknown) output is
 collapsed onto that same 6-class taxonomy via PRODUCT_TYPE below, since
@@ -19,40 +27,18 @@ Input construction mirrors the official preprocessing
 import numpy as np
 import torch
 
-from detectors.bst_model import BST_CG_AP
+from detectors.bst_model import BST_0, BST_CG_AP
+from fullmatch import bst_inputs
 
 SEQ_LEN = 100
-N_JOINTS = 17
-BONE_PAIRS = [
-    (0, 1), (0, 2), (1, 2), (1, 3), (2, 4),   # head
-    (3, 5), (4, 6),                            # ears to shoulders
-    (5, 7), (7, 9), (6, 8), (8, 10),           # arms
-    (5, 6), (5, 11), (6, 12), (11, 12),        # torso
-    (11, 13), (13, 15), (12, 14), (14, 16),    # legs
-]
+N_JOINTS = bst_inputs.N_JOINTS
+BONE_PAIRS = bst_inputs.BONE_PAIRS
 FRAME_W, FRAME_H = 512.0, 288.0
 COURT_W, COURT_H = 6.1, 13.4   # pipeline homography target (meters)
 
 # Merged ShuttleSet classes: index 0 unknown, 1-12 Top_, 13-24 Bottom_
-MERGED_TYPES_ZH = [
-    "放小球", "擋小球", "殺球", "挑球",
-    "長球", "平球", "切球", "推球",
-    "撲球", "勾球", "發短球", "發長球",
-]
-TYPE_EN = {
-    "放小球": "Net Drop",
-    "擋小球": "Block",
-    "殺球": "Smash",
-    "挑球": "Lift",
-    "長球": "Clear",
-    "平球": "Drive",
-    "切球": "Drop",
-    "推球": "Push",
-    "撲球": "Net Kill",
-    "勾球": "Cross-court Net",
-    "發短球": "Short Serve",
-    "發長球": "Long Serve",
-}
+MERGED_TYPES_ZH = bst_inputs.MERGED_TYPES_ZH
+TYPE_EN = bst_inputs.MERGED_TO_EN
 
 # Collapses BST's 12-class TYPE_EN vocabulary onto the product's 6-class
 # taxonomy (Clear/Smash/Drop/Drive/Net/Lob) that the frontend (shotUtils.ts
@@ -62,20 +48,7 @@ TYPE_EN = {
 # classes aren't part of this taxonomy, consistent with hit-detection
 # already excluding serves from its own ground truth/training labels
 # upstream (see train/extract_features.py's SERVICE_TYPES_ZH).
-PRODUCT_TYPE = {
-    "Net Drop": "Net",
-    "Block": "Net",
-    "Smash": "Smash",
-    "Lift": "Lob",
-    "Clear": "Clear",
-    "Drive": "Drive",
-    "Drop": "Drop",
-    "Push": "Drive",
-    "Net Kill": "Net",
-    "Cross-court Net": "Net",
-    "Short Serve": None,
-    "Long Serve": None,
-}
+PRODUCT_TYPE = bst_inputs.EN_TO_PRODUCT
 
 
 def _normalize_joints(joints: np.ndarray, bbox: np.ndarray) -> np.ndarray:
@@ -93,16 +66,6 @@ def _normalize_joints(joints: np.ndarray, bbox: np.ndarray) -> np.ndarray:
     x_n = x_n - c_n[:, None, 0]
     y_n = y_n - c_n[:, None, 1]
     return np.stack((x_n, y_n), axis=-1)
-
-
-def _create_bones(joints: np.ndarray) -> np.ndarray:
-    """joints (t, m, J, 2) -> bones (t, m, B, 2), zero where either joint missing."""
-    bones = []
-    for start, end in BONE_PAIRS:
-        s = joints[:, :, start, :]
-        e = joints[:, :, end, :]
-        bones.append(np.where((s != 0.0) & (e != 0.0), e - s, 0.0))
-    return np.stack(bones, axis=-2)
 
 
 def _fit_seq_len(joints, pos, shuttle, target_len=SEQ_LEN):
@@ -209,7 +172,7 @@ class BSTStrokeClassifierAdapter:
             joints, pos, shuttle, v_len = self._build_segment(
                 start_f, end_f, shuttle_traj, tracking_by_frame, pixel_to_meters)
 
-            bones = _create_bones(joints)
+            bones = bst_inputs.create_bones(joints)
             jnb = np.concatenate((joints, bones), axis=-2)   # (s, 2, J+B, 2)
             jnb = jnb.reshape(SEQ_LEN, 2, -1)                # flatten joints*xy
 
@@ -230,13 +193,8 @@ class BSTStrokeClassifierAdapter:
         for hit, p in zip(hits, probs):
             idx = int(p.argmax())
             conf = float(p[idx])
-            if idx == 0:
-                side, zh = None, "未知球種"
-                hit["type"] = "Unknown"
-            else:
-                side = "Top" if idx <= 12 else "Bottom"
-                zh = MERGED_TYPES_ZH[(idx - 1) % 12]
-                hit["type"] = PRODUCT_TYPE[TYPE_EN[zh]]
+            side, zh, _ = bst_inputs.class_label(idx)
+            hit["type"] = "Unknown" if zh is None else PRODUCT_TYPE[TYPE_EN[zh]]
             hit["side"] = side
             hit["typeConfidence"] = round(conf, 3)
 
@@ -248,4 +206,75 @@ class BSTStrokeClassifierAdapter:
         for h in hits:
             counts[h["type"]] = counts.get(h["type"], 0) + 1
         print(f"[bst] Stroke types assigned: {counts}")
+        return hits
+
+
+class BST0Adapter:
+    """BST-0 (bst_0_JnB_bone_merged.pt, 2D poses) fed COURTSIDE's input recipe.
+
+    Same classify_hits contract as BSTStrokeClassifierAdapter, plus per hit
+    "probs" (25 floats, bst_inputs.CLASSES order) and "detailType" (the
+    10-class name, e.g. "net shot"). Inputs are built in fullmatch/bst_inputs.py
+    (+-15 frames around the hit, bbox-normalised joints + bones, shuttle / frame
+    size, players [Top, Bottom]).
+    """
+
+    # Pipeline shuttle and player coordinates are 512x288; COURTSIDE's inputs
+    # were 1280x720, so tracks and shuttle are scaled by 2.5 in x and y first.
+    PIPELINE_SIZE = (512, 288)
+
+    def __init__(self, weights_path: str, device=None):
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self._model = BST_0(in_dim=bst_inputs.IN_DIM, seq_len=bst_inputs.SEQ_LEN,
+                            n_class=len(bst_inputs.CLASSES), depth_tem=2, depth_inter=1)
+        state = torch.load(weights_path, map_location=self.device, weights_only=True)
+        self._model.load_state_dict(state)
+        self._model.to(self.device).eval()
+        print(f"[bst0] BST0Adapter loaded: {weights_path} (device={self.device})")
+
+    def probs_at(self, hit_frames: list, shuttle_traj: list, player_tracking: list,
+                 frame_size=(1280, 720)) -> np.ndarray:
+        """Softmax probabilities (n, 25) for windows centred on hit_frames."""
+        n_class = len(bst_inputs.CLASSES)
+        if not hit_frames:
+            return np.zeros((0, n_class), dtype=np.float32)
+        shuttle_by_frame = {s["frame"]: s.get("pos") for s in shuttle_traj}
+        players_by_frame = {e["frame"]: e["players"] for e in player_tracking}
+
+        windows = [bst_inputs.build_window(int(f), shuttle_by_frame, players_by_frame,
+                                           src_size=self.PIPELINE_SIZE, dst_size=frame_size)
+                   for f in hit_frames]
+        jnb = torch.from_numpy(np.stack([w[0] for w in windows])).to(self.device)
+        shuttle = torch.from_numpy(np.stack([w[1] for w in windows])).to(self.device)
+        video_len = torch.full((len(windows),), bst_inputs.SEQ_LEN,
+                               dtype=torch.long, device=self.device)
+        with torch.no_grad():
+            logits = self._model(jnb, shuttle, video_len)
+            return torch.softmax(logits, dim=1).cpu().numpy()
+
+    def classify_hits(self, hits: list, shuttle_traj: list, player_tracking: list,
+                      fps: float, pixel_to_meters) -> list:
+        """Assign type/side/typeConfidence/detailType/probs to each hit (drops
+        serve-classified hits, like BSTStrokeClassifierAdapter). fps and
+        pixel_to_meters are unused: BST-0 has a fixed 30-frame window and no
+        court-position input."""
+        if not hits:
+            return hits
+        probs = self.probs_at([h["frame"] for h in hits], shuttle_traj, player_tracking)
+
+        for hit, p in zip(hits, probs):
+            idx = int(p.argmax())
+            side, zh, ten = bst_inputs.class_label(idx)
+            hit["side"] = side
+            hit["type"] = "Unknown" if zh is None else PRODUCT_TYPE[TYPE_EN[zh]]
+            hit["detailType"] = ten
+            hit["typeConfidence"] = round(float(p[idx]), 3)
+            hit["probs"] = [round(float(x), 4) for x in p]
+
+        hits = [h for h in hits if h["type"] is not None]
+
+        counts = {}
+        for h in hits:
+            counts[h["type"]] = counts.get(h["type"], 0) + 1
+        print(f"[bst0] Stroke types assigned: {counts}")
         return hits

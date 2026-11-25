@@ -18,6 +18,7 @@ class BadmintonPipeline:
         self.engine = inference_engine
         self.geometry = None
         self.homography_matrix = None
+        self.court_support = (0, 0)
 
         self.COURT_WIDTH = 6.1
         self.COURT_HEIGHT = 13.4
@@ -33,15 +34,33 @@ class BadmintonPipeline:
     # Homography setup
     # -------------------------------------------------------------------------
 
-    def setup_homography(self, video_path, search_limit=150):
+    def setup_homography(self, video_path, search_limit=150, consensus=False):
+        """Detect the court on every 10th frame up to search_limit (None = the
+        whole video) and build the homography from the first detection, or with
+        consensus, from the largest cluster of agreeing detections over all
+        sampled frames (fullmatch.court; a replay or close-up early in the
+        video can't win). self.court_support = (cluster size, detections)."""
         vr = VideoReader(video_path, ctx=cpu(0), width=512, height=288)
         print(f"[court] Searching for court geometry...")
-        for i in range(0, min(search_limit, len(vr)), 10):
+        limit = len(vr) if search_limit is None else min(search_limit, len(vr))
+        found = []
+        for i in range(0, limit, 10):
             frame = vr[i].asnumpy()
             geom = self.engine.detect_geometry(frame)
             if geom.get("court_keypoints_6"):
-                self.geometry = geom
-                break
+                found.append(geom)
+                if not consensus:
+                    break
+        if found:
+            if consensus:
+                from fullmatch.court import consensus_court
+                idx, members = consensus_court([g["court_keypoints_6"] for g in found])
+                self.geometry = found[idx]
+                self.court_support = (len(members), len(found))
+                print(f"[court] Consensus court: {len(members)}/{len(found)} detections agree")
+            else:
+                self.geometry = found[0]
+                self.court_support = (1, 1)
 
         if not self.geometry:
             print("WARNING:  Warning: No court found. Homography unavailable.")
@@ -233,13 +252,34 @@ class BadmintonPipeline:
     # Main entry point
     # -------------------------------------------------------------------------
 
-    def process_video(self, video_path, tracknet_batch_size=8, pose_batch_size=16, limit_frames=None):
-        self.setup_homography(video_path)
+    def process_video(self, video_path, tracknet_batch_size=8, pose_batch_size=16, limit_frames=None,
+                      court_search_limit=150, skip_without_court=False, court_consensus=False):
+        """court_search_limit: frames searched for the court (None = all).
+        skip_without_court: if no court is found, return an empty result
+        (no shuttle/pose/hit passes) instead of analysing without geometry.
+        court_consensus: see setup_homography(consensus=)."""
+        self.setup_homography(video_path, search_limit=court_search_limit, consensus=court_consensus)
 
         vr = VideoReader(video_path, ctx=cpu(0), width=512, height=288)
         fps = vr.get_avg_fps()
         total_frames = min(len(vr), limit_frames) if limit_frames else len(vr)
         truncated = bool(limit_frames) and len(vr) > limit_frames
+
+        if skip_without_court and self.geometry is None:
+            print("[skip] No court in this video; skipping shuttle/pose/hit passes")
+            return {
+                "summary": {
+                    "durationSec": total_frames / (fps if fps > 0 else 30),
+                    "totalShots": 0,
+                    "shotCounts": {},
+                    "resolution": list(vr[0].asnumpy().shape[1::-1]),
+                    "truncated": truncated,
+                },
+                "geometry": None,
+                "events": [],
+                "tracking": [],
+                "shuttle_debug": [],
+            }
 
         print(f"[start] Starting analysis ({total_frames} frames @ {fps:.1f} fps)...")
 
