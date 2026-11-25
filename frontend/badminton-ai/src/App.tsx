@@ -17,6 +17,7 @@ const PairsPage = lazy(() => import("./pages/PairsPage"));
 const PairProfilePage = lazy(() => import("./pages/PairProfilePage"));
 const TournamentsPage = lazy(() => import("./pages/TournamentsPage"));
 const TournamentPage = lazy(() => import("./pages/TournamentPage"));
+const MatchPage = lazy(() => import("./pages/MatchPage"));
 const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const PrivateLayout = lazy(() => import("./layouts/PrivateLayout"));
 
@@ -55,6 +56,7 @@ function ThemedApp() {
             <Route path="/pairs/:pairId" element={<PairProfilePage />} />
             <Route path="/tournaments" element={<TournamentsPage />} />
             <Route path="/tournaments/:editionId" element={<TournamentPage />} />
+            <Route path="/matches/:matchId" element={<MatchPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

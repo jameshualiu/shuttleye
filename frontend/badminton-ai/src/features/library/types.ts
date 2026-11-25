@@ -24,7 +24,8 @@ export type RallyDoc = {
   set: number;
   startSec: number;
   endSec: number;
-  scoreBefore: [number, number];
+  /** [A, B] before the rally; null once an earlier rally of the set had no read score. */
+  scoreBefore: [number, number] | null;
   winner: Side | null;
   shots: ShotDoc[];
 };

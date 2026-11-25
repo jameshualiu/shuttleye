@@ -1,0 +1,4970 @@
+{
+ "id": "yonex-thailand-open-2021-viktor-axelsen-jonatan-christie",
+ "youtubeId": "M7lc1UVf-VE",
+ "editionId": "yonex-thailand-open-2021",
+ "round": "Quarter-final",
+ "date": "2021-01-15",
+ "players": {
+  "A": {
+   "id": "viktor-axelsen",
+   "name": "Viktor AXELSEN"
+  },
+  "B": {
+   "id": "jonatan-christie",
+   "name": "Jonatan CHRISTIE"
+  }
+ },
+ "winner": "A",
+ "games": [
+  {
+   "a": 21,
+   "b": 11
+  },
+  {
+   "a": 21,
+   "b": 17
+  }
+ ],
+ "attributed": false,
+ "status": "published",
+ "analyzer": {
+  "models": {
+   "strokes": "bst",
+   "shotStack": null,
+   "scoreboardTemplates": "t.npz"
+  },
+  "warnings": [],
+  "skippedSteps": [],
+  "timings": {
+   "total": 12.3
+  }
+ },
+ "accuracy": null,
+ "summary": {
+  "rallies": 70,
+  "avgShots": 6.0,
+  "durationSec": 1736.7
+ },
+ "rallies": [
+  {
+   "n": 1,
+   "set": 1,
+   "startSec": 30.0,
+   "endSec": 32.5,
+   "scoreBefore": [
+    0,
+    0
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 31.0,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "set": 1,
+   "startSec": 54.16,
+   "endSec": 58.63,
+   "scoreBefore": [
+    0,
+    1
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 55.16,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 56.15,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 57.13,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "set": 1,
+   "startSec": 76.47,
+   "endSec": 84.68,
+   "scoreBefore": [
+    1,
+    1
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 77.47,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 78.38,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 79.23,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 80.22,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 81.06,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 82.14,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 83.18,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "set": 1,
+   "startSec": 99.25,
+   "endSec": 109.81,
+   "scoreBefore": [
+    2,
+    1
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 100.25,
+     "p": "A",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 101.35,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 102.4,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 103.39,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 104.53,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 105.54,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 106.61,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 107.39,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 108.31,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "set": 1,
+   "startSec": 129.18,
+   "endSec": 134.35,
+   "scoreBefore": [
+    2,
+    2
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 130.18,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 130.97,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 131.96,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 132.85,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "set": 1,
+   "startSec": 151.55,
+   "endSec": 159.94,
+   "scoreBefore": [
+    3,
+    2
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 152.55,
+     "p": null,
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 153.69,
+     "p": null,
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 154.59,
+     "p": null,
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 155.38,
+     "p": null,
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 156.38,
+     "p": null,
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 157.56,
+     "p": null,
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 158.44,
+     "p": null,
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "set": 1,
+   "startSec": 176.61,
+   "endSec": 179.11,
+   "scoreBefore": [
+    4,
+    2
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 177.61,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 8,
+   "set": 1,
+   "startSec": 195.67,
+   "endSec": 202.26,
+   "scoreBefore": [
+    4,
+    3
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 196.67,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 197.74,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 198.7,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 199.74,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 200.76,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "set": 1,
+   "startSec": 224.57,
+   "endSec": 230.42,
+   "scoreBefore": [
+    5,
+    3
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 225.57,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 226.66,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 227.85,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 228.92,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 10,
+   "set": 1,
+   "startSec": 241.3,
+   "endSec": 243.8,
+   "scoreBefore": [
+    6,
+    3
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 242.3,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 11,
+   "set": 1,
+   "startSec": 256.82,
+   "endSec": 265.28,
+   "scoreBefore": [
+    7,
+    3
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 257.82,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 258.99,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 259.8,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 260.81,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 261.84,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 262.99,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 263.78,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 12,
+   "set": 1,
+   "startSec": 288.41,
+   "endSec": 293.65,
+   "scoreBefore": [
+    8,
+    3
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 289.41,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 290.15,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 291.15,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 292.15,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "set": 1,
+   "startSec": 311.27,
+   "endSec": 313.77,
+   "scoreBefore": [
+    8,
+    4
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 312.27,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 14,
+   "set": 1,
+   "startSec": 336.41,
+   "endSec": 341.87,
+   "scoreBefore": [
+    8,
+    5
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 337.41,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 338.22,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 339.21,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 340.37,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 15,
+   "set": 1,
+   "startSec": 364.12,
+   "endSec": 369.41,
+   "scoreBefore": [
+    8,
+    6
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 365.12,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 365.9,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 366.9,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 367.91,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 16,
+   "set": 1,
+   "startSec": 386.81,
+   "endSec": 392.67,
+   "scoreBefore": [
+    9,
+    6
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 387.81,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 388.54,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 389.47,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 390.33,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 391.17,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 17,
+   "set": 1,
+   "startSec": 406.39,
+   "endSec": 413.67,
+   "scoreBefore": [
+    9,
+    7
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 407.39,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 408.53,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 409.43,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 410.24,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 411.4,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 412.17,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 18,
+   "set": 1,
+   "startSec": 435.68,
+   "endSec": 439.09,
+   "scoreBefore": [
+    9,
+    8
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 436.68,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 437.59,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 19,
+   "set": 1,
+   "startSec": 453.73,
+   "endSec": 463.75,
+   "scoreBefore": [
+    10,
+    8
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 454.73,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 455.66,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 456.51,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 457.33,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 458.48,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 459.6,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 460.57,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 461.41,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 462.25,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 20,
+   "set": 1,
+   "startSec": 482.15,
+   "endSec": 485.58,
+   "scoreBefore": [
+    11,
+    8
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 483.15,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 484.08,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 21,
+   "set": 1,
+   "startSec": 499.56,
+   "endSec": 502.06,
+   "scoreBefore": [
+    11,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 500.56,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 22,
+   "set": 1,
+   "startSec": 524.76,
+   "endSec": 550.1,
+   "scoreBefore": [
+    12,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 525.76,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 526.56,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 527.4,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 528.11,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 529.09,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 529.84,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 530.96,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 532.15,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 533.17,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 533.93,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 534.71,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 535.75,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 536.68,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 537.86,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 539.04,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 539.93,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 540.89,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 541.78,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 542.6,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 543.63,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 544.49,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 545.51,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 546.53,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 547.49,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 548.6,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 23,
+   "set": 1,
+   "startSec": 569.62,
+   "endSec": 573.14,
+   "scoreBefore": [
+    13,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 570.62,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 571.64,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 24,
+   "set": 1,
+   "startSec": 584.3,
+   "endSec": 586.8,
+   "scoreBefore": [
+    14,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 585.3,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 25,
+   "set": 1,
+   "startSec": 603.66,
+   "endSec": 606.16,
+   "scoreBefore": [
+    15,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 604.66,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 26,
+   "set": 1,
+   "startSec": 623.19,
+   "endSec": 630.63,
+   "scoreBefore": [
+    16,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 624.19,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 625.26,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 626.33,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 627.27,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 628.36,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 629.13,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 27,
+   "set": 1,
+   "startSec": 648.51,
+   "endSec": 651.01,
+   "scoreBefore": [
+    17,
+    9
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 649.51,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 28,
+   "set": 1,
+   "startSec": 674.16,
+   "endSec": 676.66,
+   "scoreBefore": [
+    17,
+    10
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 675.16,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 29,
+   "set": 1,
+   "startSec": 690.94,
+   "endSec": 698.45,
+   "scoreBefore": [
+    18,
+    10
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 691.94,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 693.02,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 693.76,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 694.72,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 695.87,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 696.95,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 30,
+   "set": 1,
+   "startSec": 717.16,
+   "endSec": 721.18,
+   "scoreBefore": [
+    19,
+    10
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 718.16,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 718.98,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 719.68,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 31,
+   "set": 1,
+   "startSec": 733.51,
+   "endSec": 738.04,
+   "scoreBefore": [
+    19,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 734.51,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 735.37,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 736.54,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 32,
+   "set": 1,
+   "startSec": 751.83,
+   "endSec": 754.33,
+   "scoreBefore": [
+    20,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 752.83,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 33,
+   "set": 2,
+   "startSec": 772.49,
+   "endSec": 777.69,
+   "scoreBefore": [
+    0,
+    0
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 773.49,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 774.56,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 775.41,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 776.19,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 34,
+   "set": 2,
+   "startSec": 791.05,
+   "endSec": 808.34,
+   "scoreBefore": [
+    0,
+    1
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 792.05,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 793.03,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 793.89,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 794.6,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 795.4,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 796.39,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 797.49,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 798.38,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 799.49,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 800.57,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 801.3,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 802.24,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 803.01,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 804.06,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 805.15,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 805.87,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 806.84,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 35,
+   "set": 2,
+   "startSec": 822.74,
+   "endSec": 844.97,
+   "scoreBefore": [
+    0,
+    2
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 823.74,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 824.55,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 825.48,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 826.42,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 827.47,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 828.51,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 829.67,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 830.58,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 831.65,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 832.51,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 833.59,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 834.38,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 835.56,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 836.74,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 837.64,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 838.84,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 840.01,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 840.9,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 841.6,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 842.36,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 843.47,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 36,
+   "set": 2,
+   "startSec": 861.62,
+   "endSec": 866.84,
+   "scoreBefore": [
+    1,
+    2
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 862.62,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 863.51,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 864.61,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 865.34,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 37,
+   "set": 2,
+   "startSec": 889.03,
+   "endSec": 893.86,
+   "scoreBefore": [
+    1,
+    3
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 890.03,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 891.2,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 892.36,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 38,
+   "set": 2,
+   "startSec": 914.84,
+   "endSec": 936.43,
+   "scoreBefore": [
+    1,
+    4
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 915.84,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 916.65,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 917.55,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 918.71,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 919.82,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 920.68,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 921.48,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 922.2,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 923.34,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 924.09,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 924.91,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 925.98,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 927.1,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 928.17,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 928.95,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 929.84,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 930.95,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 931.89,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 932.61,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 933.79,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 934.93,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 39,
+   "set": 2,
+   "startSec": 959.22,
+   "endSec": 961.72,
+   "scoreBefore": [
+    1,
+    5
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 960.22,
+     "p": "B",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 40,
+   "set": 2,
+   "startSec": 976.77,
+   "endSec": 979.27,
+   "scoreBefore": [
+    1,
+    6
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 977.77,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 41,
+   "set": 2,
+   "startSec": 992.42,
+   "endSec": 996.96,
+   "scoreBefore": [
+    2,
+    6
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 993.42,
+     "p": "A",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 994.57,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 995.46,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 42,
+   "set": 2,
+   "startSec": 1013.9,
+   "endSec": 1019.82,
+   "scoreBefore": [
+    2,
+    7
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1014.9,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1015.8,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1016.58,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1017.44,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1018.32,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 43,
+   "set": 2,
+   "startSec": 1035.04,
+   "endSec": 1038.25,
+   "scoreBefore": [
+    3,
+    7
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1036.04,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1036.75,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 44,
+   "set": 2,
+   "startSec": 1054.03,
+   "endSec": 1070.81,
+   "scoreBefore": [
+    4,
+    7
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1055.03,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1055.79,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1056.69,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1057.48,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1058.21,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1059.31,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1060.47,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1061.21,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1062.23,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1063.03,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1064.2,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1065.39,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1066.51,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1067.4,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1068.43,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1069.31,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 45,
+   "set": 2,
+   "startSec": 1094.13,
+   "endSec": 1100.14,
+   "scoreBefore": [
+    4,
+    8
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1095.13,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1096.22,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1096.97,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1097.89,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1098.64,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 46,
+   "set": 2,
+   "startSec": 1111.34,
+   "endSec": 1117.88,
+   "scoreBefore": [
+    5,
+    8
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1112.34,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1113.43,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1114.48,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1115.32,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1116.38,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 47,
+   "set": 2,
+   "startSec": 1131.66,
+   "endSec": 1136.07,
+   "scoreBefore": [
+    6,
+    8
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1132.66,
+     "p": "A",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1133.77,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1134.57,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 48,
+   "set": 2,
+   "startSec": 1147.05,
+   "endSec": 1150.39,
+   "scoreBefore": [
+    6,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1148.05,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1148.89,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 49,
+   "set": 2,
+   "startSec": 1164.33,
+   "endSec": 1176.02,
+   "scoreBefore": [
+    7,
+    9
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1165.33,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1166.21,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1167.35,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1168.25,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1169.24,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1170.02,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1170.85,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1171.88,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1172.66,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1173.81,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1174.52,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 50,
+   "set": 2,
+   "startSec": 1191.16,
+   "endSec": 1194.43,
+   "scoreBefore": [
+    8,
+    9
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1192.16,
+     "p": "A",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1192.93,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 51,
+   "set": 2,
+   "startSec": 1205.11,
+   "endSec": 1218.09,
+   "scoreBefore": [
+    8,
+    10
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1206.11,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1206.84,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1207.95,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1209.09,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1210.05,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1210.78,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1211.94,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1212.74,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1213.76,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1214.49,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1215.43,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1216.59,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 52,
+   "set": 2,
+   "startSec": 1241.54,
+   "endSec": 1245.92,
+   "scoreBefore": [
+    9,
+    10
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1242.54,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1243.69,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1244.42,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 53,
+   "set": 2,
+   "startSec": 1268.34,
+   "endSec": 1294.4,
+   "scoreBefore": [
+    9,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1269.34,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1270.52,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1271.35,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1272.43,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1273.25,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1274.28,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1275.33,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1276.31,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1277.05,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1277.81,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1278.52,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1279.57,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1280.45,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1281.18,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1281.94,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1283.06,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1284.08,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1285.15,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1285.87,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1286.75,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1287.87,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1288.79,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1289.76,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1290.87,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1291.95,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1292.9,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 54,
+   "set": 2,
+   "startSec": 1309.41,
+   "endSec": 1322.89,
+   "scoreBefore": [
+    10,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1310.41,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1311.19,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1311.97,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1313.17,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1313.92,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1314.83,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1315.74,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1316.76,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1317.8,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1318.76,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1319.63,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1320.44,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1321.39,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 55,
+   "set": 2,
+   "startSec": 1341.42,
+   "endSec": 1351.75,
+   "scoreBefore": [
+    11,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1342.42,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1343.42,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1344.25,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1345.28,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1346.13,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1347.29,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1347.99,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1349.18,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1350.25,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 56,
+   "set": 2,
+   "startSec": 1371.37,
+   "endSec": 1379.71,
+   "scoreBefore": [
+    12,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1372.37,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1373.4,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1374.39,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1375.31,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1376.13,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1377.26,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1378.21,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 57,
+   "set": 2,
+   "startSec": 1394.48,
+   "endSec": 1396.98,
+   "scoreBefore": [
+    13,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1395.48,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 58,
+   "set": 2,
+   "startSec": 1408.86,
+   "endSec": 1413.44,
+   "scoreBefore": [
+    14,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1409.86,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1410.95,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1411.94,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 59,
+   "set": 2,
+   "startSec": 1432.25,
+   "endSec": 1446.78,
+   "scoreBefore": [
+    15,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1433.25,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1434.32,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1435.28,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1436.3,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1437.04,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1438.03,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1439.2,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1440.13,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1441.23,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1442.34,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1443.44,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1444.46,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1445.28,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 60,
+   "set": 2,
+   "startSec": 1466.1,
+   "endSec": 1472.44,
+   "scoreBefore": [
+    16,
+    11
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1467.1,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1468.13,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1468.87,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1469.76,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1470.94,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 61,
+   "set": 2,
+   "startSec": 1491.48,
+   "endSec": 1494.81,
+   "scoreBefore": [
+    17,
+    11
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1492.48,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1493.31,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 62,
+   "set": 2,
+   "startSec": 1515.4,
+   "endSec": 1519.99,
+   "scoreBefore": [
+    17,
+    12
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1516.4,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1517.3,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1518.49,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 63,
+   "set": 2,
+   "startSec": 1538.76,
+   "endSec": 1543.21,
+   "scoreBefore": [
+    17,
+    13
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1539.76,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1540.73,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1541.71,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 64,
+   "set": 2,
+   "startSec": 1560.12,
+   "endSec": 1562.62,
+   "scoreBefore": [
+    17,
+    14
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1561.12,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    }
+   ]
+  },
+  {
+   "n": 65,
+   "set": 2,
+   "startSec": 1582.22,
+   "endSec": 1585.85,
+   "scoreBefore": [
+    18,
+    14
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1583.22,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1584.35,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 66,
+   "set": 2,
+   "startSec": 1603.67,
+   "endSec": 1613.07,
+   "scoreBefore": [
+    18,
+    15
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1604.67,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1605.58,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1606.59,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1607.76,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1608.7,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1609.71,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1610.65,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1611.57,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 67,
+   "set": 2,
+   "startSec": 1627.38,
+   "endSec": 1641.44,
+   "scoreBefore": [
+    19,
+    15
+   ],
+   "winner": "A",
+   "shots": [
+    {
+     "t": 1628.38,
+     "p": "A",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1629.57,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1630.52,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1631.28,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1632.18,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1633.08,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1634.02,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1634.99,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1636.03,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1637.05,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1638.18,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1638.89,
+     "p": "B",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1639.94,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 68,
+   "set": 2,
+   "startSec": 1652.21,
+   "endSec": 1659.46,
+   "scoreBefore": [
+    20,
+    15
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1653.21,
+     "p": "A",
+     "g": null,
+     "d": "long service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1653.94,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1655.04,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1655.75,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1656.94,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1657.96,
+     "p": "B",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 69,
+   "set": 2,
+   "startSec": 1670.02,
+   "endSec": 1680.14,
+   "scoreBefore": [
+    20,
+    16
+   ],
+   "winner": "B",
+   "shots": [
+    {
+     "t": 1671.02,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1672.15,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-left",
+     "s": false
+    },
+    {
+     "t": 1672.99,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1674.15,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1674.92,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1675.87,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1676.6,
+     "p": "B",
+     "g": "Clear",
+     "d": "clear",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1677.64,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1678.64,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-left",
+     "s": false
+    }
+   ]
+  },
+  {
+   "n": 70,
+   "set": 2,
+   "startSec": 1694.76,
+   "endSec": 1715.09,
+   "scoreBefore": [
+    20,
+    17
+   ],
+   "winner": null,
+   "shots": [
+    {
+     "t": 1695.76,
+     "p": "B",
+     "g": null,
+     "d": "short service",
+     "z": null,
+     "s": true
+    },
+    {
+     "t": 1696.54,
+     "p": "A",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1697.32,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1698.25,
+     "p": "A",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1699.09,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1700.09,
+     "p": "A",
+     "g": "Push",
+     "d": "push/rush",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1700.86,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1701.69,
+     "p": "A",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1702.5,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1703.34,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1704.43,
+     "p": "B",
+     "g": "Drop",
+     "d": "drop",
+     "z": "rear-left",
+     "s": false
+    },
+    {
+     "t": 1705.62,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1706.6,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1707.57,
+     "p": "A",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1708.63,
+     "p": "B",
+     "g": "Lift",
+     "d": "defensive shot",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1709.53,
+     "p": "A",
+     "g": "Smash",
+     "d": "smash",
+     "z": "rear-right",
+     "s": false
+    },
+    {
+     "t": 1710.23,
+     "p": "B",
+     "g": "Lift",
+     "d": "lob",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1711.11,
+     "p": "A",
+     "g": "Clear",
+     "d": "clear",
+     "z": "mid-right",
+     "s": false
+    },
+    {
+     "t": 1711.94,
+     "p": "B",
+     "g": "Smash",
+     "d": "smash",
+     "z": "mid-left",
+     "s": false
+    },
+    {
+     "t": 1712.74,
+     "p": "A",
+     "g": "Drive",
+     "d": "drive",
+     "z": "front-right",
+     "s": false
+    },
+    {
+     "t": 1713.59,
+     "p": "B",
+     "g": "Net",
+     "d": "net shot",
+     "z": "mid-left",
+     "s": false
+    }
+   ]
+  }
+ ],
+ "insights": {
+  "A": {
+   "insights": {
+    "phaseMix": {
+     "start": {
+      "Lift": 21.9,
+      "Smash": 6.2,
+      "Net": 26.6,
+      "Drive": 9.4,
+      "Push": 4.7,
+      "Clear": 10.9,
+      "Drop": 20.3,
+      "shots": 64
+     },
+     "mid": {
+      "Lift": 35.1,
+      "Smash": 10.8,
+      "Net": 23.0,
+      "Drive": 8.1,
+      "Push": 6.8,
+      "Clear": 8.1,
+      "Drop": 8.1,
+      "shots": 74
+     },
+     "late": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 33
+     }
+    },
+    "replies": {
+     "Lift": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 37
+     },
+     "Smash": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 25
+     },
+     "Net": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 19
+     },
+     "Drive": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 11
+     },
+     "Push": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 12
+     },
+     "Clear": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 16
+     },
+     "Drop": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 29
+     }
+    },
+    "zones": {
+     "front-left": 14.6,
+     "front-right": 14.0,
+     "mid-left": 18.1,
+     "mid-right": 22.8,
+     "rear-left": 11.1,
+     "rear-right": 19.3,
+     "shots": 171
+    },
+    "tempo": {
+     "secPerShot": 0.95,
+     "rallyShots": 6.51
+    },
+    "bands": [
+     {
+      "band": "short",
+      "label": "4 shots or fewer",
+      "rallies": 39,
+      "winRate": 48.7
+     },
+     {
+      "band": "mid",
+      "label": "5 to 8 shots",
+      "rallies": 15,
+      "winRate": null
+     },
+     {
+      "band": "long",
+      "label": "9 shots or more",
+      "rallies": 15,
+      "winRate": null
+     }
+    ],
+    "serve": {
+     "serves": 41,
+     "shortShare": 87.8,
+     "pointsWonShort": 63.9,
+     "pointsWonLong": null
+    },
+    "smashWins": {
+     "smashes": 19,
+     "winShare": null
+    }
+   },
+   "findings": [
+    {
+     "key": "phaseMix.start.Smash.less",
+     "kind": "style",
+     "claim": "Smashed on 6.2% of his shots in the first four shots of a rally, vs 21.1% in his other matches.",
+     "figure": "6.2%",
+     "comparison": "In his other matches: 21.1%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 75,
+       "endSec": 87,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 1\u20131"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 194,
+       "endSec": 204,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 4\u20133"
+      }
+     ]
+    },
+    {
+     "key": "serve.pointsWonShort.more",
+     "kind": "strength",
+     "claim": "Won 64% of points on his short serve, vs 52% in his other matches.",
+     "figure": "64%",
+     "comparison": "In his other matches: 52%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 75,
+       "endSec": 87,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 1\u20131"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 223,
+       "endSec": 232,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 5\u20133"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 240,
+       "endSec": 246,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 6\u20133"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 255,
+       "endSec": 267,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 7\u20133"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 452,
+       "endSec": 466,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 10\u20138"
+      }
+     ]
+    },
+    {
+     "key": "phaseMix.start.Drop.more",
+     "kind": "style",
+     "claim": "Dropped on 20.3% of his shots in the first four shots of a rally, vs 8.3% in his other matches.",
+     "figure": "20.3%",
+     "comparison": "In his other matches: 8.3%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 128,
+       "endSec": 136,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 2\u20132"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 255,
+       "endSec": 267,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 7\u20133"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 732,
+       "endSec": 740,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 19\u201311"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 821,
+       "endSec": 847,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 2 at 0\u20132"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 1146,
+       "endSec": 1152,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 2 at 6\u20139"
+      }
+     ]
+    },
+    {
+     "key": "phaseMix.start.Net.more",
+     "kind": "style",
+     "claim": "Played net shots on 26.6% of his shots in the first four shots of a rally, vs 18.8% in his other matches.",
+     "figure": "26.6%",
+     "comparison": "In his other matches: 18.8%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 53,
+       "endSec": 61,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 0\u20131"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 128,
+       "endSec": 136,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 2\u20132"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 363,
+       "endSec": 371,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 8\u20136"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 434,
+       "endSec": 441,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 9\u20138"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 523,
+       "endSec": 552,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Jonatan Christie",
+       "scoreLabel": "game 1 at 12\u20139"
+      }
+     ]
+    }
+   ]
+  },
+  "B": {
+   "insights": {
+    "phaseMix": {
+     "start": {
+      "Lift": 29.3,
+      "Smash": 12.0,
+      "Net": 6.7,
+      "Drive": 10.7,
+      "Push": 6.7,
+      "Clear": 12.0,
+      "Drop": 22.7,
+      "shots": 75
+     },
+     "mid": {
+      "Lift": 22.1,
+      "Smash": 17.6,
+      "Net": 16.2,
+      "Drive": 5.9,
+      "Push": 7.4,
+      "Clear": 11.8,
+      "Drop": 19.1,
+      "shots": 68
+     },
+     "late": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 33
+     }
+    },
+    "replies": {
+     "Lift": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 42
+     },
+     "Smash": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 16
+     },
+     "Net": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 28
+     },
+     "Drive": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 18
+     },
+     "Push": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 10
+     },
+     "Clear": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 10
+     },
+     "Drop": {
+      "Lift": null,
+      "Smash": null,
+      "Net": null,
+      "Drive": null,
+      "Push": null,
+      "Clear": null,
+      "Drop": null,
+      "shots": 19
+     }
+    },
+    "zones": {
+     "front-left": 11.4,
+     "front-right": 12.5,
+     "mid-left": 25.0,
+     "mid-right": 13.6,
+     "rear-left": 21.0,
+     "rear-right": 16.5,
+     "shots": 176
+    },
+    "tempo": {
+     "secPerShot": 0.95,
+     "rallyShots": 6.69
+    },
+    "bands": [
+     {
+      "band": "short",
+      "label": "4 shots or fewer",
+      "rallies": 39,
+      "winRate": 51.3
+     },
+     {
+      "band": "mid",
+      "label": "5 to 8 shots",
+      "rallies": 15,
+      "winRate": null
+     },
+     {
+      "band": "long",
+      "label": "9 shots or more",
+      "rallies": 15,
+      "winRate": null
+     }
+    ],
+    "serve": {
+     "serves": 28,
+     "shortShare": null,
+     "pointsWonShort": null,
+     "pointsWonLong": null
+    },
+    "smashWins": {
+     "smashes": 23,
+     "winShare": null
+    }
+   },
+   "findings": [
+    {
+     "key": "phaseMix.start.Net.less",
+     "kind": "style",
+     "claim": "Played net shots on 6.7% of his shots in the first four shots of a rally, vs 24.8% in his other matches.",
+     "figure": "6.7%",
+     "comparison": "In his other matches: 24.8%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 1651,
+       "endSec": 1661,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 15\u201320"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 1669,
+       "endSec": 1682,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 16\u201320"
+      }
+     ]
+    },
+    {
+     "key": "phaseMix.start.Lift.more",
+     "kind": "style",
+     "claim": "Lifted on 29.3% of his shots in the first four shots of a rally, vs 17.5% in his other matches.",
+     "figure": "29.3%",
+     "comparison": "In his other matches: 17.5%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 287,
+       "endSec": 296,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 3\u20138"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 385,
+       "endSec": 395,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 6\u20139"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 771,
+       "endSec": 780,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 0\u20130"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 790,
+       "endSec": 810,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 1\u20130"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 860,
+       "endSec": 869,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 2\u20131"
+      }
+     ]
+    },
+    {
+     "key": "phaseMix.start.Drop.more",
+     "kind": "style",
+     "claim": "Dropped on 22.7% of his shots in the first four shots of a rally, vs 13.1% in his other matches.",
+     "figure": "22.7%",
+     "comparison": "In his other matches: 13.1%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 335,
+       "endSec": 344,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 5\u20138"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 405,
+       "endSec": 416,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 7\u20139"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 481,
+       "endSec": 488,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 8\u201311"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 888,
+       "endSec": 896,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 3\u20131"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 913,
+       "endSec": 938,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 4\u20131"
+      }
+     ]
+    },
+    {
+     "key": "zones.rear-left.more",
+     "kind": "style",
+     "claim": "Hit from the rear left corner on 21.0% of his shots, vs 13.5% in his other matches.",
+     "figure": "21.0%",
+     "comparison": "In his other matches: 13.5%.",
+     "tip": null,
+     "clips": [
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 287,
+       "endSec": 296,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 1 at 3\u20138"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 771,
+       "endSec": 780,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 0\u20130"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 790,
+       "endSec": 810,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 1\u20130"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 860,
+       "endSec": 869,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 2\u20131"
+      },
+      {
+       "youtubeId": "M7lc1UVf-VE",
+       "startSec": 913,
+       "endSec": 938,
+       "matchLabel": "Yonex Thailand Open 2021 quarter-final against Viktor Axelsen",
+       "scoreLabel": "game 2 at 4\u20131"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
