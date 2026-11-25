@@ -12,6 +12,10 @@ const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const AnalysisPage = lazy(() => import("./pages/AnalysisPage"));
+const PlayerProfilePage = lazy(() => import("./pages/PlayerProfilePage"));
+const PlayersPage = lazy(() => import("./pages/PlayersPage"));
+const TournamentsPage = lazy(() => import("./pages/TournamentsPage"));
+const TournamentPage = lazy(() => import("./pages/TournamentPage"));
 const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const PrivateLayout = lazy(() => import("./layouts/PrivateLayout"));
 
@@ -42,6 +46,10 @@ function ThemedApp() {
           >
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/analysis/:videoId" element={<AnalysisPage />} />
+            <Route path="/players" element={<PlayersPage />} />
+            <Route path="/players/:playerId" element={<PlayerProfilePage />} />
+            <Route path="/tournaments" element={<TournamentsPage />} />
+            <Route path="/tournaments/:editionId" element={<TournamentPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

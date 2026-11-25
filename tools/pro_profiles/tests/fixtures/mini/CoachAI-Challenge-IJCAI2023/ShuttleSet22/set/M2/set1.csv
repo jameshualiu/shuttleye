@@ -1,0 +1,4 @@
+rally,ball_round,time,roundscore_A,roundscore_B,player,type,getpoint_player
+1,1.0,00:02:00,3,4,B,發長球,
+1,2.0,00:02:02,3,4,A,平球,
+1,3.0,00:02:03,3,4,B,後場抽平球,B
