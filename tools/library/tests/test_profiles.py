@@ -120,3 +120,12 @@ def test_shows_rate_weakness_needs_lost_rally():
     assert profiles.shows(serve, "strength", "p", _rally(5, "p"))
     assert not profiles.shows(serve, "weakness", "p", _rally(5, "p"))
     assert profiles.shows(serve, "weakness", "p", _rally(5, "o"))
+
+
+def test_new_player_takes_event_from_doc():
+    rallies = [make_rally(1, ["", "Net", "Lift", "Smash"])]
+    d = make_doc("m1", "xx", "ww", rallies)
+    d["players"]["B"]["event"] = "WS"
+    out = build_library([d], PLAYERS, TOURNAMENTS, {})
+    assert out["players/ww"]["event"] == "WS"
+    assert out["players/xx"]["event"] == "MS"   # players.json wins for known players

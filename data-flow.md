@@ -344,13 +344,13 @@ Pre-analysed BWF singles matches, built by `tools/library` (Admin SDK, run by ha
 {
   "id": "string", "youtubeId": "string", "editionId": "string", "round": "string",
   "date": "YYYY-MM-DD",
-  "players": { "A": {"id": "string", "name": "string"}, "B": {"id": "string", "name": "string"} },
+  "players": { "A": {"id": "string", "name": "string", "event": "MS | WS"}, "B": {"id": "string", "name": "string", "event": "MS | WS"} },
   "winner": "A",
   "games": [{"a": 21, "b": 15}, {"a": 21, "b": 18}],
   "attributed": true,
   "status": "unpublished | published",
-  "analyzer": { "models": {}, "warnings": [], "skippedSteps": [], "timings": {} },
-  "accuracy": null,
+  "analyzer": { "models": {}, "warnings": [], "skippedSteps": [], "timings": { "ingest": {} } },
+  "accuracy": { "hitF1": 0.0, "side": 0.0, "type6": 0.0, "ten": 0.0 },
   "summary": { "rallies": 0, "avgShots": 0.0, "durationSec": 0 },
   "rallies": [{
     "n": 1, "set": 1, "startSec": 0.0, "endSec": 0.0, "scoreBefore": [0, 0], "winner": "A | B | null",
@@ -360,7 +360,7 @@ Pre-analysed BWF singles matches, built by `tools/library` (Admin SDK, run by ha
 }
 ```
 
-`A` is always the match winner (resolved at ingest). `games` is `null` unless every set's final score was read; it is a list of maps (`a` = winner A, `b` = B) because Firestore forbids arrays nested in arrays. `library/index` matches and `tournaments/{id}` match rows use the same form. `attributed` is true only when every rally knows its near-side player; `publish` refuses otherwise. `status` starts `unpublished`; `insights` is `null` until publish and is set back to `null` on unpublish.
+`A` is always the match winner (resolved at ingest). `players.*.event` is written by ingest (from `players.json`, or `--event` for a new player) and is what `profiles.people()` uses for a player not in `players.json` (else `MS`). `games` is `null` unless every set's final score was read; it is a list of maps (`a` = winner A, `b` = B) because Firestore forbids arrays nested in arrays. `library/index` matches and `tournaments/{id}` match rows use the same form. `attributed` is true only when every rally knows its near-side player and the analyzer agrees with the ingest's winner/near side: it is false (with a warning in `analyzer.warnings`) when rally 1's near player disagrees with `--near-first`, or when the read games show B winning more games than A. `publish` refuses an unattributed match and lists its warnings. `status` starts `unpublished`; `insights` is `null` until publish and is set back to `null` on unpublish.
 
 `insights` once published is `{ "A": {"insights": Insights, "findings": Finding[]}, "B": {...} }`: that player's `Insights` over this match alone, plus up to four findings comparing it with their other published matches (none if they have no other match). `Finding` is `{key, kind, claim, figure, comparison, tip, clips[]}` as in section 5, with `tip` always `null`.
 
@@ -403,7 +403,25 @@ python -m library.publish recompute             # rebuild everything; prints cha
 python -m library.set_admin <uid>               # custom claim {admin: true}
 ```
 
-`recompute` writes only documents whose content changed, deletes `players/*`, `players/*/views/*`, `tournaments/*` and `library/index` documents the new build no longer produces, and sets each published match's `insights` (`null` for unpublished). A second run returns nothing. Ingest (`python -m library.ingest`): added in Task 6.
+`recompute` writes only documents whose content changed, deletes `players/*`, `players/*/views/*`, `tournaments/*` and `library/index` documents the new build no longer produces, and sets each published match's `insights` (`null` for unpublished). A second run returns nothing.
+
+### Ingest (`python -m library.ingest`, from `tools/`)
+
+```bash
+python -m library.ingest <youtube-url> --players "<winner>" "<loser>" --near-first winner|loser \
+    --tournament <editionId> --round <round> --date <YYYY-MM-DD> \
+    [--event MS|WS] [--runner modal|local|merged:<fullmatch_*.json>] [--video <path>] \
+    [--shuttleset <ShuttleSet match>] [--force] [--keep-video] [--dry-run]
+python -m library.ingest --batch <file.json> [--dry-run]
+```
+
+- Match id `<editionId>-<winner id>-<loser id>`. Players resolve by name or alias against `pro_profiles/content/players.json`; a new player gets a slug id, is printed, and needs `--event`.
+- Steps, each timed (seconds) into `analyzer.timings.ingest` as `download_s, analyse_s, segment_s, scoreboard_s[, accuracy_s]`: download (yt-dlp `bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720]` into a temp dir; skipped with `--video`, which must exist), analyse, segment (`apply_segmentation`, with the shot stack when found), scoreboard (`apply_scoreboard`; a crash is recorded in `skippedSteps`), accuracy, then the store. A downloaded video is deleted afterwards, also on failure, unless `--keep-video`; a `--video` file is never deleted.
+- Runners: `modal` cuts locally and analyses chunks with the deployed `badminton-ai-worker` / `BadmintonWorker.analyze_chunk` (starmap, up to 50 containers); `local` runs `analyze_chunk_clip` on this machine with the model files in `$SHUTTLEYE_MODELS_DIR` (default `~/.cache/shuttleye-eval/models`); `merged:<path>` loads a saved merged result from the eval cache (`eval_shuttleset._load_merged`) and skips chunk analysis; it still needs the video for the scoreboard.
+- An existing id is skipped unless `--force`. `--force` keeps the stored `status`; if it was `published`, `recompute` runs and the changed paths are printed (a re-run that is no longer attributed is stored `unpublished`, with a warning).
+- `--shuttleset <match>` scores the internal result with the eval's own `_labels` + `_score_full_match` (labels fetched from GitHub, tolerance 3 frames) and stores `accuracy` (0-100, one decimal; `null` without `--shuttleset`, except that a `--force` re-run keeps the stored value). Mapping from the eval's whole-match OVERALL (hits after segmentation, serves excluded, `hits_after.excl_serves`): `hitF1` = `hits.f1`, `side` = `side.accuracy`, `type6` = `type.accuracy` (the six product groups), `ten` = `ten.accuracy` (`detailType`).
+- Batch file: a JSON list of `{"url", "meta": {"players": [winner, loser], "nearFirst": "winner|loser", "tournament", "round", "date", "event"?}, "shuttleset"?, "runner"?, "video"?, "force"?}`. Stored ids are skipped, so a batch can be re-run; a failing entry is reported and the rest go on (exit code 1 if any failed).
+- `--dry-run` prints each resolved meta, runner and source and touches nothing (no download, no store); it still checks player events, runner specs and `--video` paths. Without `--shuttleset`, a `--force` re-run keeps the previously stored `accuracy`.
 
 ---
 

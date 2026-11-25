@@ -62,11 +62,11 @@ def templates() -> dict:
 
 def people(docs: list[dict], players: dict) -> dict:
     """players.json entries plus anyone only known from a match doc
-    (their doc name, event DEFAULT_EVENT)."""
+    (their doc name, and the doc's event, else DEFAULT_EVENT)."""
     out = {pid: dict(p) for pid, p in players.items()}
     for d in docs:
         for ref in d["players"].values():
-            out.setdefault(ref["id"], {"name": ref["name"], "event": DEFAULT_EVENT})
+            out.setdefault(ref["id"], {"name": ref["name"], "event": ref.get("event") or DEFAULT_EVENT})
     return out
 
 

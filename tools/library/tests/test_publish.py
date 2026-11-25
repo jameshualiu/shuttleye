@@ -88,3 +88,12 @@ def test_memory_store_rejects_nested_arrays():
     with pytest.raises(ValueError):
         store.set("x/y", {"games": [[21, 15]]})
     store.set("x/y", {"games": [{"a": 21, "b": 15}], "scoreBefore": [0, 0]})
+
+
+def test_publish_refusal_lists_warnings():
+    store = make_store(doc("m1", "aa", "bb"))
+    d = store.get("matches/m1")
+    store.set("matches/m1", {**d, "attributed": False,
+                             "analyzer": {"warnings": ["near side at rally 1 disagrees with --near-first"]}})
+    with pytest.raises(PublishError, match="disagrees with --near-first"):
+        publish(store, "m1")

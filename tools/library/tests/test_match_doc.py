@@ -2,7 +2,7 @@ import copy
 import json
 
 from fullmatch.bst_inputs import TEN_CLASSES
-from library.match_doc import GROUP_OF_DETAIL, match_doc, zone_of
+from library.match_doc import GROUP_OF_DETAIL, match_doc, zone_of, NEAR_FIRST_WARNING, WINNER_WARNING
 
 
 def test_hitter_from_side_and_near(product_result, meta):
@@ -95,3 +95,39 @@ def test_player_ids_carried_unchanged(product_result, meta):
     assert doc["players"]["A"]["id"] == "viktor-axelsen"
     assert doc["players"]["A"]["name"] == "Viktor AXELSEN"
     assert doc["players"]["B"]["id"] == "some-opponent"
+
+
+def test_player_event_recorded_when_given(product_result, meta):
+    meta = {**meta, "playerA": {**meta["playerA"], "event": "MS"}}
+    doc = match_doc(product_result, meta)
+    assert doc["players"]["A"] == {"id": "viktor-axelsen", "name": "Viktor AXELSEN", "event": "MS"}
+    assert "event" not in doc["players"]["B"]
+
+
+def _attributed(product_result):
+    import copy
+    res = copy.deepcopy(product_result)
+    for r in res["rallies"]:
+        r["nearPlayer"] = r.get("nearPlayer") or "B"
+    return res
+
+
+def test_near_first_disagreement_unattributes(product_result, meta):
+    res = _attributed(product_result)
+    assert match_doc(res, meta)["attributed"] is True
+    doc = match_doc(res, {**meta, "nearFirst": "A"})
+    assert doc["attributed"] is False
+    assert NEAR_FIRST_WARNING in doc["analyzer"]["warnings"]
+
+
+def test_games_winner_disagreement_unattributes(product_result, meta):
+    res = _attributed(product_result)
+    res["sets"] = [{"set": 1, "finalScore": [15, 21]}, {"set": 2, "finalScore": [21, 19]},
+                   {"set": 3, "finalScore": [10, 21]}]
+    doc = match_doc(res, meta)
+    assert doc["attributed"] is False
+    assert WINNER_WARNING in doc["analyzer"]["warnings"]
+    assert NEAR_FIRST_WARNING not in doc["analyzer"]["warnings"]
+    res["sets"] = [{"set": 1, "finalScore": [21, 15]}, {"set": 2, "finalScore": None}]   # partial, A ahead
+    ok = match_doc(res, meta)
+    assert ok["attributed"] is True and WINNER_WARNING not in ok["analyzer"]["warnings"]

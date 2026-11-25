@@ -2,9 +2,10 @@
 from typing import TypedDict
 
 
-class PlayerRef(TypedDict):
-    id: str
-    name: str
+class PlayerRef(TypedDict, total=False):
+    id: str      # required
+    name: str    # required
+    event: str   # "MS" | "WS"; stored on the doc when given (new players have no players.json event)
 
 
 class MatchMeta(TypedDict):
@@ -31,6 +32,7 @@ _CENTRE_X = 3.05
 _FRONT_M = 1.98
 _REAR_M = 4.72
 NEAR_FIRST_WARNING = "near side at rally 1 disagrees with --near-first"
+WINNER_WARNING = "the read games show B winning more games than A (the given winner)"
 
 
 def zone_of(location_m: list[float] | None, hitter_near: bool) -> str | None:
@@ -51,6 +53,13 @@ def _other(p: str) -> str:
 
 def _pair(v):
     return [v[0], v[1]] if v else None
+
+
+def _player(ref: PlayerRef) -> dict:
+    out = {"id": ref["id"], "name": ref["name"]}
+    if ref.get("event"):
+        out["event"] = ref["event"]
+    return out
 
 
 def match_doc(result: dict, meta: MatchMeta) -> dict:
@@ -88,22 +97,29 @@ def match_doc(result: dict, meta: MatchMeta) -> dict:
             "scoreBefore": before, "winner": r.get("winner"), "shots": shots,
         })
 
+    # A is the winner given at ingest. If the analyzer disagrees (rally 1's near
+    # side, or the read games), A/B may be swapped: never attribute such a match.
     warnings = list(result.get("warnings") or [])
+    disagrees = False
     if rallies_in and rallies_in[0].get("nearPlayer") not in (None, meta["nearFirst"]):
         warnings.append(NEAR_FIRST_WARNING)
-
+        disagrees = True
     finals = [_pair(s.get("finalScore")) for s in result.get("sets") or []]
+    read = [f for f in finals if f]
+    if sum(b > a for a, b in read) > sum(a > b for a, b in read):
+        warnings.append(WINNER_WARNING)
+        disagrees = True
     games = [{"a": f[0], "b": f[1]} for f in finals] if finals and all(finals) else None
     total = sum(len(r["shots"]) for r in rallies)
     summary = result.get("summary") or {}
     return {
         "id": meta["id"], "youtubeId": meta["youtubeId"], "editionId": meta["editionId"],
         "round": meta["round"], "date": meta["date"],
-        "players": {"A": {"id": meta["playerA"]["id"], "name": meta["playerA"]["name"]},
-                    "B": {"id": meta["playerB"]["id"], "name": meta["playerB"]["name"]}},
+        "players": {"A": _player(meta["playerA"]), "B": _player(meta["playerB"])},
         "winner": "A",
         "games": games,
-        "attributed": bool(rallies_in) and all(r.get("nearPlayer") for r in rallies_in),
+        "attributed": (bool(rallies_in) and all(r.get("nearPlayer") for r in rallies_in)
+                       and not disagrees),
         "status": "unpublished",
         "analyzer": {"models": result.get("models"), "warnings": warnings,
                      "skippedSteps": result.get("skippedSteps") or [],

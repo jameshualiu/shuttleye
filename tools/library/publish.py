@@ -87,7 +87,10 @@ def _set_status(store: Store, match_id: str, status: str, changed: list[str]) ->
     if doc is None:
         raise PublishError(f"no such match: {match_id}")
     if status == "published" and not doc.get("attributed"):
-        raise PublishError(f"{match_id} is not attributed (rally sides unresolved); fix and re-ingest")
+        warnings = (doc.get("analyzer") or {}).get("warnings") or []
+        raise PublishError(f"{match_id} is not attributed (rally sides unresolved, or the analyzer "
+                           f"disagrees with the given winner / near side); fix and re-ingest. "
+                           f"Warnings: {'; '.join(warnings) or 'none'}")
     _write(store, f"matches/{match_id}", {**doc, "status": status}, changed)
 
 
