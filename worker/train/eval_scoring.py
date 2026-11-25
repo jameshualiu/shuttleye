@@ -44,6 +44,31 @@ ZH_TO_PRODUCT = {
     "過度切球": "Drop",   # passive drop
 }
 
+# ShuttleSet label -> the 10 canonical shot classes (short service, long service,
+# clear, drive, drop, lob, net shot, smash, push/rush, defensive shot). Copied from
+# COURTSIDE's ShuttleSet CN->EN map (jayclim/BadmintonAI, src/badminton/shuttleset.py
+# at commit 5c356f05cde0ed90c75316c133e0aba495e5232b, MIT License), i.e. the
+# official ShuttleSet22 two-step mapping flattened. 小平球 and 未知球種 are unmapped.
+ZH_TO_TEN = {
+    "發短球": "short service",
+    "發長球": "long service",
+    "長球": "clear",
+    "平球": "drive",
+    "後場抽平球": "drive",
+    "切球": "drop",
+    "過度切球": "drop",
+    "挑球": "lob",
+    "放小球": "net shot",
+    "勾球": "net shot",
+    "殺球": "smash",
+    "點扣": "smash",
+    "推球": "push/rush",
+    "撲球": "push/rush",
+    "擋小球": "defensive shot",
+    "防守回挑": "defensive shot",
+    "防守回抽": "defensive shot",
+}
+
 PRODUCT_TYPES = ["Clear", "Drive", "Drop", "Lob", "Net", "Smash"]
 
 
@@ -79,7 +104,8 @@ def parse_rallies(rows, h, far_corner, near_corner):
     """Group ShuttleSet CSV rows (dicts) into rallies.
 
     Returns {rally_id: [shot, ...]} with shots sorted by frame, each:
-      {"frame": int, "serve": bool, "type": product type | None, "side": "Top"|"Bottom"|None}
+      {"frame": int, "serve": bool, "type": product type | None,
+       "ten": 10-class name | None, "side": "Top"|"Bottom"|None}
     """
     rallies = {}
     for row in rows:
@@ -91,6 +117,7 @@ def parse_rallies(rows, h, far_corner, near_corner):
             "frame": int(frame),
             "serve": zh in SERVICE_TYPES_ZH,
             "type": ZH_TO_PRODUCT.get(zh),
+            "ten": ZH_TO_TEN.get(zh),
             "side": side_from_location(
                 h, far_corner, near_corner,
                 _float_or_none(row.get("player_location_x")),
@@ -125,19 +152,29 @@ def match_hits(pred_frames, gt_frames, tolerance):
     return sorted(pairs)
 
 
-def score_rally(pred_events, gt_shots, tolerance=3):
-    """Score one rally. Frames on both sides must be in the same (clip) frame space."""
-    serve_frames = [s["frame"] for s in gt_shots if s["serve"]]
-    gt = [s for s in gt_shots if not s["serve"]]
+def score_rally(pred_events, gt_shots, tolerance=3, include_serves=False):
+    """Score one rally. Frames on both sides must be in the same (clip) frame space.
 
-    # Predicted hits on a serve are neither true nor false positives.
-    on_serve = {pi for pi, _ in match_hits([e["frame"] for e in pred_events], serve_frames, tolerance)}
-    preds = [e for i, e in enumerate(pred_events) if i not in on_serve]
+    By default serves are excluded from ground truth and predicted hits on a
+    serve are dropped. With include_serves, serves are ordinary hits (a predicted
+    event with isServe matches them like any other).
+    """
+    if include_serves:
+        gt = list(gt_shots)
+        preds = list(pred_events)
+    else:
+        serve_frames = [s["frame"] for s in gt_shots if s["serve"]]
+        gt = [s for s in gt_shots if not s["serve"]]
+
+        # Predicted hits on a serve are neither true nor false positives.
+        on_serve = {pi for pi, _ in match_hits([e["frame"] for e in pred_events], serve_frames, tolerance)}
+        preds = [e for i, e in enumerate(pred_events) if i not in on_serve]
 
     pairs = match_hits([e["frame"] for e in preds], [s["frame"] for s in gt], tolerance)
 
     side_total = side_correct = side_missing = 0
     type_total = type_correct = 0
+    ten_total = ten_correct = 0
     confusion = Counter()
     for pi, gi in pairs:
         p, g = preds[pi], gt[gi]
@@ -153,6 +190,10 @@ def score_rally(pred_events, gt_shots, tolerance=3):
             confusion[(g["type"], pred_type)] += 1
             if pred_type == g["type"]:
                 type_correct += 1
+        if g.get("ten") is not None:
+            ten_total += 1
+            if p.get("detailType") == g["ten"]:
+                ten_correct += 1
 
     return {
         "tp": len(pairs),
@@ -163,20 +204,86 @@ def score_rally(pred_events, gt_shots, tolerance=3):
         "side_missing": side_missing,
         "type_total": type_total,
         "type_correct": type_correct,
+        "ten_total": ten_total,
+        "ten_correct": ten_correct,
         "confusion": confusion,
         "frame_offsets": [preds[pi]["frame"] - gt[gi]["frame"] for pi, gi in pairs],
     }
 
 
-def summarize(rally_scores):
+def _overlap(a, b):
+    """Frames shared by two inclusive (start, end) intervals."""
+    return max(0, min(a[1], b[1]) - max(a[0], b[0]) + 1)
+
+
+def score_segments(pred, gt, min_overlap=0.5):
+    """Score predicted rally intervals against ground truth (inclusive frames).
+
+    One-to-one matching, best overlap first, where overlap is the fraction of the
+    ground-truth interval covered. Unmatched predictions that overlap a matched
+    ground-truth rally are the extra pieces of a split rally ("split"), not false
+    positives. Unmatched ground-truth rallies that overlap a matched prediction
+    were swallowed by it ("merged"); they still count as false negatives.
+    """
+    candidates = sorted(
+        ((_overlap(p, g) / (g[1] - g[0] + 1), pi, gi)
+         for pi, p in enumerate(pred) for gi, g in enumerate(gt)),
+        key=lambda c: (-c[0], c[1], c[2]),
+    )
+    used_p, used_g = set(), set()
+    for frac, pi, gi in candidates:
+        if frac < min_overlap or pi in used_p or gi in used_g:
+            continue
+        used_p.add(pi)
+        used_g.add(gi)
+
+    split = fp = 0
+    for pi, p in enumerate(pred):
+        if pi in used_p:
+            continue
+        if any(_overlap(p, gt[gi]) > 0 for gi in used_g):
+            split += 1
+        else:
+            fp += 1
+    merged = sum(
+        1 for gi, g in enumerate(gt)
+        if gi not in used_g and any(_overlap(pred[pi], g) > 0 for pi in used_p)
+    )
+
+    tp = len(used_g)
+    fn = len(gt) - tp
+    precision = tp / (tp + fp) if tp + fp else None
+    recall = tp / (tp + fn) if tp + fn else None
+    f1 = (2 * precision * recall / (precision + recall)
+          if precision and recall else None)
+    return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall,
+            "f1": f1, "split": split, "merged": merged}
+
+
+def fit_frame_offset(pred_frames, gt_frames, search=range(-8, 9), tolerance=3):
+    """Offset to add to gt frames that maximises one-to-one matches with pred_frames.
+
+    Ties go to the offset with the smallest total distance between matched
+    frames, then to the one closest to zero.
+    """
+    def key(off):
+        shifted = [g + off for g in gt_frames]
+        pairs = match_hits(pred_frames, shifted, tolerance)
+        dist = sum(abs(pred_frames[pi] - shifted[gi]) for pi, gi in pairs)
+        return (len(pairs), -dist, -abs(off), -off)
+
+    return max(search, key=key)
+
+
+def summarize(rally_scores, segment_scores=None):
     """Aggregate score_rally() results into overall metrics."""
     total = Counter()
     confusion = Counter()
     offsets = []
     for s in rally_scores:
         for k in ("tp", "fp", "fn", "side_total", "side_correct", "side_missing",
-                  "type_total", "type_correct"):
-            total[k] += s[k]
+                  "type_total", "type_correct", "ten_total", "ten_correct"):
+            total[k] += s.get(k, 0)
         confusion.update(s["confusion"])
         offsets.extend(s["frame_offsets"])
 
@@ -187,7 +294,7 @@ def summarize(rally_scores):
     recall = ratio(total["tp"], total["tp"] + total["fn"])
     f1 = (2 * precision * recall / (precision + recall)
           if precision and recall else None)
-    return {
+    out = {
         "hits": {"tp": total["tp"], "fp": total["fp"], "fn": total["fn"],
                  "precision": precision, "recall": recall, "f1": f1,
                  "mean_frame_offset": ratio(sum(offsets), len(offsets))},
@@ -195,5 +302,18 @@ def summarize(rally_scores):
                  "scored": total["side_total"], "missing": total["side_missing"]},
         "type": {"accuracy": ratio(total["type_correct"], total["type_total"]),
                  "scored": total["type_total"]},
+        "ten": {"accuracy": ratio(total["ten_correct"], total["ten_total"]),
+                "scored": total["ten_total"]},
         "confusion": {f"{g}->{p}": n for (g, p), n in sorted(confusion.items())},
     }
+    if segment_scores:
+        seg = Counter()
+        for sc in segment_scores:
+            for k in ("tp", "fp", "fn", "split", "merged"):
+                seg[k] += sc[k]
+        p = ratio(seg["tp"], seg["tp"] + seg["fp"])
+        r = ratio(seg["tp"], seg["tp"] + seg["fn"])
+        out["segments"] = {**{k: seg[k] for k in ("tp", "fp", "fn", "split", "merged")},
+                           "precision": p, "recall": r,
+                           "f1": 2 * p * r / (p + r) if p and r else None}
+    return out
