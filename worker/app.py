@@ -72,6 +72,24 @@ worker_image = (
 models_volume = modal.Volume.from_name("badminton-models", create_if_missing=True)
 MODELS_DIR = Path("/models")
 
+# Weight files BadmintonInference is built from, keyed by its argument names.
+# Module-level so worker/train/eval_shuttleset.py loads the exact same set.
+MODEL_TARGETS = {
+    "tracknet": "ball_track.pt",
+    "court_kprcnn": "court_kpRCNN.pth",
+    "net_kprcnn": "net_kpRCNN.pth",
+    "yolo_pose": "yolo11x-pose.pt",
+    "lstm": "15Matches_LSTM.onnx",
+}
+
+# TrackNetV3 weights are optional: worker falls back to legacy TrackNet when absent
+OPTIONAL_MODEL_TARGETS = {
+    "tracknet_v3": "TrackNet_best.pt",
+    "inpaintnet": "InpaintNet_best.pt",
+    "hit_detector": "hit_detector_v3.onnx",
+    "bst": "bst_stroke_classifier.pt",
+}
+
 
 def _validate_webhook_secret(authorization: str | None, expected_secret: str | None) -> bool:
     """Constant-time check of an `Authorization: Bearer <token>` header."""
@@ -131,25 +149,10 @@ class BadmintonWorker:
         print(f"[volume] Volume contains: {list(all_volume_files.keys())}")
 
         # Resolve Model Paths (Smart Search)
-        model_targets = {
-            "tracknet": "ball_track.pt",
-            "court_kprcnn": "court_kpRCNN.pth",
-            "net_kprcnn": "net_kpRCNN.pth",
-            "yolo_pose": "yolo11x-pose.pt",
-            "lstm": "15Matches_LSTM.onnx",
-        }
         resolved_paths = {}
 
-        # TrackNetV3 weights are optional: worker falls back to legacy TrackNet when absent
-        optional_targets = {
-            "tracknet_v3": "TrackNet_best.pt",
-            "inpaintnet": "InpaintNet_best.pt",
-            "hit_detector": "hit_detector_v3.onnx",
-            "bst": "bst_stroke_classifier.pt",
-        }
-
-        for key, filename in {**model_targets, **optional_targets}.items():
-            optional = key in optional_targets
+        for key, filename in {**MODEL_TARGETS, **OPTIONAL_MODEL_TARGETS}.items():
+            optional = key in OPTIONAL_MODEL_TARGETS
             if filename in all_volume_files:
                 resolved_paths[key] = str(all_volume_files[filename])
                 print(f"[OK] Found {filename} in Volume at: {resolved_paths[key]}")
