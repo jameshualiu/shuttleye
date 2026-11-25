@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { HOME_PATH } from "@/lib/routes";
 import { motion } from "motion/react";
 import { Chrome, Lock, Mail } from "lucide-react";
 import { signInWithEmail, signInWithGoogle } from "../auth/authActions";
@@ -15,7 +16,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard", { replace: true });
+    if (!authLoading && user) navigate(HOME_PATH, { replace: true });
   }, [user, authLoading, navigate]);
 
   if (authLoading || user) {
@@ -33,7 +34,7 @@ export default function SignInPage() {
     const res = await signInWithEmail(email, password);
     setLoading(false);
     if (!res.ok) { setError(res.error.message); return; }
-    navigate("/dashboard");
+    navigate(HOME_PATH);
   };
 
   const handleGoogleSignIn = async () => {
@@ -42,7 +43,7 @@ export default function SignInPage() {
     const res = await signInWithGoogle();
     setLoading(false);
     if (!res.ok) { setError(res.error.message); return; }
-    navigate("/dashboard");
+    navigate(HOME_PATH);
   };
 
   const inputClass = "w-full pl-10 pr-4 py-3 bg-white dark:bg-card border border-slate-300 dark:border-border rounded-xl text-foreground placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition-all";

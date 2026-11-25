@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { HOME_PATH } from "@/lib/routes";
 import { useEffect } from "react";
 import { MotionConfig, motion } from "motion/react";
 import { ChevronRight, Moon, Sun } from "lucide-react";
@@ -271,7 +272,7 @@ export default function LandingPage() {
     const { isDark, toggle } = useTheme();
 
     useEffect(() => {
-        if (!loading && user) navigate("/dashboard", { replace: true });
+        if (!loading && user) navigate(HOME_PATH, { replace: true });
     }, [user, loading, navigate]);
 
     if (loading || user) {

@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useTheme } from "./context/useTheme";
+import { HOME_PATH } from "./lib/routes";
 
 // FE-15: lazy-load every route (including ProtectedRoute/PrivateLayout --
 // ProtectedRoute pulls in firebase/auth via useAuthUser, so leaving it as a
@@ -10,8 +11,6 @@ import { useTheme } from "./context/useTheme";
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
-const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const AnalysisPage = lazy(() => import("./pages/AnalysisPage"));
 const PlayerProfilePage = lazy(() => import("./pages/PlayerProfilePage"));
 const PlayersPage = lazy(() => import("./pages/PlayersPage"));
 const PairsPage = lazy(() => import("./pages/PairsPage"));
@@ -46,8 +45,10 @@ function ThemedApp() {
               </ProtectedRoute>
             }
           >
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/analysis/:videoId" element={<AnalysisPage />} />
+            {/* Sessions and upload are hidden for now (#71): DashboardPage and
+                AnalysisPage stay in the codebase but aren't routed. */}
+            <Route path="/dashboard" element={<Navigate to={HOME_PATH} replace />} />
+            <Route path="/analysis/:videoId" element={<Navigate to={HOME_PATH} replace />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/players/:playerId" element={<PlayerProfilePage />} />
             <Route path="/pairs" element={<PairsPage />} />
