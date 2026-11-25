@@ -229,8 +229,22 @@ def _view(kind, pid, subset, sources, players, tournaments, *, full, findings=()
     }
 
 
+def known_editions(docs: list[dict], tournaments: dict) -> list[dict]:
+    """The docs whose editionId is in tournaments.json; the rest are skipped with a warning."""
+    keep = []
+    for d in docs:
+        if d.get("editionId") in tournaments:
+            keep.append(d)
+        else:
+            print(f"[library] WARNING {d.get('id')}: editionId {d.get('editionId')!r} is not in "
+                  f"tournaments.json; left out of the library")
+    return keep
+
+
 def build_library(docs: list[dict], players: dict, tournaments: dict, photos: dict) -> dict[str, dict]:
-    """Firestore path -> document for the published match `docs`."""
+    """Firestore path -> document for the published match `docs` (docs of an
+    edition missing from `tournaments` are skipped with a warning)."""
+    docs = known_editions(docs, tournaments)
     players = people(docs, players)
     matches = [to_match(d) for d in docs]
     sources = sources_for(matches)

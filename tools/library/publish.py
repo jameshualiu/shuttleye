@@ -8,19 +8,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 
 from pro_profiles.build import PHOTOS_PATH
 from pro_profiles.load import load_content
 
 from .insights import player_insights
 from .match_insights import match_insights
-from .profiles import build_library
+from .profiles import build_library, known_editions
 from .store import FirestoreStore, Store
 from .to_model import to_match
 
 
 class PublishError(Exception):
     pass
+
+
+RECOMPUTE_HINT = "Run `python -m library.publish recompute` to rebuild the library."
 
 
 def load_context() -> dict:
@@ -57,6 +61,8 @@ def recompute(store: Store, *, changed: list[str] | None = None) -> list[str]:
     changed = [] if changed is None else changed
     ctx = load_context()
     published = sorted(store.list("matches", ("status", "==", "published")), key=lambda d: d["id"])
+    # A doc whose edition is not in tournaments.json is left out (with a warning), not fatal.
+    published = known_editions(published, ctx["tournaments"])
 
     built = build_library(published, ctx["players"], ctx["tournaments"], ctx["photos"])
     for path, data in built.items():
@@ -82,6 +88,16 @@ def recompute(store: Store, *, changed: list[str] | None = None) -> list[str]:
     return changed
 
 
+def recompute_after_write(store: Store, what: str, *, changed: list[str] | None = None) -> list[str]:
+    """recompute() after `what` was already written; on failure say how to recover, then re-raise."""
+    try:
+        return recompute(store, changed=changed)
+    except Exception as exc:
+        print(f"[library] recompute failed after {what} ({type(exc).__name__}: {exc}). {RECOMPUTE_HINT}",
+              file=sys.stderr)
+        raise
+
+
 def _set_status(store: Store, match_id: str, status: str, changed: list[str]) -> None:
     doc = store.get(f"matches/{match_id}")
     if doc is None:
@@ -97,13 +113,13 @@ def _set_status(store: Store, match_id: str, status: str, changed: list[str]) ->
 def publish(store: Store, match_id: str) -> list[str]:
     changed: list[str] = []
     _set_status(store, match_id, "published", changed)
-    return recompute(store, changed=changed)
+    return recompute_after_write(store, f"publishing {match_id}", changed=changed)
 
 
 def unpublish(store: Store, match_id: str) -> list[str]:
     changed: list[str] = []
     _set_status(store, match_id, "unpublished", changed)
-    return recompute(store, changed=changed)
+    return recompute_after_write(store, f"unpublishing {match_id}", changed=changed)
 
 
 def main(argv: list[str] | None = None) -> None:

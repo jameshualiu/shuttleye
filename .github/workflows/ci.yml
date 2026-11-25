@@ -75,8 +75,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install pytest
-        run: pip install pytest
+      - name: Install test dependencies
+        # numpy: library/tests import worker fullmatch modules; pinned to worker/requirements.txt
+        run: pip install pytest numpy==1.26.4
       - name: Fetch pinned dataset
         run: |
           git init "$RUNNER_TEMP/coachai"

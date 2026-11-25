@@ -67,13 +67,13 @@ class FakeDownloader:
 
 def meta():
     m, _ = build_meta(URL, ["Viktor AXELSEN", "Jonatan Christie"], "loser", "test-open-2022",
-                      "Final", "2022-08-01", None, PLAYERS)
+                      "Final", "2022-08-01", None, PLAYERS, TOURNAMENTS)
     return m
 
 
 def test_build_meta_resolves_players():
     m, created = build_meta(URL, ["Viktor AXELSEN", "Jonatan Christie"], "loser", "test-open-2022",
-                            "Final", "2022-08-01", None, PLAYERS)
+                            "Final", "2022-08-01", None, PLAYERS, TOURNAMENTS)
     assert created == []
     assert m["id"] == "test-open-2022-viktor-axelsen-jonatan-christie"
     assert m["youtubeId"] == "abcdefghijk"
@@ -83,9 +83,9 @@ def test_build_meta_resolves_players():
 
 def test_build_meta_new_player_needs_event():
     with pytest.raises(IngestError, match="--event"):
-        build_meta(URL, ["Viktor Axelsen", "New Guy"], "winner", "e", "QF", "2022-01-01", None, PLAYERS)
+        build_meta(URL, ["Viktor Axelsen", "New Guy"], "winner", "test-open-2022", "QF", "2022-01-01", None, PLAYERS, TOURNAMENTS)
     m, created = build_meta("https://youtu.be/abcdefghijk", ["Viktor Axelsen", "New Guy"], "winner",
-                            "e", "QF", "2022-01-01", "MS", PLAYERS)
+                            "test-open-2022", "QF", "2022-01-01", "MS", PLAYERS, TOURNAMENTS)
     assert created == ["new-guy"]
     assert m["playerB"] == {"id": "new-guy", "name": "New Guy", "event": "MS"}
     assert m["nearFirst"] == "A"
@@ -138,7 +138,7 @@ def test_force_keeps_published_and_recomputes(attributed, capsys):
 def test_force_unpublished_stays_unpublished_without_recompute(attributed, monkeypatch):
     store, dl = MemoryStore(), FakeDownloader()
     ingest(URL, meta(), store, runner=FakeAnalyzer(attributed), downloader=dl)
-    monkeypatch.setattr(ing, "recompute", lambda *a, **k: pytest.fail("recompute must not run"))
+    monkeypatch.setattr(ing, "recompute_after_write", lambda *a, **k: pytest.fail("recompute must not run"))
     out = ingest(URL, meta(), store, runner=FakeAnalyzer(attributed), downloader=dl, force=True)
     assert out["status"] == "stored" and out["changed"] == []
     assert store.get(f"matches/{out['matchId']}")["status"] == "unpublished"
@@ -223,13 +223,13 @@ def test_batch_continues_after_failure(attributed, capsys):
     def analyzer_for(spec):
         return FakeAnalyzer(attributed, fail=spec == "fail")
 
-    results = run_batch(batch_entries(), store, PLAYERS, downloader=FakeDownloader(),
+    results = run_batch(batch_entries(), store, PLAYERS, TOURNAMENTS, downloader=FakeDownloader(),
                         analyzer_for=analyzer_for)
     assert [r["status"] for r in results] == ["failed", "failed", "stored"]
     assert "boom" in results[0]["error"] and "--event" in results[1]["error"]
     assert store.paths() == ["matches/test-open-2022-viktor-axelsen-jonatan-christie"]
     # resumable: a second run skips the stored match
-    again = run_batch(batch_entries()[2:], store, PLAYERS, downloader=FakeDownloader(),
+    again = run_batch(batch_entries()[2:], store, PLAYERS, TOURNAMENTS, downloader=FakeDownloader(),
                       analyzer_for=analyzer_for)
     assert again[0]["status"] == "skipped"
     assert "failed" in capsys.readouterr().out
@@ -238,7 +238,7 @@ def test_batch_continues_after_failure(attributed, capsys):
 def test_batch_dry_run_touches_nothing(tmp_path, capsys):
     f = tmp_path / "b.json"
     f.write_text(json.dumps(batch_entries()))
-    code = main(["--batch", str(f), "--dry-run"], players=PLAYERS,
+    code = main(["--batch", str(f), "--dry-run"], players=PLAYERS, tournaments=TOURNAMENTS,
                 store_factory=lambda: pytest.fail("no store on a dry run"),
                 downloader=lambda *a: pytest.fail("no download on a dry run"))
     out = capsys.readouterr().out
@@ -250,19 +250,19 @@ def test_batch_dry_run_touches_nothing(tmp_path, capsys):
 def test_cli_single_new_player_requires_event(capsys):
     with pytest.raises(SystemExit):
         main([URL, "--players", "Viktor Axelsen", "New Guy", "--near-first", "winner",
-              "--tournament", "e", "--round", "QF", "--date", "2022-01-01", "--dry-run"],
-             players=PLAYERS, store_factory=lambda: pytest.fail("no store"))
+              "--tournament", "test-open-2022", "--round", "QF", "--date", "2022-01-01", "--dry-run"],
+             players=PLAYERS, tournaments=TOURNAMENTS, store_factory=lambda: pytest.fail("no store"))
     assert "--event" in capsys.readouterr().err
 
 
 def test_cli_single_dry_run_prints_created(capsys):
     code = main([URL, "--players", "Viktor Axelsen", "New Guy", "--near-first", "winner",
-                 "--tournament", "e", "--round", "QF", "--date", "2022-01-01", "--event", "MS",
+                 "--tournament", "test-open-2022", "--round", "QF", "--date", "2022-01-01", "--event", "MS",
                  "--runner", "merged:~/x.json", "--dry-run"],
-                players=PLAYERS, store_factory=lambda: pytest.fail("no store"))
+                players=PLAYERS, tournaments=TOURNAMENTS, store_factory=lambda: pytest.fail("no store"))
     out = capsys.readouterr().out
     assert code == 0
-    assert "new player: new-guy" in out and "merged:~/x.json" in out and "e-viktor-axelsen-new-guy" in out
+    assert "new player: new-guy" in out and "merged:~/x.json" in out and "test-open-2022-viktor-axelsen-new-guy" in out
     assert "merged result not found" in out
 
 
@@ -271,7 +271,7 @@ def test_cli_single_stores(attributed, monkeypatch):
     monkeypatch.setattr(ing, "make_analyzer", lambda spec: FakeAnalyzer(attributed))
     code = main([URL, "--players", "Viktor Axelsen", "Jonatan Christie", "--near-first", "loser",
                  "--tournament", "test-open-2022", "--round", "Final", "--date", "2022-08-01"],
-                players=PLAYERS, store_factory=lambda: store, downloader=FakeDownloader())
+                players=PLAYERS, tournaments=TOURNAMENTS, store_factory=lambda: store, downloader=FakeDownloader())
     assert code == 0
     assert store.get("matches/test-open-2022-viktor-axelsen-jonatan-christie")["status"] == "unpublished"
 
@@ -303,14 +303,48 @@ def test_missing_video_is_an_error(attributed, tmp_path):
                downloader=lambda *a: pytest.fail("must not download"))
     with pytest.raises(SystemExit):
         main([URL, "--players", "Viktor Axelsen", "Jonatan Christie", "--near-first", "loser",
-              "--tournament", "e", "--round", "QF", "--date", "2022-01-01", "--video", missing, "--dry-run"],
-             players=PLAYERS, store_factory=lambda: pytest.fail("no store"))
+              "--tournament", "test-open-2022", "--round", "QF", "--date", "2022-01-01", "--video", missing, "--dry-run"],
+             players=PLAYERS, tournaments=TOURNAMENTS, store_factory=lambda: pytest.fail("no store"))
     entry = {**batch_entries()[2], "runner": "modal", "video": missing}
-    results = run_batch([entry], MemoryStore(), PLAYERS, dry_run=True)
+    results = run_batch([entry], MemoryStore(), PLAYERS, TOURNAMENTS, dry_run=True)
     assert results[0]["status"] == "failed" and "nope.mp4" in results[0]["error"]
 
 
 def test_batch_dry_run_validates_runner():
     entry = {**batch_entries()[2], "runner": "gpu-cluster"}
-    results = run_batch([entry], None, PLAYERS, dry_run=True)
+    results = run_batch([entry], None, PLAYERS, TOURNAMENTS, dry_run=True)
     assert results[0]["status"] == "failed" and "unknown runner" in results[0]["error"]
+
+
+def test_unknown_edition_rejected(capsys):
+    with pytest.raises(IngestError, match="tournaments.json"):
+        build_meta(URL, ["Viktor Axelsen", "Jonatan Christie"], "loser", "no-such-open-2099", "QF",
+                   "2022-01-01", None, PLAYERS, TOURNAMENTS)
+    # single, also on --dry-run
+    with pytest.raises(SystemExit):
+        main([URL, "--players", "Viktor Axelsen", "Jonatan Christie", "--near-first", "loser",
+              "--tournament", "no-such-open-2099", "--round", "QF", "--date", "2022-01-01", "--dry-run"],
+             players=PLAYERS, tournaments=TOURNAMENTS, store_factory=lambda: pytest.fail("no store"))
+    assert "tournaments.json" in capsys.readouterr().err
+    # batch and batch --dry-run: the entry fails, nothing is stored
+    entry = {**batch_entries()[2], "meta": {**batch_entries()[2]["meta"], "tournament": "no-such-open-2099"}}
+    for dry in (True, False):
+        store = MemoryStore()
+        results = run_batch([entry], store, PLAYERS, TOURNAMENTS, dry_run=dry,
+                            downloader=lambda *a: pytest.fail("no download"),
+                            analyzer_for=lambda spec: pytest.fail("no analyzer"))
+        assert results[0]["status"] == "failed" and "tournaments.json" in results[0]["error"]
+        assert store.list_ids("matches") == []
+
+
+def test_force_recompute_failure_says_how_to_recover(attributed, monkeypatch, capsys):
+    store, dl = MemoryStore(), FakeDownloader()
+    mid = ingest(URL, meta(), store, runner=FakeAnalyzer(attributed), downloader=dl)["matchId"]
+    pub.publish(store, mid)
+
+    def boom(*a, **k):
+        raise RuntimeError("firestore down")
+    monkeypatch.setattr(pub, "build_library", boom)
+    with pytest.raises(RuntimeError, match="firestore down"):
+        ingest(URL, meta(), store, runner=FakeAnalyzer(attributed), downloader=dl, force=True)
+    assert "python -m library.publish recompute" in capsys.readouterr().err

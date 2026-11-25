@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Play } from "lucide-react";
 import { KindBadge } from "@/features/pros/components/FindingsPanel";
 import { cn } from "@/lib/utils";
-import { surname } from "../names";
 import type { LibraryPlayerRef, MatchInsights as MatchInsightsData, Side } from "../types";
 import { InsightCards } from "./InsightCards";
 
@@ -39,7 +38,7 @@ export function MatchInsights({ insights, players, onSeek }: MatchInsightsProps)
           <div role="group" aria-label="Player" className="inline-flex gap-1 rounded-full bg-card p-1">
             {(["A", "B"] as const).map((s) => (
               <button key={s} type="button" aria-pressed={side === s} onClick={() => setSide(s)} className={toggle}>
-                {surname(players[s].name)}
+                {players[s].name}
               </button>
             ))}
           </div>

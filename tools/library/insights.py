@@ -37,6 +37,22 @@ def _rate(wins: int, n: int, minimum: int) -> float | None:
     return _pct(wins, n) if n >= minimum and n else None
 
 
+def _serve_length(shots, server: str) -> str | None:
+    """short/long for a serve: the detail type when it names one, else the depth
+    the receiver hit the next shot from (rear = long, front/mid = short)."""
+    d = shots[0].detail
+    if d == "short service":
+        return "short"
+    if d == "long service":
+        return "long"
+    if len(shots) < 2:
+        return None
+    reply = shots[1]
+    if reply.player in (server, "?", None) or reply.zone not in ZONES:
+        return None
+    return "long" if reply.zone.startswith("rear-") else "short"
+
+
 def player_insights(matches: list[Match], player: str) -> Insights:
     phase = {k: [] for k, _, _ in PHASES}
     replies = {g: [] for g in SHOWN_GROUPS}
@@ -79,10 +95,9 @@ def player_insights(matches: list[Match], player: str) -> Insights:
                 band_n[band] += 1
                 band_w[band] += r.winner == player
 
-            if shots and shots[0].player == player:
+            if shots and shots[0].is_serve and shots[0].player == player:
                 serves += 1
-                d = shots[0].detail
-                kind = "short" if d == "short service" else "long" if d == "long service" else None
+                kind = _serve_length(shots, player)
                 if kind:
                     short += kind == "short"
                     long_ += kind == "long"

@@ -88,6 +88,35 @@ def test_serve_short_share(low):
     assert s == {"serves": 3, "shortShare": 66.7, "pointsWonShort": 50.0, "pointsWonLong": 100.0}
 
 
+def test_serve_length_from_receiver_zone(low):
+    # Analyzer serves carry no detail: length comes from where the receiver hit shot 2.
+    def serve_rally(n, server, zone, winner, receiver=None, serve=True):
+        recv = receiver or (O if server == P else P)
+        return rally([shot(1, server, None, serve=serve), shot(2, recv, "Net", zone=zone)],
+                     winner=winner, n=n)
+    rs = [serve_rally(1, P, "front-left", P), serve_rally(2, P, "mid-right", O),
+          serve_rally(3, P, "rear-left", P), serve_rally(4, P, "rear-right", O),
+          serve_rally(5, P, None, P),                       # zone unknown: excluded
+          serve_rally(6, P, "rear-left", P, receiver="?"),  # receiver unknown: excluded
+          serve_rally(7, P, "rear-left", P, serve=False),   # first shot not a serve: not counted
+          serve_rally(8, O, "front-left", P)]               # opponent's serve
+    s = player_insights([match(rs)], P)["serve"]
+    assert s == {"serves": 6, "shortShare": 50.0, "pointsWonShort": 50.0, "pointsWonLong": 50.0}
+
+
+def test_serve_detail_overrides_zone(low):
+    rs = [rally([shot(1, P, None, detail="long service", serve=True), shot(2, O, "Net", zone="front-left")],
+                winner=P)]
+    s = player_insights([match(rs)], P)["serve"]
+    assert s["serves"] == 1 and s["shortShare"] == 0.0 and s["pointsWonLong"] == 100.0
+
+
+def test_serve_without_any_length(low):
+    rs = [rally([shot(1, P, None, serve=True)], winner=P)]
+    s = player_insights([match(rs)], P)["serve"]
+    assert s == {"serves": 1, "shortShare": None, "pointsWonShort": None, "pointsWonLong": None}
+
+
 def test_smash_wins(low):
     rs = [rally([shot(1, O, "Net"), shot(2, P, "Smash"), shot(3, O, "Lift")], winner=P, n=1),
           rally([shot(1, O, "Net"), shot(2, P, "Smash"), shot(3, O, "Lift"), shot(4, P, "Net"),
@@ -103,7 +132,7 @@ def test_under_minimum_is_null():
     assert out["phaseMix"]["mid"]["Net"] is None and out["phaseMix"]["mid"]["shots"] == 8
     assert out["zones"]["rear-left"] is None and out["zones"]["shots"] == 49
     assert out["tempo"] == {"secPerShot": None, "rallyShots": None}
-    assert out["serve"]["shortShare"] is None and out["serve"]["serves"] == 1
+    assert out["serve"]["shortShare"] is None and out["serve"]["serves"] == 0  # first shot is not a serve
     assert out["smashWins"] == {"smashes": 0, "winShare": None}
     assert all(b["winRate"] is None for b in out["bands"])
     empty = player_insights([], P)

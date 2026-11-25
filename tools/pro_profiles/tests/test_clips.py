@@ -71,6 +71,16 @@ def test_score_label_from_player_perspective():
     )
 
 
+def test_score_label_when_score_not_read():
+    m = make_match()
+    r = m.rallies[0]
+    r = Rally(r.match_id, r.set_no, r.number, r.shots, r.winner, None, None)
+    assert default_labels(m, r, "a", PLAYERS, TOURNAMENTS) == (
+        "Malaysia Masters 2020 final against Kento Momota",
+        "game 2, score not read",
+    )
+
+
 @pytest.mark.parametrize("raw,word", [
     ("Finals", "final"), ("Semi-finals", "semi-final"),
     ("Quarter-finals", "quarter-final"), ("Group-Stage", "group stage")])

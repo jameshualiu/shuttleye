@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { scoreText, surname } from "../names";
+import { scoreText } from "../names";
 import type { LibraryPlayerRef, RallyDoc, ShotDoc, Side } from "../types";
 import { LEGEND_GROUPS, shotFill, shotInk, shotLabel } from "./shotColors";
 
@@ -25,7 +25,7 @@ type RallyLanesProps = {
 export function RallyLanes({ rally, players, onSeek, className }: RallyLanesProps) {
   const lanes: Lane[] = (["A", "B"] as const).map((side) => ({
     key: side,
-    name: surname(players[side].name),
+    name: players[side].name,
     shots: [],
   }));
   const unknown: Lane = { key: "unknown", name: "Unknown", shots: [] };

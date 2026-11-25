@@ -58,6 +58,8 @@ def default_labels(
         f"{edition['name']} {edition['season']} {round_word} "
         f"against {players[opponent]['name']}"
     )
+    if rally.score_a is None or rally.score_b is None:
+        return match_label, f"game {rally.set_no}, score not read"
     mine, theirs = (
         (rally.score_a, rally.score_b)
         if player == match.winner

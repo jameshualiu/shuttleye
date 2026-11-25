@@ -167,7 +167,9 @@ function ViewBody({
     }
     return fetchLibraryView(player.id, viewId);
   }, [player.id, viewId, fixture]);
-  const ranked = index?.players.find((p) => p.id === player.id)?.ranked ?? player.context.comparedWith > 0;
+  // `ranked` in the index only means 300+ shots; comparisons also need other pros in this view.
+  const ranked =
+    (index?.players.find((p) => p.id === player.id)?.ranked ?? true) && player.context.comparedWith > 0;
 
   if (state.status === "loading") return <p className="text-muted-foreground">Loading…</p>;
   if (state.status === "error") {

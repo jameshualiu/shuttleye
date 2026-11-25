@@ -6,7 +6,7 @@ def to_match(doc: dict) -> Match:
     ids = {"A": doc["players"]["A"]["id"], "B": doc["players"]["B"]["id"]}
     rallies = []
     for r in doc["rallies"]:
-        before = r.get("scoreBefore") or [0, 0]
+        before = r.get("scoreBefore") or [None, None]   # unread: clip labels say so
         shots = tuple(
             Shot(
                 rally=r["n"],

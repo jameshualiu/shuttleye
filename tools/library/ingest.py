@@ -26,7 +26,7 @@ from pro_profiles.load import load_content
 from . import runners
 from .match_doc import MatchMeta, match_doc
 from .players import resolve_player, slugify
-from .publish import recompute
+from .publish import recompute_after_write
 from .runners import Analyzer, download_720p, make_analyzer
 from .store import FirestoreStore, Store
 
@@ -47,9 +47,12 @@ def youtube_id(url: str) -> str:
 
 
 def build_meta(url: str, names: list[str], near_first: str, edition_id: str, round_: str, date: str,
-               event: str | None, players: dict) -> tuple[MatchMeta, list[str]]:
+               event: str | None, players: dict, tournaments: dict) -> tuple[MatchMeta, list[str]]:
     """(meta, ids of players not in players.json). names = [winner, loser];
-    near_first = "winner" | "loser". A new player needs `event`."""
+    near_first = "winner" | "loser". A new player needs `event`; the edition must be
+    in tournaments.json."""
+    if edition_id not in tournaments:
+        raise IngestError(f"--tournament {edition_id!r} is not an editionId in tournaments.json")
     if len(names) != 2:
         raise IngestError("--players takes the winner then the loser")
     if near_first not in ("winner", "loser"):
@@ -153,7 +156,7 @@ def ingest(url_or_file: str, meta: MatchMeta, store: Store, *, runner: str | Ana
         store.set(path, json.loads(json.dumps(doc)))
     changed: list[str] = []
     if was_published:
-        changed = recompute(store)
+        changed = recompute_after_write(store, f"storing {mid}")
         print(f"[ingest] {mid}: recomputed the library; changed:\n" + ("\n".join(changed) or "no changes"))
     warnings = doc["analyzer"]["warnings"]
     for w in warnings:
@@ -164,10 +167,10 @@ def ingest(url_or_file: str, meta: MatchMeta, store: Store, *, runner: str | Ana
             "accuracy": accuracy, "changed": changed}
 
 
-def _entry_meta(entry: dict, players: dict) -> tuple[MatchMeta, list[str]]:
+def _entry_meta(entry: dict, players: dict, tournaments: dict) -> tuple[MatchMeta, list[str]]:
     m = entry["meta"]
     return build_meta(entry["url"], m["players"], m["nearFirst"], m["tournament"], m["round"],
-                      m["date"], m.get("event"), players)
+                      m["date"], m.get("event"), players, tournaments)
 
 
 def _plan(meta: MatchMeta, created: list[str], source: str, runner: str, shuttleset: str | None) -> str:
@@ -179,7 +182,7 @@ def _plan(meta: MatchMeta, created: list[str], source: str, runner: str, shuttle
     return "\n".join(lines)
 
 
-def run_batch(entries: list[dict], store: Store | None, players: dict, *, dry_run: bool = False,
+def run_batch(entries: list[dict], store: Store | None, players: dict, tournaments: dict, *, dry_run: bool = False,
               downloader=download_720p, analyzer_for=make_analyzer) -> list[dict]:
     """Each entry: {url, meta: {players: [winner, loser], nearFirst: winner|loser,
     tournament, round, date, event?}, shuttleset?, runner?, video?, force?}.
@@ -188,7 +191,7 @@ def run_batch(entries: list[dict], store: Store | None, players: dict, *, dry_ru
     for n, entry in enumerate(entries, 1):
         label = f"entry {n}"
         try:
-            meta, created = _entry_meta(entry, players)
+            meta, created = _entry_meta(entry, players, tournaments)
             label = meta["id"]
             spec = entry.get("runner", "modal")
             analyzer = analyzer_for(spec)   # validates the spec before any work (lazy: no Modal yet)
@@ -213,7 +216,7 @@ def run_batch(entries: list[dict], store: Store | None, players: dict, *, dry_ru
     return results
 
 
-def main(argv: list[str] | None = None, *, players: dict | None = None,
+def main(argv: list[str] | None = None, *, players: dict | None = None, tournaments: dict | None = None,
          store_factory=FirestoreStore, downloader=download_720p) -> int:
     ap = argparse.ArgumentParser(prog="python -m library.ingest",
                                  description="Analyse a BWF singles match into the library (unpublished).")
@@ -233,13 +236,14 @@ def main(argv: list[str] | None = None, *, players: dict | None = None,
     ap.add_argument("--dry-run", action="store_true", help="print the resolved meta and plan; touch nothing")
     args = ap.parse_args(argv)
     players = load_content("players") if players is None else players
+    tournaments = load_content("tournaments") if tournaments is None else tournaments
 
     if args.batch:
         if args.url:
             ap.error("give a URL or --batch, not both")
         entries = json.loads(Path(args.batch).read_text(encoding="utf-8"))
         store = None if args.dry_run else store_factory()
-        results = run_batch(entries, store, players, dry_run=args.dry_run, downloader=downloader)
+        results = run_batch(entries, store, players, tournaments, dry_run=args.dry_run, downloader=downloader)
         return 1 if any(r["status"] == "failed" for r in results) else 0
 
     missing = [o for o, v in (("url", args.url), ("--players", args.players), ("--near-first", args.near_first),
@@ -249,7 +253,7 @@ def main(argv: list[str] | None = None, *, players: dict | None = None,
         ap.error(f"missing {', '.join(missing)}")
     try:
         meta, created = build_meta(args.url, args.players, args.near_first, args.tournament, args.round,
-                                   args.date, args.event, players)
+                                   args.date, args.event, players, tournaments)
         make_analyzer(args.runner)   # validate the spec before any work
         if args.video:
             _existing_video(args.video)

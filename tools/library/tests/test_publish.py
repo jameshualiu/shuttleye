@@ -97,3 +97,24 @@ def test_publish_refusal_lists_warnings():
                              "analyzer": {"warnings": ["near side at rally 1 disagrees with --near-first"]}})
     with pytest.raises(PublishError, match="disagrees with --near-first"):
         publish(store, "m1")
+
+
+def test_recompute_skips_unknown_edition(capsys):
+    store = make_store(doc("m1", "aa", "bb"), {**doc("m2", "aa", "cc"), "editionId": "no-such-open-2099"})
+    store.set("matches/m2", {**store.get("matches/m2"), "status": "published"})
+    publish(store, "m1")
+    assert store.get("matches/m1")["insights"] is not None
+    assert store.get("players/cc") is None and store.get("tournaments/no-such-open-2099") is None
+    assert "no-such-open-2099" in capsys.readouterr().out
+
+
+def test_recompute_failure_says_how_to_recover(monkeypatch, capsys):
+    store = make_store(doc("m1", "aa", "bb"))
+
+    def boom(*a, **k):
+        raise RuntimeError("firestore down")
+    monkeypatch.setattr(pub, "build_library", boom)
+    with pytest.raises(RuntimeError, match="firestore down"):
+        publish(store, "m1")
+    assert store.get("matches/m1")["status"] == "published"   # the status write already happened
+    assert "python -m library.publish recompute" in capsys.readouterr().err

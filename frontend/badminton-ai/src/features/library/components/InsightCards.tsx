@@ -223,6 +223,10 @@ function ScoreFigure({ label, value, scoreRead, unit }: { label: string; value: 
   );
 }
 
+// Matches tools/library/insights.py MIN_SERVES: with this many serves, a null
+// shortShare means the length (short/long) was not known for enough of them.
+const MIN_SERVES = 30;
+
 function ServeCard({ ins, scoreRead }: { ins: Insights; scoreRead: boolean }) {
   const s = ins.serve;
   return (
@@ -231,7 +235,9 @@ function ServeCard({ ins, scoreRead }: { ins: Insights; scoreRead: boolean }) {
         {s.shortShare === null ? (
           <div>
             <div className="text-xs text-muted-foreground">Short serves</div>
-            <p className="mt-1 text-xs text-muted-foreground">Too few serves</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {s.serves >= MIN_SERVES ? "Serve length not known for these serves" : "Too few serves"}
+            </p>
           </div>
         ) : (
           <Big label="Short serves" value={pct(s.shortShare)} />

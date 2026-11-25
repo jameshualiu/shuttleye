@@ -21,7 +21,8 @@ export type ShotDoc = {
 
 export type RallyDoc = {
   n: number;
-  set: number;
+  /** null when the game number was not read. */
+  set: number | null;
   startSec: number;
   endSec: number;
   /** [A, B] before the rally; null once an earlier rally of the set had no read score. */
@@ -66,11 +67,11 @@ export type MatchDoc = {
   analyzer: {
     models: Record<string, unknown>;
     warnings: string[];
-    skippedSteps: string[];
+    skippedSteps: { step: string; error: string }[];
     timings: Record<string, Record<string, number>>;
   };
   accuracy: { hitF1: number | null; side: number | null; type6: number | null; ten: number | null } | null;
-  summary: { rallies: number; avgShots: number; durationSec: number };
+  summary: { rallies: number; avgShots: number; durationSec: number | null };
   rallies: RallyDoc[];
   insights: MatchInsights | null;
 };

@@ -129,3 +129,12 @@ def test_new_player_takes_event_from_doc():
     out = build_library([d], PLAYERS, TOURNAMENTS, {})
     assert out["players/ww"]["event"] == "WS"
     assert out["players/xx"]["event"] == "MS"   # players.json wins for known players
+
+
+def test_unknown_edition_skipped_with_warning(capsys):
+    docs = small_docs()
+    stray = {**make_doc("m3", "xx", "qq", docs[0]["rallies"]), "editionId": "no-such-open-2099"}
+    out = build_library([*docs, stray], PLAYERS, TOURNAMENTS, {})
+    assert out == build_library(docs, PLAYERS, TOURNAMENTS, {})
+    assert "players/qq" not in out and "tournaments/no-such-open-2099" not in out
+    assert "m3" in capsys.readouterr().out

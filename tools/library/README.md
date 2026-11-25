@@ -28,12 +28,15 @@ done
 Commands (from `tools/`, with the venv's python):
 
 ```bash
-export GOOGLE_APPLICATION_CREDENTIALS=~/keys/shuttleye-service-account.json   # ingest/publish only
+export GOOGLE_APPLICATION_CREDENTIALS=~/.config/shuttleye/firebase-admin.json   # ingest/publish only (key outside the repo)
 # time one chunk and estimate a 50-minute match, comparing hits with a saved Modal result
 $V/python -m library.time_local <match.mp4> --start-frame 19140 --compare-merged <fullmatch_*.json>
 # ingest with the local runner
 $V/python -m library.ingest <url> ... --runner local
 ```
+
+Admin access to unpublished matches in the app: `python -m library.set_admin <uid>`, then sign out and
+back in so the ID token is refreshed with the `admin` claim.
 
 `SHUTTLEYE_MODELS_DIR` overrides the weights folder. The worker takes `device="mps"` for the torch
 models: tracknet_v3 (+ InpaintNet) and BST-0 run on MPS. The court and net keypoint R-CNNs fail on MPS

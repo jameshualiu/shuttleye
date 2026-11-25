@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { scoreText, surname } from "../names";
+import { scoreText } from "../names";
 import type { LibraryPlayerRef, RallyDoc, Side } from "../types";
 
 /** The pro_profiles "long" band: 9 shots or more. */
@@ -35,7 +35,10 @@ export function RallyList({ rallies, players, selected, onSelect, className }: R
   const [lostBy, setLostBy] = useState<Side | null>(null);
   const [game, setGame] = useState<number | null>(null);
 
-  const games = useMemo(() => [...new Set(rallies.map((r) => r.set))].sort((a, b) => a - b), [rallies]);
+  const games = useMemo(
+    () => [...new Set(rallies.flatMap((r) => (r.set === null ? [] : [r.set])))].sort((a, b) => a - b),
+    [rallies],
+  );
   const maxShots = useMemo(() => Math.max(1, ...rallies.map((r) => r.shots.length)), [rallies]);
   const shown = rallies.filter(
     (r) =>
@@ -44,8 +47,8 @@ export function RallyList({ rallies, players, selected, onSelect, className }: R
       (lostBy === null || (r.winner !== null && r.winner !== lostBy)) &&
       (game === null || r.set === game),
   );
-  const a = surname(players.A.name);
-  const b = surname(players.B.name);
+  const a = players.A.name;
+  const b = players.B.name;
 
   return (
     <section aria-label="Rallies" className={cn("flex flex-col rounded-2xl bg-card text-card-foreground", className)}>
@@ -110,7 +113,7 @@ export function RallyList({ rallies, players, selected, onSelect, className }: R
                 type="button"
                 aria-pressed={r.n === selected}
                 aria-label={`Rally ${r.n}, score ${scoreText(r.scoreBefore)}, ${
-                  r.winner ? `${surname(players[r.winner].name)} won` : "winner not read"
+                  r.winner ? `${players[r.winner].name} won` : "winner not read"
                 }, ${r.shots.length} shots`}
                 onClick={() => onSelect(r)}
                 className={cn(

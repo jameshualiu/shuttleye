@@ -5,6 +5,11 @@ service cloud.firestore {
     // TODO(James): diff against the rules currently deployed in the Firebase console before deploying
     // Reconstructed, not copied: the frontend only reads these with onSnapshot and the backend
     // uses the Admin SDK (which bypasses rules), so owner read and no client writes.
+    // ensureUserDoc (src/lib/ensureUserDoc.ts) reads, creates and updates the signed-in user's own doc.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
     match /users/{uid}/videos/{videoId} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if false;
