@@ -1,8 +1,10 @@
-import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
 
 type YTPlayer = {
   seekTo(seconds: number, allowSeekAhead: boolean): void;
   playVideo(): void;
+  getCurrentTime(): number;
+  getPlayerState(): number;
   getIframe(): HTMLIFrameElement;
   destroy(): void;
 };
@@ -55,7 +57,12 @@ function loadYouTubeApi(): Promise<YTNamespace> {
 }
 
 /** Seconds of lead-in before a seek target, so the moment isn't cut off. */
-const LEAD_IN_SEC = 1;
+export const LEAD_IN_SEC = 1;
+
+/** YT.PlayerState.PLAYING */
+const PLAYING = 1;
+/** How often the playback time is reported while the video plays. */
+const TIME_POLL_MS = 250;
 
 export type YouTubePlayerHandle = {
   /** Jump to `sec` (minus a 1 s lead-in, never below 0) and play. */
@@ -67,14 +74,30 @@ type YouTubePlayerProps = {
   title: string;
   className?: string;
   ref?: Ref<YouTubePlayerHandle>;
+  /** Called with the playback time (seconds) about every 250 ms while the video plays. */
+  onTime?: (sec: number) => void;
 };
 
-export function YouTubePlayer({ videoId, title, className, ref }: YouTubePlayerProps) {
+export function YouTubePlayer({ videoId, title, className, ref, onTime }: YouTubePlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const readyRef = useRef(false);
   const pendingRef = useRef<number | null>(null);
   const [failed, setFailed] = useState(false);
+  // Latest onTime, so a new callback doesn't recreate the player.
+  const onTimeRef = useRef(onTime);
+  useLayoutEffect(() => {
+    onTimeRef.current = onTime;
+  });
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const player = playerRef.current;
+      if (!player || !readyRef.current || !onTimeRef.current) return;
+      if (player.getPlayerState() === PLAYING) onTimeRef.current(player.getCurrentTime());
+    }, TIME_POLL_MS);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

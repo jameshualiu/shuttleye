@@ -11,6 +11,9 @@ import { useLibraryIndex } from "@/features/library/hooks/useLibraryIndex";
 import { fetchMatch } from "@/features/library/libraryData";
 import type { MatchDoc, RallyDoc } from "@/features/library/types";
 
+// A rally's end time is when the shuttle lands; give the replay a moment before moving on.
+const POINT_END_GRACE_SEC = 1;
+
 function loadMatch(id: string, fixture: boolean) {
   // DEV ONLY: /matches/<any>?fixture=1 renders a bundled fixture instead of Firestore, for
   // working on the page without credentials. `import.meta.env.DEV` is false in production
@@ -34,6 +37,15 @@ function Match({ match, editionLabel }: { match: MatchDoc; editionLabel?: string
     seek(r.startSec);
   };
 
+  // Follow the video: select the rally being played, or the last one played while
+  // the video is between rallies. A rally counts from its seek target (start minus
+  // the lead-in), so jumping to a rally selects that rally, not the one before it.
+  // Follow the video: stay on a rally until its point ends, then jump ahead to the next one.
+  const followVideo = (sec: number) => {
+    const current = match.rallies.find((r) => sec < r.endSec + POINT_END_GRACE_SEC);
+    if (current && current.n !== selected) setSelected(current.n);
+  };
+
   return (
     <>
       <title>{`${match.players.A.name} v ${match.players.B.name} | Shuttleye`}</title>
@@ -49,6 +61,7 @@ function Match({ match, editionLabel }: { match: MatchDoc; editionLabel?: string
             ref={playerRef}
             videoId={match.youtubeId}
             title={`${match.players.A.name} v ${match.players.B.name}`}
+            onTime={followVideo}
           />
           {rally && <RallyLanes rally={rally} players={match.players} onSeek={seek} />}
         </div>

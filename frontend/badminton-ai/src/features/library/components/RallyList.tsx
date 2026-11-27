@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { scoreText } from "../names";
 import type { LibraryPlayerRef, RallyDoc, Side } from "../types";
@@ -49,6 +49,19 @@ export function RallyList({ rallies, players, selected, onSelect, className }: R
   );
   const a = players.A.name;
   const b = players.B.name;
+
+  // Keep the selected rally in view as the video moves on. Scrolls the list only,
+  // never the page.
+  const listRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const list = listRef.current;
+    const item = list?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!list || !item) return;
+    const top = item.offsetTop; // the list is the offset parent (relative)
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (top + item.offsetHeight > list.scrollTop + list.clientHeight)
+      list.scrollTop = top + item.offsetHeight - list.clientHeight;
+  }, [selected]);
 
   return (
     <section aria-label="Rallies" className={cn("flex flex-col rounded-2xl bg-card text-card-foreground", className)}>
@@ -106,7 +119,7 @@ export function RallyList({ rallies, players, selected, onSelect, className }: R
       {shown.length === 0 ? (
         <p className="px-4 py-6 text-sm text-muted-foreground">No rallies match these filters.</p>
       ) : (
-        <ul className="max-h-[520px] overflow-y-auto py-1 max-[899px]:max-h-[420px]">
+        <ul ref={listRef} className="relative max-h-[520px] overflow-y-auto py-1 max-[899px]:max-h-[420px]">
           {shown.map((r) => (
             <li key={r.n}>
               <button
