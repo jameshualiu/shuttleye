@@ -43,6 +43,8 @@ class Shot:
     player: str
     group: str | None
     is_serve: bool
+    detail: str | None = None  # analyzer fine-grained type (e.g. "net shot")
+    zone: str | None = None  # analyzer landing zone (e.g. "rear-left")
 
 
 @dataclass(frozen=True)
@@ -54,15 +56,16 @@ class Rally:
     winner: str | None  # None when the data records no point winner
     # Score BEFORE the rally (A = match winner). The CSV's roundscore is the
     # score after the rally, so this is the previous rally's after-score in
-    # the same set, or 0-0 for the set's first rally.
-    score_a: int
-    score_b: int
+    # the same set, or 0-0 for the set's first rally. None when the score was
+    # not read (library matches only; ShuttleSet always has it).
+    score_a: int | None
+    score_b: int | None
 
 
 @dataclass(frozen=True)
 class Match:
     id: str
-    source: Literal["ShuttleSet", "ShuttleSet22"]
+    source: Literal["ShuttleSet", "ShuttleSet22", "Analyzer"]
     edition_id: str
     round: str
     date: str
