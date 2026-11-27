@@ -1,39 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
 
-    // TODO(James): diff against the rules currently deployed in the Firebase console before deploying
-    // Reconstructed, not copied: the frontend only reads these with onSnapshot and the backend
-    // uses the Admin SDK (which bypasses rules), so owner read and no client writes.
-    // ensureUserDoc (src/lib/ensureUserDoc.ts) reads, creates and updates the signed-in user's own doc.
+    // Users profile doc (as deployed before the match library)
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
+      allow read: if isMe(uid);
+      allow create: if isMe(uid);
+      allow update: if isMe(uid);
+      allow delete: if false;
 
-    match /users/{uid}/videos/{videoId} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
+      // Videos subcollection
+      match /videos/{videoId} {
+        allow read: if isMe(uid);
+        allow create: if isMe(uid);
+        allow update: if isMe(uid);
+        allow delete: if isMe(uid);
+      }
     }
 
     // Match library. Written only by tools/library (Admin SDK), never by clients.
     match /matches/{id} {
-      allow read: if request.auth != null
-        && (resource.data.status == "published" || request.auth.token.admin == true);
+      allow read: if signedIn()
+        && (resource.data.status == "published" || isAdmin());
       allow write: if false;
     }
 
     match /players/{path=**} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /tournaments/{id} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
 
     match /library/{id} {
-      allow read: if request.auth != null;
+      allow read: if signedIn();
       allow write: if false;
     }
   }
