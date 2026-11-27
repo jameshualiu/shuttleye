@@ -235,6 +235,19 @@ def test_batch_continues_after_failure(attributed, capsys):
     assert "failed" in capsys.readouterr().out
 
 
+def test_batch_force_reruns_stored(attributed):
+    store = MemoryStore()
+
+    def analyzer_for(spec):
+        return FakeAnalyzer(attributed)
+
+    entries = batch_entries()[2:]
+    run_batch(entries, store, PLAYERS, TOURNAMENTS, downloader=FakeDownloader(), analyzer_for=analyzer_for)
+    again = run_batch(entries, store, PLAYERS, TOURNAMENTS, downloader=FakeDownloader(),
+                      analyzer_for=analyzer_for, force=True)
+    assert again[0]["status"] != "skipped"
+
+
 def test_batch_dry_run_touches_nothing(tmp_path, capsys):
     f = tmp_path / "b.json"
     f.write_text(json.dumps(batch_entries()))

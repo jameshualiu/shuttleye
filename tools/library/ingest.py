@@ -5,7 +5,7 @@ the match document as `unpublished`, delete the video.
         --near-first winner|loser --tournament <editionId> --round <round> --date <YYYY-MM-DD> \\
         [--event MS|WS] [--runner modal|local|merged:<path>] [--video <path>] \\
         [--shuttleset <match>] [--force] [--keep-video] [--dry-run]
-    python -m library.ingest --batch <file.json> [--dry-run]
+    python -m library.ingest --batch <file.json> [--force] [--dry-run]
 
 Needs GOOGLE_APPLICATION_CREDENTIALS pointing at a service-account key (kept outside the repo).
 """
@@ -183,10 +183,12 @@ def _plan(meta: MatchMeta, created: list[str], source: str, runner: str, shuttle
 
 
 def run_batch(entries: list[dict], store: Store | None, players: dict, tournaments: dict, *, dry_run: bool = False,
+              force: bool = False,
               downloader=download_720p, analyzer_for=make_analyzer) -> list[dict]:
     """Each entry: {url, meta: {players: [winner, loser], nearFirst: winner|loser,
     tournament, round, date, event?}, shuttleset?, runner?, video?, force?}.
-    Stored ids are skipped (resumable); a failing entry is reported and the batch goes on."""
+    Stored ids are skipped (resumable) unless `force` or the entry's force is set;
+    a failing entry is reported and the batch goes on."""
     results = []
     for n, entry in enumerate(entries, 1):
         label = f"entry {n}"
@@ -204,7 +206,7 @@ def run_batch(entries: list[dict], store: Store | None, players: dict, tournamen
                 continue
             for pid in created:
                 print(f"[ingest] new player: {pid}")
-            out = ingest(entry["url"], meta, store, runner=analyzer, force=entry.get("force", False),
+            out = ingest(entry["url"], meta, store, runner=analyzer, force=force or entry.get("force", False),
                          shuttleset=entry.get("shuttleset"), video=entry.get("video"), downloader=downloader)
             results.append(out)
         except Exception as exc:     # one bad match must not stop the batch
@@ -243,7 +245,8 @@ def main(argv: list[str] | None = None, *, players: dict | None = None, tourname
             ap.error("give a URL or --batch, not both")
         entries = json.loads(Path(args.batch).read_text(encoding="utf-8"))
         store = None if args.dry_run else store_factory()
-        results = run_batch(entries, store, players, tournaments, dry_run=args.dry_run, downloader=downloader)
+        results = run_batch(entries, store, players, tournaments, dry_run=args.dry_run, force=args.force,
+                            downloader=downloader)
         return 1 if any(r["status"] == "failed" for r in results) else 0
 
     missing = [o for o, v in (("url", args.url), ("--players", args.players), ("--near-first", args.near_first),
