@@ -23,6 +23,7 @@
     "Smash": ["smashes", "Smashed"],
     "Net": ["plays net shots", "Played net shots"],
     "Lift": ["lifts", "Lifted"],
+    "Block": ["blocks", "Blocked"],
     "Drop": ["drops", "Dropped"],
     "Clear": ["clears", "Cleared"]
   },
@@ -35,7 +36,7 @@
     "of": "of {his} replies to a smash",
     "did": "Answered with {reply} on"
   },
-  "replyWords": {"Net": "a net shot", "Lift": "a lift"},
+  "replyWords": {"Net": "a net shot", "Lift": "a lift", "Block": "a block"},
 
   "zone": {
     "claim.top": "{He} hits from the {where} more than most pros",

@@ -72,6 +72,7 @@ def test_group_map():
     for name in TEN_CLASSES:
         assert name in GROUP_OF_DETAIL
     assert GROUP_OF_DETAIL["lob"] == "Lift" and GROUP_OF_DETAIL["short service"] is None
+    assert GROUP_OF_DETAIL["defensive shot"] == "Block"
 
 
 def test_doc_size_under_limit(product_result, meta):

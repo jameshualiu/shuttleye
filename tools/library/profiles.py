@@ -39,12 +39,13 @@ DEFAULT_EVENT = "MS"  # players not yet in players.json
 # style finding at the top/bottom EDGE; "rate" gives a strength at the top;
 # "band" is a rate whose lowest value can also be the weakness.
 # "bandWin" is bands[*].winRate keyed by band (see _rankable).
-_PHASE_GROUPS = ("Smash", "Net", "Lift", "Drop", "Clear")
+_PHASE_GROUPS = ("Smash", "Net", "Lift", "Block", "Drop", "Clear")
 FINDING_SCALARS: list[tuple[tuple[str, ...], str, str]] = [
     *[(("phaseMix", "late", g), "share", "phase") for g in _PHASE_GROUPS],
     *[(("phaseMix", "start", g), "share", "phase") for g in _PHASE_GROUPS],
     (("replies", "Smash", "Net"), "share", "reply"),
     (("replies", "Smash", "Lift"), "share", "reply"),
+    (("replies", "Smash", "Block"), "share", "reply"),
     *[(("zones", z), "share", "zone") for z in ("rear-left", "rear-right", "front-left", "front-right")],
     (("tempo", "secPerShot"), "tempo", "tempo"),  # higher = slower: top is slowest
     (("serve", "shortShare"), "share", "serveShort"),

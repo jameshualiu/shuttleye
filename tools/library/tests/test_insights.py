@@ -1,6 +1,7 @@
 import pytest
 from pro_profiles.load import Match, Rally, Shot
-from pro_profiles.stats import Ranked, SHOWN_GROUPS
+from pro_profiles.stats import Ranked
+from library.insights import SHOWN_GROUPS
 
 from library import insights
 from library.insights import player_insights, rank_insight
@@ -167,3 +168,10 @@ def test_unknown_player_excluded_from_shares_but_counts_length(low):
     assert out["phaseMix"]["start"]["Smash"] == 0.0
     assert out["tempo"]["rallyShots"] == 4.0
     assert out["bands"][0]["rallies"] == 1
+
+
+def test_block_is_its_own_group(low):
+    shots = [shot(1, O, "Smash"), shot(2, P, "Block"), shot(3, O, "Smash"), shot(4, P, "Lift")]
+    r = player_insights([match([rally(shots)])], P)
+    assert r["replies"]["Smash"]["Block"] == 50.0 and r["replies"]["Smash"]["Lift"] == 50.0
+    assert r["phaseMix"]["start"]["Block"] == 50.0

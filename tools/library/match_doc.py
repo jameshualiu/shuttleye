@@ -19,10 +19,13 @@ class MatchMeta(TypedDict):
     nearFirst: str  # "A" | "B": who is on the near side in rally 1
 
 
+# "defensive shot" is the classifier's 擋小球 (block) class: checked against the
+# ShuttleSet labels of the 5 checkpoint matches, 299 of its 334 matched hits were
+# blocks (22 defensive drives, 13 defensive lifts), so it is shown as Block.
 GROUP_OF_DETAIL: dict[str, str | None] = {
     "clear": "Clear", "drive": "Drive", "drop": "Drop", "lob": "Lift",
     "net shot": "Net", "smash": "Smash", "push/rush": "Push",
-    "defensive shot": "Lift", "short service": None, "long service": None,
+    "defensive shot": "Block", "short service": None, "long service": None,
 }
 
 # Court coordinates (worker/pipeline.py): 6.1 x 13.4 m, far baseline y = 0,

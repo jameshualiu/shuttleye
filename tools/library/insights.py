@@ -5,7 +5,7 @@ from pro_profiles.load import Match
 from pro_profiles.stats import (
     BANDS,
     MIN_BAND_RALLIES,
-    SHOWN_GROUPS,
+    SHOWN_GROUPS as _PROFILE_GROUPS,
     Ranked,
     _band_of,
     rank_value,
@@ -17,6 +17,9 @@ MIN_GAPS = 50
 MIN_RALLIES = 30
 MIN_SERVES = 30
 PHASES = (("start", 1, 4), ("mid", 5, 12), ("late", 13, None))
+# The profile groups plus Block, which only the analyzer labels (ShuttleSet
+# profiles fold blocks into Net).
+SHOWN_GROUPS = (*_PROFILE_GROUPS, "Block")
 ZONES = tuple(f"{d}-{s}" for d in ("front", "mid", "rear") for s in ("left", "right"))
 
 Insights = dict

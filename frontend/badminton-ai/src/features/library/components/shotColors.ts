@@ -2,7 +2,7 @@ import { groupColor } from "@/utils/shotUtils";
 import type { ShotDoc } from "../types";
 
 /** Legend order on the match page. */
-export const LEGEND_GROUPS = ["Serve", "Smash", "Clear", "Drop", "Net", "Lift", "Drive", "Push"] as const;
+export const LEGEND_GROUPS = ["Serve", "Smash", "Clear", "Drop", "Net", "Block", "Lift", "Drive", "Push"] as const;
 
 /** Display label for a shot: serves have no group; an unclassified shot is "Unknown". */
 export function shotLabel(shot: ShotDoc): string {

@@ -9,7 +9,7 @@ import { shotFill } from "./shotColors";
 
 export const SCORE_NOTE = "Shown only for matches whose score we can read.";
 
-const MIX_GROUPS = ["Smash", "Clear", "Drop", "Net", "Lift", "Drive", "Push"] as const;
+const MIX_GROUPS = ["Smash", "Clear", "Drop", "Net", "Block", "Lift", "Drive", "Push"] as const;
 
 const PHASES: { key: keyof Insights["phaseMix"]; label: string }[] = [
   { key: "start", label: "Shots 1–4" },

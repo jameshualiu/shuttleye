@@ -150,7 +150,7 @@
     {
      "t": 81.06,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -325,7 +325,7 @@
     {
      "t": 153.69,
      "p": null,
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
@@ -341,7 +341,7 @@
     {
      "t": 155.38,
      "p": null,
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -431,7 +431,7 @@
     {
      "t": 199.74,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-right",
      "s": false
@@ -534,7 +534,7 @@
     {
      "t": 258.99,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -550,7 +550,7 @@
     {
      "t": 260.81,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -775,7 +775,7 @@
     {
      "t": 390.33,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -910,7 +910,7 @@
     {
      "t": 456.51,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -1133,7 +1133,7 @@
     {
      "t": 537.86,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -1189,7 +1189,7 @@
     {
      "t": 544.49,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -1250,7 +1250,7 @@
     {
      "t": 571.64,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -1424,7 +1424,7 @@
     {
      "t": 693.02,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -1440,7 +1440,7 @@
     {
      "t": 694.72,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -1448,7 +1448,7 @@
     {
      "t": 695.87,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -1580,7 +1580,7 @@
     {
      "t": 774.56,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -1681,7 +1681,7 @@
     {
      "t": 799.49,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -1697,7 +1697,7 @@
     {
      "t": 801.3,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-left",
      "s": false
@@ -1713,7 +1713,7 @@
     {
      "t": 803.01,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -1782,7 +1782,7 @@
     {
      "t": 825.48,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -1886,7 +1886,7 @@
     {
      "t": 838.84,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -1918,7 +1918,7 @@
     {
      "t": 842.36,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-left",
      "s": false
@@ -1971,7 +1971,7 @@
     {
      "t": 865.34,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -2093,7 +2093,7 @@
     {
      "t": 923.34,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -2149,7 +2149,7 @@
     {
      "t": 929.84,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -2313,7 +2313,7 @@
     {
      "t": 1017.44,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
@@ -2350,7 +2350,7 @@
     {
      "t": 1036.75,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -2830,7 +2830,7 @@
     {
      "t": 1207.95,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -2931,7 +2931,7 @@
     {
      "t": 1243.69,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-right",
      "s": false
@@ -2992,7 +2992,7 @@
     {
      "t": 1273.25,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -3000,7 +3000,7 @@
     {
      "t": 1274.28,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
@@ -3024,7 +3024,7 @@
     {
      "t": 1277.05,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -3032,7 +3032,7 @@
     {
      "t": 1277.81,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-left",
      "s": false
@@ -3152,7 +3152,7 @@
     {
      "t": 1291.95,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -3197,7 +3197,7 @@
     {
      "t": 1311.97,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -3213,7 +3213,7 @@
     {
      "t": 1313.92,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -3237,7 +3237,7 @@
     {
      "t": 1316.76,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -3314,7 +3314,7 @@
     {
      "t": 1344.25,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -3481,7 +3481,7 @@
     {
      "t": 1410.95,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
@@ -3526,7 +3526,7 @@
     {
      "t": 1435.28,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -3542,7 +3542,7 @@
     {
      "t": 1437.04,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
@@ -3558,7 +3558,7 @@
     {
      "t": 1439.2,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-right",
      "s": false
@@ -3841,7 +3841,7 @@
     {
      "t": 1605.58,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-right",
      "s": false
@@ -3934,7 +3934,7 @@
     {
      "t": 1631.28,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "rear-left",
      "s": false
@@ -4152,7 +4152,7 @@
     {
      "t": 1678.64,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-left",
      "s": false
@@ -4181,7 +4181,7 @@
     {
      "t": 1696.54,
      "p": "A",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "front-right",
      "s": false
@@ -4285,7 +4285,7 @@
     {
      "t": 1708.63,
      "p": "B",
-     "g": "Lift",
+     "g": "Block",
      "d": "defensive shot",
      "z": "mid-right",
      "s": false
